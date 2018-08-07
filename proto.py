@@ -75,7 +75,7 @@ class CheckPositions(threading.Thread):
 		"""Overrides Thread.run. Don't call this directly its called internally
 		when you call Thread.start().
 		"""
-		for i in range(2):
+		while 1:
 			self.checkQ()
 			self._driveSystem.check_encoder_pos()
 			pos=self._driveSystem.positions
@@ -217,7 +217,7 @@ class DriveView:
 	def updatePositions(self,pos):
 		rand=2
 		dis=90
-		pos=pos/200
+		pos=pos*0.005
 		self.position1.remove()
 		if pos[0]==None:
 			text="Position 1: 0"
