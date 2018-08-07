@@ -77,7 +77,8 @@ class CheckPositions(threading.Thread):
 		"""
 		for i in range(2):
 			self.checkQ()
-			pos=self._driveSystem.check_encoder_pos()
+			self._driveSystem.check_encoder_pos()
+			pos=self._driveSystem.positions
 			event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
 			wx.PostEvent(self._parent.matplotpanel, event)
 			time.sleep(UPDATE_TIME)
@@ -193,7 +194,7 @@ class DriveView:
 		x2=self.two.get_x()
 		height=twoH/2
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
-		text="d = "+str(x2-x1)+" cm"
+		text="d = "+str(x2-x1)+" mm"
 		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20, height+3,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
@@ -216,6 +217,7 @@ class DriveView:
 	def updatePositions(self,pos):
 		rand=2
 		dis=90
+		pos=pos/200
 		self.position1.remove()
 		if pos[0]==None:
 			text="Position 1: 0"

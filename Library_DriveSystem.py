@@ -11,6 +11,7 @@ class DriveSystem():
 		self.serial_port = serial.Serial()
 		self.port_open = False
 		self.parity=int(1)
+		self.positions=[]
 		
 		
 		# Port option lists
@@ -192,12 +193,10 @@ class DriveSystem():
 		#print( pattern )
 
 		if pattern is not None:
-			#self.encoder_pos[axis-1] = int( pattern.group(2) )
+			self.positions[axis-1] = int( pattern.group(2) )
 			#self.enc_disp_txt[axis-1].set( ('%d: %d' % ( axis, int( pattern.group(2) ) ) ) )
-			#self.send_to_influx( axis, int( pattern.group(2) ) )
-			return int(pattern.group(2))
-		else:
-			return None
+			self.send_to_influx( axis, int( pattern.group(2) ) )
+
 
 	# send positions to InfluxDB
 	def send_to_influx( self, axis, pos ):
