@@ -1,11 +1,11 @@
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-import wx
 import matplotlib 
 matplotlib.use('WXAgg')
 from matplotlib import pyplot as plt
-
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib import animation
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+
+import wx
 import numpy as np
 import threading
 import time
@@ -75,12 +75,13 @@ class CheckPositions(threading.Thread):
 		"""Overrides Thread.run. Don't call this directly its called internally
 		when you call Thread.start().
 		"""
-		while 1:
+		for i in range(2):
 			self.checkQ()
 			pos=self._driveSystem.check_encoder_pos()
-			evt = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
-			wx.PostEvent(self._matplotpanel.driveView, evt)
+			event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
+			wx.PostEvent(self._parent.matplotpanel, event)
 			time.sleep(UPDATE_TIME)
+			print("Check")
 	def checkQ(self):
 		element=self._parent.q.root
 		while(element!=None):
@@ -212,28 +213,36 @@ class DriveView:
 	def move4(self,newpos):
 		self.four.set_y(newpos)
 		self.changeText(4)
-	def updatePositions(self,event):
-		pos=event.GetValue()		
-		
+	def updatePositions(self,pos):
+		rand=2
+		dis=90
 		self.position1.remove()
-		text="Position 1: "+str(pos[0])
+		if pos[0]==None:
+			text="Position 1: 0"
+			self.one.set_x(0)
+		else:
+			self.one.set_x(pos[0])
+			text="Position 1: "+str(pos[0])
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
-		self.one.set_x(pos[0])
+		
 		
 		self.position2.remove()
 		text="Position 2: "+str(pos[1])
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=twoC)
 		self.two.set_x(pos[1])		
 
+		pos1=self.one.get_x()
 		self.position3.remove()
 		text="Position 3: "+str(pos[2])
 		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
 		self.three.set_y(pos[2])
+		self.three.set_x(pos1+oneW-target_sidespace-threeW)
 		
 		self.position4.remove()
 		text="Position 4: "+str(pos[3])
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
 		self.four.set_y(pos[3])
+		self.four.set_x(pos1+detector_sidespace)
 		self.drawArrow()
 		self.matplotpanel.canvas.draw()
 		
@@ -274,7 +283,8 @@ class MatplotPanel(wx.Panel):
 		self.Bind(EVT_POSUPDATE, self.updatePositions)
 
 	def updatePositions(self,event):
-		self.driveView.updatePositions()
+		pos=event.GetValue()		
+		self.driveView.updatePositions(pos)
 	def move1(self,moveDis):
 		self.driveView.move1(moveDis)
 		self.canvas.draw()
@@ -296,6 +306,8 @@ class ControlView(wx.Panel):
    
 	def __init__(self,parent,matplotpanel,frame):
 		self.driveSystem=Library_DriveSystem.DriveSystem()
+		self.driveSystem.connect_to_port()
+
 		self.frame=frame
 		sizeX=100
 		sizeY=100

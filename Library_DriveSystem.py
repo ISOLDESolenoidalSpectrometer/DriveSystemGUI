@@ -36,7 +36,7 @@ class DriveSystem():
 		self.set7()
 		self.baudrate= "9600"  # initial value
 		#self.portalias=self.port_opt[0].device 
-		self.portalias="ttyS0"	# initial value
+		self.portalias="/dev/ttyS0"	# initial value
 	
 
 	###########
@@ -56,13 +56,13 @@ class DriveSystem():
 		if self.serial_port.is_open == True:
 			
 			tmpStr = "Connected to " + self.portalias
-			self.out_now.set( tmpStr )
+			#self.out_now.set( tmpStr )
 			print( tmpStr )
 	
 		else:
 		
 			tmpStr = "Failed to connect to " + self.portalias.get()
-			self.out_now.set( tmpStr )
+			#self.out_now.set( tmpStr )
 			print( tmpStr )
 
 	# Disconnect from serial port
@@ -192,10 +192,10 @@ class DriveSystem():
 		#print( pattern )
 
 		if pattern is not None:
-			self.encoder_pos[axis-1] = int( pattern.group(2) )
+			#self.encoder_pos[axis-1] = int( pattern.group(2) )
 			#self.enc_disp_txt[axis-1].set( ('%d: %d' % ( axis, int( pattern.group(2) ) ) ) )
-			self.send_to_influx( axis, int( pattern.group(2) ) )
-			return pattern.group(2)
+			#self.send_to_influx( axis, int( pattern.group(2) ) )
+			return int(pattern.group(2))
 		else:
 			return None
 
