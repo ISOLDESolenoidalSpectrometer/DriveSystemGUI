@@ -16,18 +16,12 @@ class DriveSystem():
 		
 		
 		# Port option lists
-		'''
-		self.port_opt = list_ports.comports()			# get port list
-		self.port_name = {}								# list of devices
-		for k in self.port_opt:
-			self.port_name[ k.device ] = k.device
-		'''
 		self.set_defaults()
+		if self.serial_port.is_open == True:
+			print("Already connected to"+ self.portalias)
+		else:
+			self.connect_to_port()
 		
-		# Baudrate option lists
-		#self.baud_opt = { "1200", "2400", "4800", "9600", "19200", "38400", "57600", "115200" }
-
-
 	
 	############
 	# Defaults #
@@ -37,7 +31,6 @@ class DriveSystem():
 		self.seteven()
 		self.set7()
 		self.baudrate= "9600"  # initial value
-		#self.portalias=self.port_opt[0].device 
 		self.portalias="/dev/ttyS0"	# initial value
 	
 
@@ -60,18 +53,22 @@ class DriveSystem():
 			tmpStr = "Connected to " + self.portalias
 			#self.out_now.set( tmpStr )
 			print( tmpStr )
-	
+			self.port_open = True
 		else:
 		
 			tmpStr = "Failed to connect to " + self.portalias.get()
 			#self.out_now.set( tmpStr )
 			print( tmpStr )
+	
+	def checkConnection(self):
+		return self.port_open
 
 	# Disconnect from serial port
 	def disconnect_port( self ):
 		
 		self.serial_port.close()	# close the port
-		self.out_now.set( "Disconnected" )
+		#self.out_now.set( "Disconnected" )
+		self.port_open = False
 		print( "Disconnected" )
 
 	# go to position 1

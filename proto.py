@@ -38,7 +38,7 @@ threeC='g'
 fourC='b'
 
 #Frequency por the positons checking
-UPDATE_TIME=1
+UPDATE_TIME=2
 
 #-------------------Code Start-------------------
 
@@ -308,7 +308,6 @@ class ControlView(wx.Panel):
    
 	def __init__(self,parent,matplotpanel,frame):
 		self.driveSystem=Library_DriveSystem.DriveSystem()
-		self.driveSystem.connect_to_port()
 
 		self.frame=frame
 		sizeX=100
@@ -338,15 +337,22 @@ class ControlView(wx.Panel):
 		sizey=(sizeY+offset)/4
 		self.connectButton = wx.Button(self, wx.ID_ANY, "CONNECT", (frameWidth-buttonW,0),(buttonW,sizey))
 		self.connectButton.Bind(wx.EVT_BUTTON, self.connectB)
-		self.connectButton.SetBackgroundColour("#7FFF00") 
+		 
 
 		self.disconnectButton = wx.Button(self, wx.ID_ANY, "DISCONNECT", (frameWidth-buttonW,sizey),(buttonW,sizey))
 		self.disconnectButton.Bind(wx.EVT_BUTTON, self.disconnectB)
-		self.disconnectButton.SetBackgroundColour("#EE4000") 
+		
 
 		self.quitButton = wx.Button(self, wx.ID_ANY, "QUIT", (frameWidth-buttonW,sizey*3),(buttonW,sizey))
 		self.quitButton.Bind(wx.EVT_BUTTON, self.quitB)
 		self.quitButton.SetBackgroundColour("#FF3030")# #DC143C
+
+		if self.driveSystem.checkConnection()==True:
+			self.disconnectButton.SetBackgroundColour("#EE4000") 
+			self.connectButton.Enable(False)
+		else:
+			self.connectButton.SetBackgroundColour("#7FFF00")
+			self.disconnectButton.Enable(False)
 		
 		#Settings
 		self.settingsButton = wx.Button(self, wx.ID_ANY, "Settings", (frameWidth-buttonW,sizey*2),(buttonW,sizey))
@@ -401,16 +407,17 @@ class ControlView(wx.Panel):
 		
 		
 	def sendingCommandB(self,event):
-		command = self.writeCommand.GetValue()
+		command = self.writeCommand.GetValue() + '\r'
+		command = bytes( command.encode('ascii') )
 		element=queues.Element('S',0,command)
 		self.q.add(element)
 
 	def sendingCommand(self,cmd):
 		command=cmd
-		print("Send command "+command)
+		print("Send command "+command.decode())
 		ax,answer=self.driveSystem.executeCommand(command)
 		self.currentAx.SetValue(ax)
-		self.responseText.SetValue(answer)
+		self.commandResponse.SetValue(answer)
 
 	def connectB(self,event):
 		element=queues.Element('C')
@@ -425,6 +432,10 @@ class ControlView(wx.Panel):
 	def disconnect(self):
 		print("Disconnect")
 		self.driveSystem.disconnect_port()
+		self.disconnectButton.SetBackgroundColour("grey") 
+		self.connectButton.Enable(True)
+		self.connectButton.SetBackgroundColour("#7FFF00")
+		self.disconnectButton.Enable(False)
 
 	def quitB(self,event):
 		element=queues.Element('Q')
