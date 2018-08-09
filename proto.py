@@ -75,14 +75,14 @@ class CheckPositions(threading.Thread):
 		"""Overrides Thread.run. Don't call this directly its called internally
 		when you call Thread.start().
 		"""
-		while 1:
-			self.checkQ()
+		while self._driveSystem.port_open == True :
 			self._driveSystem.check_encoder_pos()
 			pos=self._driveSystem.positions
 			event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
 			wx.PostEvent(self._parent.matplotpanel, event)
 			time.sleep(UPDATE_TIME)
 			print("Check")
+			self.checkQ()
 	def checkQ(self):
 		element=self._parent.q.root
 		while(element!=None):
@@ -420,11 +420,20 @@ class ControlView(wx.Panel):
 		self.commandResponse.SetValue(answer)
 
 	def connectB(self,event):
-		element=queues.Element('C')
-		self.q.add(element)
-	def connect(self):
 		print("Connect")
 		self.driveSystem.connect_to_port()
+		self.positionsChecker=None
+		self.connectButton.SetBackgroundColour("grey") 
+		self.disconnectButton.Enable(True)
+		self.disconnectButton.SetBackgroundColour("#EE4000")
+		self.connectButton.Enable(False)
+		self.positionsChecker=CheckPositions(self,self.driveSystem)
+		self.positionsChecker.start()
+		#element=queues.Element('C')
+		#self.q.add(element)
+	def connect(self):
+		#nothing
+		print("connect")
 
 	def disconnectB(self,event):
 		element=queues.Element('D')
