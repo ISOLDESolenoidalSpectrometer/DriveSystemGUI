@@ -10,6 +10,7 @@ import numpy as np
 import threading
 import time
 import Library_DriveSystem
+import queue
 import queues
 
 #----------Constants-------------------
@@ -38,7 +39,7 @@ threeC='g'
 fourC='b'
 
 #Frequency por the positons checking
-UPDATE_TIME=2
+UPDATE_TIME=5
 
 #-------------------Code Start-------------------
 
@@ -84,12 +85,10 @@ class CheckPositions(threading.Thread):
 			print("Check")
 			self.checkQ()
 	def checkQ(self):
-		element=self._parent.q.root
-		while(element!=None):
-			self.action(element)
-			e=element.next
-			self._parent.q.remove(element)
-			element=e
+		while self._parent.q.empty()==False:
+			item = self._parent.q.get()
+			self.action(item)
+			self._parent.q.task_done()
 	def action(self,element):
 		if element.mode=='Q':
 			self._parent.quit()
@@ -131,8 +130,8 @@ class DriveView:
 		self.fig.set_size_inches(10, 5.3)
 		
 		#Setting properties of the axes
-		self.ymin=-40
-		self.ymax=60
+		self.ymin=-10100/200
+		self.ymax=-self.ymin
 		self.xmin=-200
 		self.xmax=200
 		
@@ -219,12 +218,8 @@ class DriveView:
 		dis=90
 		pos=pos*0.005
 		self.position1.remove()
-		if pos[0]==None:
-			text="Position 1: 0"
-			self.one.set_x(0)
-		else:
-			self.one.set_x(pos[0])
-			text="Position 1: "+str(pos[0])
+		self.one.set_x(pos[0])
+		text="Position 1: "+str(pos[0])
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
 		
 		
@@ -399,7 +394,7 @@ class ControlView(wx.Panel):
 		self.targetPositions=np.array([-15,-fourH/2,-5,0,5,10])
 
 		#Create the queue that the Thread checks
-		self.q=queues.SingleQueue()
+		self.q=queue.Queue()
 
 		#Start Thread which checks continously the positions
 		self.positionsChecker=CheckPositions(self,self.driveSystem)#
@@ -410,7 +405,7 @@ class ControlView(wx.Panel):
 		command = self.writeCommand.GetValue() + '\r'
 		command = bytes( command.encode('ascii') )
 		element=queues.Element('S',0,command)
-		self.q.add(element)
+		self.q.put(element)
 
 	def sendingCommand(self,cmd):
 		command=cmd
@@ -437,7 +432,7 @@ class ControlView(wx.Panel):
 
 	def disconnectB(self,event):
 		element=queues.Element('D')
-		self.q.add(element)
+		self.q.put(element)
 	def disconnect(self):
 		print("Disconnect")
 		self.driveSystem.disconnect_port()
@@ -448,42 +443,42 @@ class ControlView(wx.Panel):
 
 	def quitB(self,event):
 		element=queues.Element('Q')
-		self.q.add(element)
+		self.q.put(element)
 	def quit(self):
 		print("Quit")
 		self.frame.closeProgram()
 	
 	def home1B(self,event):
 		element=queues.Element('H',1)
-		self.q.add(element)
+		self.q.put(element)
 	def home1(self):
 		print("Home 1")
 		self.driveSystem.datum_search(1)
 
 	def home2B(self,event):
 		element=queues.Element('H',2)
-		self.q.add(element)
+		self.q.put(element)
 	def home2(self):
 		print("Home 2")
 		self.driveSystem.datum_search(2)
 		
 	def home3B(self,event):
 		element=queues.Element('H',3)
-		self.q.add(element)
+		self.q.put(element)
 	def home3(self):
 		print("Home 3")
 		self.driveSystem.datum_search(3)
 
 	def home4B(self,event):
 		element=queues.Element('H',4)
-		self.q.add(element)
+		self.q.put(element)
 	def home4(self):
 		print("Home 4")
 		self.driveSystem.datum_search(4)
 	
 	def move1B(self,event):
 		element=queues.Element('M',1)
-		self.q.add(element)
+		self.q.put(element)
 	def move1(self):
 		moveDis = float(self.move1Insert.GetValue())
 		print("Move 1")
@@ -491,7 +486,7 @@ class ControlView(wx.Panel):
 	
 	def move2B(self,event):
 		element=queues.Element('M',2)
-		self.q.add(element)
+		self.q.put(element)
 	def move2(self):
 		moveDis = float(self.move2Insert.GetValue())
 		print("Move 2")
@@ -499,7 +494,7 @@ class ControlView(wx.Panel):
 
 	def setTargetPosB(self,event):
 		element=queues.Element('M',3)
-		self.q.add(element)
+		self.q.put(element)
 	def setTargetPos(self):
 		newposition=self.targetChoice.GetSelection()
 		print("Target position changed to position "+str(newposition+1))
@@ -507,7 +502,7 @@ class ControlView(wx.Panel):
 
 	def setDetectorPosB(self,event):
 		element=queues.Element('M',4)
-		self.q.add(element)
+		self.q.put(element)
 	def setDetectorPos(self):
 		newposition=self.detectorChoice.GetSelection()
 		if newposition==0:

@@ -13,6 +13,7 @@ class DriveSystem():
 		self.port_open = False
 		self.parity=int(1)
 		self.positions=np.zeros(4)
+		self.axis_name = [ 'Trolley', 'Array', 'Target', 'FC' ]
 		
 		
 		# Port option lists
@@ -173,9 +174,8 @@ class DriveSystem():
 	def check_encoder_pos( self ):
 		pos=[]
 		for i in range(4):
-			a=self.check_encoder_pos_axis(i)
-			pos+=[a]
-		return pos
+			self.check_encoder_pos_axis(i+1)
+		return self.positions
 
 	# check encoder positions
 	def check_encoder_pos_axis( self, axis ):
@@ -189,11 +189,12 @@ class DriveSystem():
 		print( outputline )
 		pattern = re.match(b'.*\\r(\d*):(-?\d*).*\\r\\n', outputline, re.IGNORECASE)
 		#print( pattern )
-
 		if pattern is not None:
 			self.positions[axis-1] = int( pattern.group(2) )
 			#self.enc_disp_txt[axis-1].set( ('%d: %d' % ( axis, int( pattern.group(2) ) ) ) )
 			#self.send_to_influx( axis, int( pattern.group(2) ) )
+		else:
+			print("Could not read position of axis "+str(axis))
 
 
 	# send positions to InfluxDB
