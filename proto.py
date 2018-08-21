@@ -21,9 +21,11 @@ controlViewSize=200
 
 #Rectangles
 oneW=70
-oneH=65
-twoW=70
+oneH=80
+twoW=30
 twoH=30
+arrayW=40
+arrayH=10
 threeW=10
 threeH=15
 fourW=10
@@ -31,8 +33,11 @@ fourH=15
 target_sidespace=10
 detector_sidespace=10
 one_sidespace=100
-#Colours
 
+#Home positions
+homePositions=np.array([60+110932/2000,-140,0,0])
+
+#Colours
 oneC='y'
 twoC='r'
 threeC='g'
@@ -130,10 +135,10 @@ class DriveView:
 		self.fig.set_size_inches(10, 5.3)
 		
 		#Setting properties of the axes
-		self.ymin=-10100/200
+		self.ymin=-55
 		self.ymax=-self.ymin
-		self.xmin=-200
-		self.xmax=200
+		self.xmin=-140
+		self.xmax=140
 		
 		self.ax = plt.axes(xlim=(self.xmin, self.xmax), ylim=(self.ymin,self.ymax))
 		self.ax.spines['right'].set_color('none')
@@ -152,7 +157,7 @@ class DriveView:
 		self.ax.xaxis.set_minor_locator(minorLocator)
 		#ax.grid()
 		
-		#Adding the four rectangles
+		#Adding the four rectangles + array which belongs to ax 2
 		self.one = plt.Rectangle((self.xmin, -oneH/2), oneW, oneH, fc=oneC)
 		self.ax.add_patch(self.one)
 		self.two = plt.Rectangle((self.xmax-twoW-30, -twoH/2), twoW, twoH, fc=twoC)
@@ -161,6 +166,8 @@ class DriveView:
 		self.ax.add_patch(self.four)
 		self.three = plt.Rectangle((self.xmin+oneW-target_sidespace-threeW, -threeH/2), threeW, threeH, fc=threeC)
 		self.ax.add_patch(self.three)
+		self.array = plt.Rectangle((self.xmax-twoW-30+twoW, -arrayH/2), arrayW, arrayH, fc=twoC)
+		self.ax.add_patch(self.array)
 
 		#Adding information about position
 		dis=90
@@ -190,10 +197,10 @@ class DriveView:
 		self.arrow.remove()
 		self.distanceArrow.remove()
 		x1=self.three.get_x()+threeW
-		x2=self.two.get_x()
+		x2=self.two.get_x()+twoW+arrayW
 		height=twoH/2
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
-		text="d = "+str(x2-x1)+" mm"
+		text="d = "+str(x1-x2)+" mm"
 		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20, height+3,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
@@ -215,8 +222,8 @@ class DriveView:
 		self.changeText(4)
 	def updatePositions(self,pos):
 		rand=2
-		dis=90
-		pos=pos*0.005
+		dis=70
+		pos=pos*0.005*0.1+homePositions
 		self.position1.remove()
 		self.one.set_x(pos[0])
 		text="Position 1: "+str(pos[0])
@@ -226,20 +233,23 @@ class DriveView:
 		self.position2.remove()
 		text="Position 2: "+str(pos[1])
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=twoC)
-		self.two.set_x(pos[1])		
+		self.two.set_x(pos[1])
+		self.array.set_x(pos[1]+twoW)		
 
 		pos1=self.one.get_x()
 		self.position3.remove()
 		text="Position 3: "+str(pos[2])
 		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
 		self.three.set_y(pos[2])
-		self.three.set_x(pos1+oneW-target_sidespace-threeW)
+		#self.three.set_x(pos1+oneW-target_sidespace-threeW)
+		self.three.set_x(pos1+detector_sidespace)
 		
 		self.position4.remove()
 		text="Position 4: "+str(pos[3])
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
 		self.four.set_y(pos[3])
-		self.four.set_x(pos1+detector_sidespace)
+		#self.four.set_x(pos1+detector_sidespace)
+		self.four.set_x(pos1+oneW-target_sidespace-threeW)
 		self.drawArrow()
 		self.matplotpanel.canvas.draw()
 		
