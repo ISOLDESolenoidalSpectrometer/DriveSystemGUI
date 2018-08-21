@@ -44,7 +44,8 @@ threeC='g'
 fourC='b'
 
 #Frequency por the positons checking
-UPDATE_TIME=5
+UPDATE_TIME=1
+REAC_TIME=0.1
 
 #-------------------Code Start-------------------
 
@@ -81,14 +82,19 @@ class CheckPositions(threading.Thread):
 		"""Overrides Thread.run. Don't call this directly its called internally
 		when you call Thread.start().
 		"""
-		while self._driveSystem.port_open == True :
-			self._driveSystem.check_encoder_pos()
-			pos=self._driveSystem.positions
-			event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
-			wx.PostEvent(self._parent.matplotpanel, event)
-			time.sleep(UPDATE_TIME)
-			print("Check")
-			self.checkQ()
+		while 1:
+			if self._driveSystem.port_open == True :
+				self._driveSystem.check_encoder_pos()
+				pos=self._driveSystem.positions
+				event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
+				wx.PostEvent(self._parent.matplotpanel, event)
+				t=0
+				while t<UPDATE_TIME:
+					self.checkQ()
+					time.sleep(REAC_TIME)
+					t=t+REAC_TIME
+			else:
+				time.sleep(1)
 	def checkQ(self):
 		while self._parent.q.empty()==False:
 			item = self._parent.q.get()
@@ -329,6 +335,7 @@ class ControlView(wx.Panel):
 		self.writeCommand = wx.TextCtrl(self, -1, "", (5,a),size=(writeSize, -1))
 		self.sendCommand = wx.Button(self, wx.ID_ANY, "Send", (writeSize+15, a))
 		self.sendCommand.Bind(wx.EVT_BUTTON, self.sendingCommandB)
+		self.sendCommand.SetDefault()
 		self.currentAxis = wx.StaticText(self, -1, "Axis:", (5,58),style=wx.ALIGN_LEFT)
 		self.responseText = wx.StaticText(self, -1, "Response:", (65,58),style=wx.ALIGN_LEFT)
 		self.currentAx = wx.TextCtrl(self, wx.ID_ANY, "", (5,78),size=(60, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
@@ -388,15 +395,22 @@ class ControlView(wx.Panel):
 		self.move2Button.Bind(wx.EVT_BUTTON, self.move2B)
 
 		#Target Position Selection
-		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5))
-		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3), size=(50,-1),choices=["1","2","3","4","5"])
+		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
+		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3-40), size=(50,-1),choices=["1","2","3","4","5"])
 		self.targetChoice.SetSelection(1)
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
+		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(30, -1))
+		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+80,disy),size=(40, -1))
+		self.moveMinus3Button = wx.Button(self, wx.ID_ANY, "-", (2*dis,disy),size=(40, -1))
 
 		#Detector Option
 		self.detectorList=["dE","dE/dx"]
-		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5), wx.DefaultSize,self.detectorList, 2, wx.RA_SPECIFY_COLS)		
+		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-43), wx.DefaultSize,self.detectorList, 2, wx.RA_SPECIFY_COLS)		
 		self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
+		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(30, -1))
+		self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (3*dis+80,disy),size=(40, -1))
+		self.moveMinus4Button = wx.Button(self, wx.ID_ANY, "-", (3*dis,disy),size=(40, -1))
+		#self.movePlus4Button.Bind(wx.EVT_BUTTON, self.move1B)
 
 
 		#Positions Constants
@@ -427,15 +441,11 @@ class ControlView(wx.Panel):
 	def connectB(self,event):
 		print("Connect")
 		self.driveSystem.connect_to_port()
-		self.positionsChecker=None
 		self.connectButton.SetBackgroundColour("grey") 
 		self.disconnectButton.Enable(True)
 		self.disconnectButton.SetBackgroundColour("#EE4000")
 		self.connectButton.Enable(False)
-		self.positionsChecker=CheckPositions(self,self.driveSystem)
-		self.positionsChecker.start()
-		#element=queues.Element('C')
-		#self.q.add(element)
+
 	def connect(self):
 		#nothing
 		print("connect")
@@ -446,6 +456,7 @@ class ControlView(wx.Panel):
 	def disconnect(self):
 		print("Disconnect")
 		self.driveSystem.disconnect_port()
+		#self.positionsChecker=None
 		self.disconnectButton.SetBackgroundColour("grey") 
 		self.connectButton.Enable(True)
 		self.connectButton.SetBackgroundColour("#7FFF00")

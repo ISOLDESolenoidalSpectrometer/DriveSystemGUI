@@ -5,6 +5,8 @@ from serial.tools import list_ports
 import requests
 import urllib3
 import numpy as np
+import urllib3
+urllib3.disable_warnings()
 
 
 class DriveSystem():
@@ -192,7 +194,7 @@ class DriveSystem():
 		if pattern is not None:
 			self.positions[axis-1] = int( pattern.group(2) )
 			#self.enc_disp_txt[axis-1].set( ('%d: %d' % ( axis, int( pattern.group(2) ) ) ) )
-			#self.send_to_influx( axis, int( pattern.group(2) ) )
+			self.send_to_influx( axis, int( pattern.group(2) ) )
 		else:
 			print("Could not read position of axis "+str(axis))
 
