@@ -24,6 +24,7 @@ class DriveSystem():
 			print("Already connected to"+ self.portalias)
 		else:
 			self.connect_to_port()
+		#self.set_defaultMovingOptions()
 		
 	
 	############
@@ -35,6 +36,43 @@ class DriveSystem():
 		self.set7()
 		self.baudrate= "9600"  # initial value
 		self.portalias="/dev/ttyS0"	# initial value
+
+	def set_defaultMovingOptions(self):
+		# Set acceleration
+		in_cmd = ( str(axis) + 'sa500\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
+		print( outputline )
+		time.sleep(0.1)
+	
+		# Set deceleration
+		in_cmd = ( str(axis) + 'sd1000\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
+		print( outputline )
+		time.sleep(0.1)
+	
+		# Set velocity
+		in_cmd = ( str(axis) + 'sv1000\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
+		print( outputline )
+		time.sleep(0.1)
+	
+		# Set creep
+		in_cmd = ( str(axis) + 'sc200\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
+		print( outputline )
+		time.sleep(0.1)
 	
 
 	###########
@@ -74,12 +112,26 @@ class DriveSystem():
 		self.port_open = False
 		print( "Disconnected" )
 
-	# go to position 1
-	def select_pos( self, pos ):
-		
-		print( "moving to position", pos )
-	
+	# go to position 1 (move absolute)
+	def select_pos( self, axis,pos ):
+		print( "Moving to position ", pos,"on axis ",str(axis) )
+		in_cmd = ( str(axis) + 'ma\r'+str(pos) ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
+		print( outputline )
 
+	# move relative
+	def move_rel( self, axis,steps):
+		print( "Moving ", steps," on axis ",str(axis) )
+		in_cmd = ( str(axis) + 'mr\r'+str(steps) ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
+		print( outputline )
+		
 	# datum search
 	def datum_search( self, axis ):
 		

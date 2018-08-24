@@ -40,7 +40,7 @@ magL=280
 
 #Home positions
 home1=magL/2-39.2+detector_sidespace-oneW+110932/2000
-home2=magL/2-150.2-arrayW-array_sidespace
+home2=magL/2-145.2-arrayW-array_sidespace
 homePositions=np.array([home1,-140,0,0])
 
 #Colours
@@ -417,8 +417,8 @@ class ControlView(wx.Panel):
 
 
 		#Positions Constants
-		self.detectorPositions=np.array([-threeH/2,0])
-		self.targetPositions=np.array([-15,-fourH/2,-5,0,5,10])
+		self.detectorPositions=np.array([-2,2])
+		self.targetPositions=np.array([1,2,3,4,5,6,7,8])
 
 		#Create the queue that the Thread checks
 		self.q=queue.Queue()
@@ -505,8 +505,8 @@ class ControlView(wx.Panel):
 		self.q.put(element)
 	def move1(self):
 		moveDis = float(self.move1Insert.GetValue())
-		print("Move 1")
-		self.matplotpanel.move1(moveDis)
+		print("The motor of axis 1 is defect")
+		#self.matplotpanel.move1(moveDis)
 	
 	def move2B(self,event):
 		element=queues.Element('M',2)
@@ -514,7 +514,9 @@ class ControlView(wx.Panel):
 	def move2(self):
 		moveDis = float(self.move2Insert.GetValue())
 		print("Move 2")
-		self.matplotpanel.move2(moveDis)
+		#assume that moveDis is in mm
+		self.driveSystem.move_rel(2,moveDis*200)
+		#self.matplotpanel.move2(moveDis)
 
 	def setTargetPosB(self,event):
 		element=queues.Element('M',3)
@@ -522,7 +524,7 @@ class ControlView(wx.Panel):
 	def setTargetPos(self):
 		newposition=self.targetChoice.GetSelection()
 		print("Target position changed to position "+str(newposition+1))
-		self.matplotpanel.move3(self.targetPositions[newposition])
+		self.driveSystem.select_pos(4,targetPositions[newposition]*200)
 
 	def setDetectorPosB(self,event):
 		element=queues.Element('M',4)
@@ -530,10 +532,10 @@ class ControlView(wx.Panel):
 	def setDetectorPos(self):
 		newposition=self.detectorChoice.GetSelection()
 		if newposition==0:
-			print("Detector position changed to position dE")
+			print("Detector position change to position dE")
 		else:
-			print("Detector position changed to position dE/dx")
-		self.matplotpanel.move4(self.detectorPositions[newposition])
+			print("Detector position change to position dE/dx")
+		self.driveSystem.select_pos(4,detectorPositions[newposition]*200)
 
 	def settingConstants(self,event):
 		secondwindow=SettingsWindow(self, "Setting Positions")
@@ -567,7 +569,7 @@ class SettingsWindow(wx.Frame):
 
 		#Target Positions
 		pos=[]
-		for i in range(5):
+		for i in range(8):
 			pos+=[str(self.parent.targetPositions[i])]
 		targTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Target Positions')
 		targ1label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 1')
@@ -580,6 +582,12 @@ class SettingsWindow(wx.Frame):
 		self.targ4input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[3])
 		targ5label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 5')
 		self.targ5input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[4])
+		targ6label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 6')
+		self.targ6input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[5])
+		targ7label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 7')
+		self.targ7input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[6])
+		targ8label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 8')
+		self.targ8input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[7])
 
 		#Detector Positions
 		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions')
@@ -604,6 +612,9 @@ class SettingsWindow(wx.Frame):
 		targ3Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ4Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ5Sizer   = wx.BoxSizer(wx.HORIZONTAL)
+		targ6Sizer   = wx.BoxSizer(wx.HORIZONTAL)
+		targ7Sizer   = wx.BoxSizer(wx.HORIZONTAL)
+		targ8Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		detTitleSizer      = wx.BoxSizer(wx.HORIZONTAL)
 		det1Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		det2Sizer   = wx.BoxSizer(wx.HORIZONTAL)
@@ -621,6 +632,12 @@ class SettingsWindow(wx.Frame):
 		targ4Sizer.Add(self.targ4input, 1, wx.ALL|wx.EXPAND, 5)
 		targ5Sizer.Add(targ5label, 0, wx.ALL, 5)
 		targ5Sizer.Add(self.targ5input, 1, wx.ALL|wx.EXPAND, 5)
+		targ6Sizer.Add(targ6label, 0, wx.ALL, 5)
+		targ6Sizer.Add(self.targ6input, 1, wx.ALL|wx.EXPAND, 5)
+		targ7Sizer.Add(targ7label, 0, wx.ALL, 5)
+		targ7Sizer.Add(self.targ7input, 1, wx.ALL|wx.EXPAND, 5)
+		targ8Sizer.Add(targ8label, 0, wx.ALL, 5)
+		targ8Sizer.Add(self.targ8input, 1, wx.ALL|wx.EXPAND, 5)
 		detTitleSizer.Add(detTitle, 0, wx.ALL, 5)
 		det1Sizer.Add(det1label, 0, wx.ALL, 5)
 		det1Sizer.Add(self.det1input, 1, wx.ALL|wx.EXPAND, 5)
@@ -637,6 +654,9 @@ class SettingsWindow(wx.Frame):
 		topSizer.Add(targ3Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ4Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ5Sizer, 0, wx.ALL|wx.EXPAND, 5)
+		topSizer.Add(targ6Sizer, 0, wx.ALL|wx.EXPAND, 5)
+		topSizer.Add(targ7Sizer, 0, wx.ALL|wx.EXPAND, 5)
+		topSizer.Add(targ8Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(detTitleSizer, 0, wx.CENTER)
 		topSizer.Add(wx.StaticLine(self.panel,), 0, wx.ALL|wx.EXPAND, 5)
@@ -650,7 +670,7 @@ class SettingsWindow(wx.Frame):
 
 	def onOK(self, event):
 		# Do something
-		print ("onOK handler")
+		print("Saved new positions")
 		self.parent.detectorPositions[0]=float(self.det1input.GetValue())
 		self.parent.detectorPositions[1]=float(self.det2input.GetValue())
 		self.parent.targetPositions[0]=float(self.targ1input.GetValue())
@@ -658,14 +678,14 @@ class SettingsWindow(wx.Frame):
 		self.parent.targetPositions[2]=float(self.targ3input.GetValue())
 		self.parent.targetPositions[3]=float(self.targ4input.GetValue())
 		self.parent.targetPositions[4]=float(self.targ5input.GetValue())
+		self.parent.targetPositions[5]=float(self.targ6input.GetValue())
+		self.parent.targetPositions[6]=float(self.targ7input.GetValue())
+		self.parent.targetPositions[7]=float(self.targ8input.GetValue())
 		self.closeProgram()
 	
 	def onCancel(self, event):
-		self.closeProgram()
-
-	def closeProgram(self):
 		self.Close()
-
+		print("No changes in positions were made")
 
 
 def main():		
