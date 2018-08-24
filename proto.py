@@ -399,7 +399,7 @@ class ControlView(wx.Panel):
 
 		#Target Position Selection
 		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
-		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3-40), size=(50,-1),choices=["1","2","3","4","5"])
+		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3-40), size=(50,-1),choices=["1","2","3","4","5","6","7","8"])
 		self.targetChoice.SetSelection(1)
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
 		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
@@ -524,7 +524,7 @@ class ControlView(wx.Panel):
 	def setTargetPos(self):
 		newposition=self.targetChoice.GetSelection()
 		print("Target position changed to position "+str(newposition+1))
-		self.driveSystem.select_pos(4,targetPositions[newposition]*200)
+		self.driveSystem.select_pos(3,self.targetPositions[newposition]*200)
 
 	def setDetectorPosB(self,event):
 		element=queues.Element('M',4)
@@ -535,7 +535,7 @@ class ControlView(wx.Panel):
 			print("Detector position change to position dE")
 		else:
 			print("Detector position change to position dE/dx")
-		self.driveSystem.select_pos(4,detectorPositions[newposition]*200)
+		self.driveSystem.select_pos(4,self.detectorPositions[newposition]*200)
 
 	def settingConstants(self,event):
 		secondwindow=SettingsWindow(self, "Setting Positions")
@@ -681,7 +681,7 @@ class SettingsWindow(wx.Frame):
 		self.parent.targetPositions[5]=float(self.targ6input.GetValue())
 		self.parent.targetPositions[6]=float(self.targ7input.GetValue())
 		self.parent.targetPositions[7]=float(self.targ8input.GetValue())
-		self.closeProgram()
+		self.Close()
 	
 	def onCancel(self, event):
 		self.Close()

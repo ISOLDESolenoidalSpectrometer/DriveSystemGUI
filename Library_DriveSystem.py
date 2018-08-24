@@ -115,7 +115,7 @@ class DriveSystem():
 	# go to position 1 (move absolute)
 	def select_pos( self, axis,pos ):
 		print( "Moving to position ", pos,"on axis ",str(axis) )
-		in_cmd = ( str(axis) + 'ma\r'+str(pos) ).encode()
+		in_cmd = ( str(axis) + 'ma'+str(pos)+ '\r' ).encode()
 		print( in_cmd )
 		self.serial_port.write( in_cmd )
 		time.sleep(0.1)
