@@ -20,22 +20,28 @@ frameWidth=1000
 controlViewSize=200
 
 #Rectangles
-oneW=70
-oneH=80
-twoW=30
-twoH=30
-arrayW=40
-arrayH=10
-threeW=10
-threeH=15
-fourW=10
-fourH=15
-target_sidespace=10
-detector_sidespace=10
-one_sidespace=100
+oneW=40
+oneH=27
+twoW=35
+twoH=19.5
+arrayW=58.4
+arrayH=5
+array_sidespace=2.07
+threeW=8
+threeH=13
+fourW=8
+fourH=13
+target_sidespace=2
+detector_sidespace=2
+#one_sidespace=100
+
+#Magnetlength
+magL=280
 
 #Home positions
-homePositions=np.array([60+110932/2000,-140,0,0])
+home1=magL/2-39.2+detector_sidespace-oneW+110932/2000
+home2=magL/2-150.2-arrayW-array_sidespace
+homePositions=np.array([home1,-140,0,0])
 
 #Colours
 oneC='y'
@@ -141,24 +147,21 @@ class DriveView:
 		self.fig.set_size_inches(10, 5.3)
 		
 		#Setting properties of the axes
-		self.ymin=-55
-		self.ymax=-self.ymin
-		self.xmin=-140
-		self.xmax=140
+		self.ymin=-40
+		self.ymax=40
+		self.xmin=-magL*0.5
+		self.xmax=magL*0.5
 		
+		#Ax design
 		self.ax = plt.axes(xlim=(self.xmin, self.xmax), ylim=(self.ymin,self.ymax))
 		self.ax.spines['right'].set_color('none')
 		self.ax.spines['top'].set_color('none')
-		#ax.set_xticks(np.arange(-500, 500, step=100))
 		self.ax.set_yticks([])
 		self.ax.spines['left'].set_color('none')
 		self.ax.spines['bottom'].set_position(('data',0))
-		majorLocator = MultipleLocator(100)
-		#majorFormatter = FormatStrFormatter('%d')
+		majorLocator = MultipleLocator(50)
 		minorLocator = MultipleLocator(10)
 		self.ax.xaxis.set_major_locator(majorLocator)
-		#ax.xaxis.set_major_formatter(majorFormatter)
-
 		# for the minor ticks, use no labels; default NullFormatter
 		self.ax.xaxis.set_minor_locator(minorLocator)
 		#ax.grid()
@@ -172,7 +175,7 @@ class DriveView:
 		self.ax.add_patch(self.four)
 		self.three = plt.Rectangle((self.xmin+oneW-target_sidespace-threeW, -threeH/2), threeW, threeH, fc=threeC)
 		self.ax.add_patch(self.three)
-		self.array = plt.Rectangle((self.xmax-twoW-30+twoW, -arrayH/2), arrayW, arrayH, fc=twoC)
+		self.array = plt.Rectangle((self.xmax-twoW-30+twoW, -arrayH/2), arrayW, arrayH, fc='brown')
 		self.ax.add_patch(self.array)
 
 		#Adding information about position
@@ -203,7 +206,7 @@ class DriveView:
 		self.arrow.remove()
 		self.distanceArrow.remove()
 		x1=self.three.get_x()+threeW
-		x2=self.two.get_x()+twoW+arrayW
+		x2=self.array.get_x()+arrayW
 		height=twoH/2
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
 		text="d = "+str(x1-x2)+" mm"
@@ -229,9 +232,9 @@ class DriveView:
 	def updatePositions(self,pos):
 		rand=2
 		dis=70
-		pos=pos*0.005*0.1+homePositions
+		pos=pos*0.005
 		self.position1.remove()
-		self.one.set_x(pos[0])
+		self.one.set_x(pos[0]*0.1+homePositions[0])
 		text="Position 1: "+str(pos[0])
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
 		
@@ -239,21 +242,21 @@ class DriveView:
 		self.position2.remove()
 		text="Position 2: "+str(pos[1])
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=twoC)
-		self.two.set_x(pos[1])
-		self.array.set_x(pos[1]+twoW)		
+		self.two.set_x(pos[1]*0.1+homePositions[1])
+		self.array.set_x(self.two.get_x()+array_sidespace)		
 
 		pos1=self.one.get_x()
 		self.position3.remove()
 		text="Position 3: "+str(pos[2])
 		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
-		self.three.set_y(pos[2])
+		self.three.set_y(pos[2]*0.1-threeH/2)
 		#self.three.set_x(pos1+oneW-target_sidespace-threeW)
 		self.three.set_x(pos1+detector_sidespace)
 		
 		self.position4.remove()
 		text="Position 4: "+str(pos[3])
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
-		self.four.set_y(pos[3])
+		self.four.set_y(pos[3]*0.1-fourH/2)
 		#self.four.set_x(pos1+detector_sidespace)
 		self.four.set_x(pos1+oneW-target_sidespace-threeW)
 		self.drawArrow()
@@ -399,16 +402,16 @@ class ControlView(wx.Panel):
 		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3-40), size=(50,-1),choices=["1","2","3","4","5"])
 		self.targetChoice.SetSelection(1)
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
-		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(30, -1))
-		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+80,disy),size=(40, -1))
+		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
+		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
 		self.moveMinus3Button = wx.Button(self, wx.ID_ANY, "-", (2*dis,disy),size=(40, -1))
 
 		#Detector Option
 		self.detectorList=["dE","dE/dx"]
 		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-43), wx.DefaultSize,self.detectorList, 2, wx.RA_SPECIFY_COLS)		
 		self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
-		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(30, -1))
-		self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (3*dis+80,disy),size=(40, -1))
+		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(55, -1))
+		self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (3*dis+105,disy),size=(40, -1))
 		self.moveMinus4Button = wx.Button(self, wx.ID_ANY, "-", (3*dis,disy),size=(40, -1))
 		#self.movePlus4Button.Bind(wx.EVT_BUTTON, self.move1B)
 
