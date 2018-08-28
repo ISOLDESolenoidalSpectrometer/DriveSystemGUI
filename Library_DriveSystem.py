@@ -106,11 +106,11 @@ class DriveSystem():
 
 	# Disconnect from serial port
 	def disconnect_port( self ):
-		
-		self.serial_port.close()	# close the port
-		#self.out_now.set( "Disconnected" )
 		self.port_open = False
+		#time.sleep(0.1)
+		self.serial_port.close()# close the port
 		print( "Disconnected" )
+		#time.sleep(0.1)
 
 	def abortAll(self):
 		print( "Abort command on all axes")

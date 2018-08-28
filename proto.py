@@ -14,6 +14,8 @@ import queue
 import queues
 import os
 
+
+
 #----------Constants-------------------
 #Frame size constants
 frameHeight=740
@@ -46,11 +48,19 @@ home2=-magL/2+115-74.85+35129/2000
 homePositions=np.array([home1,home2,0,0])
 
 #Colours
+
 oneC='y'
 twoC='r'
 threeC='g'
 fourC='b'
-
+arrayC='brown'
+'''
+oneC='#66B2FF'
+twoC='#E0E0E0'
+threeC='#FFFF00'
+fourC='#33FF33'
+arrayC='#FF0000'
+'''
 #Frequency por the positons checking
 UPDATE_TIME=1
 REAC_TIME=0.1
@@ -188,7 +198,7 @@ class DriveView:
 		self.ax.add_patch(self.four)
 		self.three = plt.Rectangle((self.xmin+oneW-target_sidespace-threeW, -threeH/2), threeW, threeH, fc=threeC)
 		self.ax.add_patch(self.three)
-		self.array = plt.Rectangle((self.xmax-twoW-30+twoW, -arrayH/2), arrayW, arrayH, fc='brown')
+		self.array = plt.Rectangle((self.xmax-twoW-30+twoW, -arrayH/2), arrayW, arrayH, fc=arrayC)
 		self.ax.add_patch(self.array)
 
 		#Adding information about position
@@ -261,7 +271,7 @@ class DriveView:
 		
 		self.position2.remove()
 		text="Position 2: "+str(pos[1])+" mm"
-		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=twoC)
+		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=arrayC)
 		self.array.set_x(pos[1]*0.1+homePositions[1])
 		self.two.set_x(self.array.get_x()-array_sidespace)		
 
@@ -423,10 +433,10 @@ class ControlView(wx.Panel):
 		disy=sizeY+30
 		#Move 1 and 2
 		self.move1Insert = wx.TextCtrl(self, wx.ID_ANY, "", (0,disy))
-		self.move1Button = wx.Button(self, wx.ID_ANY, "Move 1", (100, disy))
+		self.move1Button = wx.Button(self, wx.ID_ANY, "Move 1 \n [mm]", (100, disy-12))
 		self.move1Button.Bind(wx.EVT_BUTTON, self.move1B)
 		self.move2Insert = wx.TextCtrl(self, wx.ID_ANY, "", (dis,disy))
-		self.move2Button = wx.Button(self, wx.ID_ANY, "Move 2", (dis+100, disy))
+		self.move2Button = wx.Button(self, wx.ID_ANY, "Move 2 \n [mm]", (dis+100, disy-12))
 		self.move2Button.Bind(wx.EVT_BUTTON, self.move2B)
 
 		#Target Position Selection
@@ -436,18 +446,19 @@ class ControlView(wx.Panel):
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
 		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
 		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
+		self.UnitText3 = wx.StaticText(self, -1, "[mm]", pos=(2*dis+105+50,disy+10))
 		self.moveMinus3Button = wx.Button(self, wx.ID_ANY, "-", (2*dis,disy),size=(40, -1))
 		self.movePlus3Button.Bind(wx.EVT_BUTTON, self.movePlus3B)
 		self.moveMinus3Button.Bind(wx.EVT_BUTTON, self.moveMinus3B)
 
 		#Detector Option
 		self.detectorList=["dE","dE/dx"]
-		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-43), wx.DefaultSize,self.detectorList, 2, wx.RA_SPECIFY_COLS)		
+		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 2, wx.RA_SPECIFY_COLS)		
 		self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
 		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(55, -1))
 		self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (3*dis+105,disy),size=(40, -1))
+		self.UnitText4 = wx.StaticText(self, -1, "[mm]", pos=(3*dis+105+50,disy+10))
 		self.moveMinus4Button = wx.Button(self, wx.ID_ANY, "-", (3*dis,disy),size=(40, -1))
-		#self.movePlus4Button.Bind(wx.EVT_BUTTON, self.move1B)
 		self.movePlus4Button.Bind(wx.EVT_BUTTON, self.movePlus4B)
 		self.moveMinus4Button.Bind(wx.EVT_BUTTON, self.moveMinus4B)
 
@@ -585,24 +596,25 @@ class ControlView(wx.Panel):
 		self.driveSystem.select_pos(4,self.detectorPositions[newposition]*200)
 	
 	def movePlus3B(self,event):
-		steps = float(self.move3Insert.GetValue())
-		element=Element('M+-',3,steps)
+		disMM = float(self.move3Insert.GetValue())
+		#Multiply distance in mm with 200 to obtain number of steps
+		element=Element('M+-',3,int(disMM*200))
 		self.q.put(element)
 	
 	def moveMinus3B(self,event):
-		steps = -1*float(self.move3Insert.GetValue())
-		element=Element('M+-',3,steps)
+		disMM = -1*float(self.move3Insert.GetValue())
+		element=Element('M+-',3,int(disMM*200))
 		self.q.put(element)
 
 	
 	def movePlus4B(self,event):
-		steps = float(self.move4Insert.GetValue())
-		element=Element('M+-',4,steps)
+		disMM = float(self.move4Insert.GetValue())
+		element=Element('M+-',4,int(disMM*200))
 		self.q.put(element)
 	
 	def moveMinus4B(self,event):
-		steps = -1*float(self.move4Insert.GetValue())
-		element=Element('M+-',4,steps)
+		disMM = -1*float(self.move4Insert.GetValue())
+		element=Element('M+-',4,int(disMM*200))
 		self.q.put(element)
 	
 
@@ -654,9 +666,10 @@ class SettingsWindow(wx.Frame):
 		pos=[]
 		for i in range(8):
 			pos+=[str(self.parent.targetPositions[i])]
-		targTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Target Positions')
+		targTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Target Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
 		targ1label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 1')
 		self.targ1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[0])
+		#targ1unit = wx.StaticText(self.panel, wx.ID_ANY, '\nmm')
 		targ2label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 2')
 		self.targ2input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[1])
 		targ3label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 3')
@@ -673,7 +686,7 @@ class SettingsWindow(wx.Frame):
 		self.targ8input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[7])
 
 		#Detector Positions
-		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions')
+		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
 		det1label = wx.StaticText(self.panel, wx.ID_ANY, 'dE')
 		pos1=str(self.parent.detectorPositions[0])
 		self.det1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos1)
@@ -707,6 +720,7 @@ class SettingsWindow(wx.Frame):
 		targTitleSizer.Add(targTitle, 0, wx.ALL, 5)
 		targ1Sizer.Add(targ1label, 0, wx.ALL, 5)
 		targ1Sizer.Add(self.targ1input, 1, wx.ALL|wx.EXPAND, 5)
+		#targ1Sizer.Add(targ1unit, 0, wx.ALL, 5)
 		targ2Sizer.Add(targ2label, 0, wx.ALL, 5)
 		targ2Sizer.Add(self.targ2input, 1, wx.ALL|wx.EXPAND, 5)
 		targ3Sizer.Add(targ3label, 0, wx.ALL, 5)
@@ -785,7 +799,7 @@ class SettingsWindow(wx.Frame):
 
 class HelpWindow(wx.Frame):
 	def __init__(self, parent, mytitle):
-		self.width=300
+		self.width=400
 		self.height=500
 		super(HelpWindow, self).__init__(parent, title=mytitle,size=(self.width,self.height))
 		self.InitUI()
@@ -797,15 +811,51 @@ class HelpWindow(wx.Frame):
 		self.Centre()
 		'''
 	def InitUI(self):
-		self.panel=wx.Panel(self,wx.ID_ANY)
-		wx.StaticText(self, -1, "This is a GUI for controlling the Drive System...", (5,5),style=wx.ALIGN_LEFT)
-
-		#wx.StaticLine(self,(self.height-30))
-		closeButton = wx.Button(self, wx.ID_ANY, 'Close',(5,self.height-80))
-		self.Bind(wx.EVT_BUTTON, self.onClose, closeButton)
-
-	def onClose(self, event):
+		self.panel=TestPanel(self)
+	def onClose(self):
 		self.Close()
+
+import wx.lib.scrolledpanel as scrolled
+
+class TestPanel(scrolled.ScrolledPanel):
+
+	def __init__(self, parent):
+
+		scrolled.ScrolledPanel.__init__(self, parent, -1)
+		self.parent=parent
+	
+		vbox = wx.BoxSizer(wx.VERTICAL)
+		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup\n\nwhich are represented by the four colored\nrectangulars.\nWhile the coordinate system of the GUI is in centimeters,\nit allows to move the axes in the unit of millimeters by inser-\nting the desired value and clicking on the corresponding but-\nton (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions of\nthe axes are checked and updated in the GUI every second."
+		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. These positions can be changed via the win-\ndow 'Settings'. By clicking on the 'Ok' Button, the new\npositions will be saved. \n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI"
+		text3="\n\nFurthermore in the top left corner of the GUI, there is the\nopportunity to send any kind of command (all available\ncommands can be found in the Drive System's handbook)."
+		text4="IMPORTANT NOTE: "
+		text5="If you want to move axes 1 and 2 via the 'Send' button or the\ncontrol stick in the experimental hall,\nplease note that the GUI's coordinate system is only correct\nfor axes 3 and 4. For axes 1 and 2, it is in the opposite direc-\ntion, so if you want to move them according to the GUI's\ncoordinate system you have to enter the negative value."
+		text=text1+'\n'+text2+text3
+		desc1 = wx.StaticText(self, -1, text)
+		desc1.SetForegroundColour("Blue")
+		desc2 = wx.StaticText(self, -1, text4)
+		desc2.SetForegroundColour("Red")
+		desc3 = wx.StaticText(self, -1, text5)
+		desc3.SetForegroundColour("Blue")
+		closeButton = wx.Button(self, wx.ID_ANY, 'Close')
+		self.Bind(wx.EVT_BUTTON, self.onClose, closeButton)
+	
+		
+		vbox.Add(desc1, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+		vbox.Add(desc2, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+		vbox.Add(desc3, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+		vbox.Add(wx.StaticLine(self, -1, size=(1024, -1)), 0, wx.ALL, 5)
+		vbox.Add(closeButton)
+		vbox.Add((20, 20))
+		
+		self.SetSizer(vbox)
+		self.SetupScrolling()
+	
+	def onClose(self, event):
+		self.parent.onClose()
+
+
+
 
 
 def main():		
