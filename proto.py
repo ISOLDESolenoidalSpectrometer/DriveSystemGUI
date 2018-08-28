@@ -15,7 +15,6 @@ import queues
 import os
 
 
-
 #----------Constants-------------------
 #Frame size constants
 frameHeight=740
@@ -187,6 +186,7 @@ class DriveView:
 		self.ax.xaxis.set_major_locator(majorLocator)
 		# for the minor ticks, use no labels; default NullFormatter
 		self.ax.xaxis.set_minor_locator(minorLocator)
+		self.ax.set_xlabel("[cm]")
 		#ax.grid()
 		
 		#Adding the four rectangles + array which belongs to ax 2
@@ -200,6 +200,9 @@ class DriveView:
 		self.ax.add_patch(self.three)
 		self.array = plt.Rectangle((self.xmax-twoW-30+twoW, -arrayH/2), arrayW, arrayH, fc=arrayC)
 		self.ax.add_patch(self.array)
+		
+		#Adding numbers to the rectangulars
+		self.placeNumbers()
 
 		#Adding information about position
 		dis=90
@@ -211,9 +214,9 @@ class DriveView:
 		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+str(self.four.get_y()),color=fourC)
 
 		#Beam Arrow
-		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20), (self.xmin+20, self.ymax-20), arrowprops={'arrowstyle':'<-'})
+		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20), (self.xmin+30, self.ymax-20),arrowprops={'arrowstyle':'<-'} )
 		text="BEAM"
-		self.beamText=self.ax.text(self.xmin+2, self.ymax-18,text)
+		self.beamText=self.ax.text(self.xmin+7, self.ymax-18,text)
 		
 		#self.targetPos=self.ax.text(xmin+2*dis,ymax-10,"Target Position: "+str(1),color=threeC)
 		#self.detectorPos=self.ax.text(xmin+3*dis,ymax-10,"Detector Position: dE or dE/dx",color=fourC)
@@ -235,9 +238,9 @@ class DriveView:
 		self.distanceArrow.remove()
 		x1=self.three.get_x()+threeW
 		x2=self.array.get_x()+arrayW
-		height=twoH/2
+		height=oneH/2+1
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
-		text="d = "+str(x1-x2)+" mm"
+		text="d = "+str((x1-x2)*10)+" mm"
 		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20, height+3,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
@@ -290,9 +293,21 @@ class DriveView:
 		#self.four.set_x(pos1+detector_sidespace)
 		self.four.set_x(pos1+oneW-target_sidespace-threeW)
 		self.drawArrow()
+		self.number1.remove()
+		self.number2.remove()
+		self.number3.remove()
+		self.number4.remove()
+		self.placeNumbers()
 		self.matplotpanel.canvas.draw()
-		
 	
+	def placeNumbers(self):
+		nSize=18
+		self.number1=self.ax.text(self.one.get_x()+oneW/2,self.one.get_y()+0.75*oneH,"1",fontsize=nSize,horizontalalignment='center')
+		self.number2=self.ax.text(self.two.get_x()+twoW/2,self.two.get_y()+0.75*twoH,"2",fontsize=nSize,horizontalalignment='center')
+		self.number3=self.ax.text(self.three.get_x()+threeW/2,self.three.get_y()+0.7*threeH,"3",fontsize=nSize,horizontalalignment='center')
+		self.number4=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()+0.7*fourH,"4",fontsize=nSize,horizontalalignment='center')
+		
+	'''
 	def changeText(self,number):
 		rand=2
 		dis=80
@@ -318,6 +333,7 @@ class DriveView:
 			self.position4.remove()
 			text="Position 4: "+str(self.four.get_y())
 			self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
+	'''
 
 class MatplotPanel(wx.Panel):
 	def __init__(self, parent):
@@ -406,7 +422,7 @@ class ControlView(wx.Panel):
 
 		if self.driveSystem.checkConnection()==True:
 			self.disconnectButton.SetBackgroundColour("#EE4000") 
-			self.connectButton.Enable(False)
+			#self.connectButton.Enable(False)
 		else:
 			self.connectButton.SetBackgroundColour("#7FFF00")
 			self.disconnectButton.Enable(False)
@@ -516,7 +532,6 @@ class ControlView(wx.Panel):
 	def disconnect(self):
 		print("Disconnect")
 		self.driveSystem.disconnect_port()
-		#self.positionsChecker=None
 		self.disconnectButton.SetBackgroundColour("grey") 
 		self.connectButton.Enable(True)
 		self.connectButton.SetBackgroundColour("#7FFF00")
@@ -825,8 +840,8 @@ class TestPanel(scrolled.ScrolledPanel):
 		self.parent=parent
 	
 		vbox = wx.BoxSizer(wx.VERTICAL)
-		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup\n\nwhich are represented by the four colored\nrectangulars.\nWhile the coordinate system of the GUI is in centimeters,\nit allows to move the axes in the unit of millimeters by inser-\nting the desired value and clicking on the corresponding but-\nton (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions of\nthe axes are checked and updated in the GUI every second."
-		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. These positions can be changed via the win-\ndow 'Settings'. By clicking on the 'Ok' Button, the new\npositions will be saved. \n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI"
+		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup\n\nwhich are represented by the four colored\nrectangulars.\nThe coordinate system of the GUI is in centimeters,\n and is centered around the middle of the magnet.\nThis means, that the limits are +-273/2 cm = +-136.5 cm.\nThe GUI allows to move the axes in the unit of millimeters by\ninserting the desired value and clicking on the corresponding\nbutton (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions of\nthe axes are checked and updated in the GUI every second."
+		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. These positions can be changed via the win-\ndow 'Settings'. By clicking on the 'Ok' Button, the new\npositions will be saved.\nThe arrow shows indicates the distance between the end of\nthe array and the target.\n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI"
 		text3="\n\nFurthermore in the top left corner of the GUI, there is the\nopportunity to send any kind of command (all available\ncommands can be found in the Drive System's handbook)."
 		text4="IMPORTANT NOTE: "
 		text5="If you want to move axes 1 and 2 via the 'Send' button or the\ncontrol stick in the experimental hall,\nplease note that the GUI's coordinate system is only correct\nfor axes 3 and 4. For axes 1 and 2, it is in the opposite direc-\ntion, so if you want to move them according to the GUI's\ncoordinate system you have to enter the negative value."
