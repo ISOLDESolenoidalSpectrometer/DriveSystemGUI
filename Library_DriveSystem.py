@@ -112,6 +112,27 @@ class DriveSystem():
 		self.port_open = False
 		print( "Disconnected" )
 
+	def abortAll(self):
+		print( "Abort command on all axes")
+		for i in range(4):
+			axis=i=1
+			in_cmd = ( str(axis) + 'ab'+ '\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+	def resetAll(self):
+		print( "Reset all axes")
+		for i in range(4):
+			axis=i=1
+			in_cmd = ( str(axis) + 'rs'+ '\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+
 	# go to position 1 (move absolute)
 	def select_pos( self, axis,pos ):
 		print( "Moving to position ", pos,"on axis ",str(axis) )
