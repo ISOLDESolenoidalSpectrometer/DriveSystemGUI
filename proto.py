@@ -1,4 +1,4 @@
-import matplotlib 
+import matplotlib
 matplotlib.use('WXAgg')
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
@@ -11,7 +11,6 @@ import threading
 import time
 import Library_DriveSystem
 import queue
-import queues
 import os
 
 
@@ -22,28 +21,28 @@ frameWidth=1000
 controlViewSize=200
 
 #Rectangles
-oneW=40
+oneW=40*10
 oneH=27
-twoW=35
+twoW=35*10
 twoH=19.5
-arrayW=74.85
+arrayW=74.85*10
 arrayH=5
-array_sidespace=2.07
-threeW=8
+array_sidespace=2.07*10
+threeW=8*10
 threeH=13
-fourW=8
+fourW=8*10
 fourH=13
-target_sidespace=2
-detector_sidespace=2
+target_sidespace=2*10
+detector_sidespace=2*10
 #one_sidespace=100
 
 #Magnetlength
-magL=273
+magL=273*10
 
 #Home positions
-home1=magL/2-39.2+detector_sidespace-oneW-110932/2000
+home1=magL/2-39.2*10+detector_sidespace-oneW-110932/200
 #home2=magL/2-145.2-arrayW-array_sidespace
-home2=-magL/2+115-74.85+35129/2000
+home2=-magL/2+115*10-74.85*10+35129/200
 homePositions=np.array([home1,home2,0,0])
 
 #Colours
@@ -90,6 +89,23 @@ class PosUpdateEvent(wx.PyCommandEvent):
            """
            return self._value
 
+myEVT_DISCONNECT = wx.NewEventType()
+EVT_DISCONNECT = wx.PyEventBinder(myEVT_DISCONNECT, 1)
+class DisConnectEvent(wx.PyCommandEvent):
+       """Event to signal that a count value is ready"""
+       def __init__(self, etype, eid, value=None):
+            """Creates the event object"""
+            wx.PyCommandEvent.__init__(self, etype, eid)
+            self._value = value
+    
+       def GetValue(self):
+           """Returns the value from the event.
+           @return: the value of this event
+   
+           """
+           return self._value
+
+#-----------------------------------------------------------
 #Thread that checks the positions regularly
 class CheckPositions(threading.Thread):
 	def __init__(self,controlView,driveSystem):
@@ -181,12 +197,12 @@ class DriveView:
 		self.ax.set_yticks([])
 		self.ax.spines['left'].set_color('none')
 		self.ax.spines['bottom'].set_position(('data',0))
-		majorLocator = MultipleLocator(50)
-		minorLocator = MultipleLocator(10)
+		majorLocator = MultipleLocator(500)
+		minorLocator = MultipleLocator(100)
 		self.ax.xaxis.set_major_locator(majorLocator)
 		# for the minor ticks, use no labels; default NullFormatter
 		self.ax.xaxis.set_minor_locator(minorLocator)
-		self.ax.set_xlabel("[cm]")
+		self.ax.set_xlabel("[mm]")
 		#ax.grid()
 		
 		#Adding the four rectangles + array which belongs to ax 2
@@ -214,9 +230,9 @@ class DriveView:
 		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+str(self.four.get_y()),color=fourC)
 
 		#Beam Arrow
-		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20), (self.xmin+30, self.ymax-20),arrowprops={'arrowstyle':'<-'} )
+		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20), (self.xmin+30*10, self.ymax-20),arrowprops={'arrowstyle':'<-'} )
 		text="BEAM"
-		self.beamText=self.ax.text(self.xmin+7, self.ymax-18,text)
+		self.beamText=self.ax.text(self.xmin+7*10, self.ymax-18,text)
 		
 		#self.targetPos=self.ax.text(xmin+2*dis,ymax-10,"Target Position: "+str(1),color=threeC)
 		#self.detectorPos=self.ax.text(xmin+3*dis,ymax-10,"Detector Position: dE or dE/dx",color=fourC)
@@ -241,7 +257,7 @@ class DriveView:
 		height=oneH/2+1
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
 		text="d = "+str((x1-x2)*10)+" mm"
-		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20, height+3,text)
+		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
 		self.one.set_x(xcurr+moveDis)
@@ -264,10 +280,10 @@ class DriveView:
 		pos[0]=-1*pos[0]
 		pos[1]=-1*pos[1]
 		rand=2
-		dis=70
+		dis=70*10
 		pos=pos*0.005
 		self.position1.remove()
-		self.one.set_x(pos[0]*0.1+homePositions[0])
+		self.one.set_x(pos[0]+homePositions[0])
 		text="Position 1: "+str(pos[0])+" mm"
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
 		
@@ -275,7 +291,7 @@ class DriveView:
 		self.position2.remove()
 		text="Position 2: "+str(pos[1])+" mm"
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=arrayC)
-		self.array.set_x(pos[1]*0.1+homePositions[1])
+		self.array.set_x(pos[1]+homePositions[1])
 		self.two.set_x(self.array.get_x()-array_sidespace)		
 
 		pos1=self.one.get_x()
@@ -368,7 +384,8 @@ class ControlView(wx.Panel):
    
 	def __init__(self,parent,matplotpanel,frame):
 		self.driveSystem=Library_DriveSystem.DriveSystem()
-
+		
+		
 		self.frame=frame
 		sizeX=100
 		sizeY=100
@@ -422,7 +439,7 @@ class ControlView(wx.Panel):
 
 		if self.driveSystem.checkConnection()==True:
 			self.disconnectButton.SetBackgroundColour("#EE4000") 
-			#self.connectButton.Enable(False)
+			self.connectButton.Enable(False)
 		else:
 			self.connectButton.SetBackgroundColour("#7FFF00")
 			self.disconnectButton.Enable(False)
@@ -496,11 +513,26 @@ class ControlView(wx.Panel):
 		#Create the queue that the Thread checks
 		self.q=queue.Queue()
 
+		#Event Handlers
+		self.Bind(EVT_DISCONNECT, self.changeViewDisconnect)
 		#Start Thread which checks continously the positions
 		self.positionsChecker=CheckPositions(self,self.driveSystem)#
 		self.positionsChecker.start()
 		
-		
+	
+	def changeViewDisconnect(self,event):
+		value=event.GetValue()
+		if value==1:
+			self.disconnectButton.SetBackgroundColour("#EE4000") 
+			self.connectButton.Enable(False)
+			self.connectButton.SetBackgroundColour("grey") 
+			self.disconnectButton.Enable(True)
+		else:
+			self.connectButton.SetBackgroundColour("#7FFF00")
+			self.disconnectButton.Enable(False)
+			self.disconnectButton.SetBackgroundColour("grey") 
+			self.connectButton.Enable(True)
+	
 	def sendingCommandB(self,event):
 		command = self.writeCommand.GetValue() + '\r'
 		command = bytes( command.encode('ascii') )
@@ -517,11 +549,8 @@ class ControlView(wx.Panel):
 	def connectB(self,event):
 		print("Connect")
 		self.driveSystem.connect_to_port()
-		self.connectButton.SetBackgroundColour("grey") 
-		self.disconnectButton.Enable(True)
-		self.disconnectButton.SetBackgroundColour("#EE4000")
-		self.connectButton.Enable(False)
-
+		event = DisConnectEvent(myEVT_DISCONNECT, -1, 1)
+		wx.PostEvent(self, event)
 	def connect(self):
 		#nothing
 		print("connect")
@@ -532,14 +561,15 @@ class ControlView(wx.Panel):
 	def disconnect(self):
 		print("Disconnect")
 		self.driveSystem.disconnect_port()
-		self.disconnectButton.SetBackgroundColour("grey") 
-		self.connectButton.Enable(True)
-		self.connectButton.SetBackgroundColour("#7FFF00")
-		self.disconnectButton.Enable(False)
-
+		event = DisConnectEvent(myEVT_DISCONNECT, -1, 0)
+		wx.PostEvent(self, event)
 	def quitB(self,event):
-		element=Element('Q')
-		self.q.put(element)
+		if self.driveSystem.checkConnection()==True:
+			element=Element('Q')
+			self.q.put(element)
+		else:
+			self.quit()
+		
 	def quit(self):
 		print("Quit")
 		self.frame.Destroy()
@@ -829,6 +859,7 @@ class HelpWindow(wx.Frame):
 		self.panel=TestPanel(self)
 	def onClose(self):
 		self.Close()
+		self.Destroy()
 
 import wx.lib.scrolledpanel as scrolled
 
@@ -840,8 +871,8 @@ class TestPanel(scrolled.ScrolledPanel):
 		self.parent=parent
 	
 		vbox = wx.BoxSizer(wx.VERTICAL)
-		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup\n\nwhich are represented by the four colored\nrectangulars.\nThe coordinate system of the GUI is in centimeters,\n and is centered around the middle of the magnet.\nThis means, that the limits are +-273/2 cm = +-136.5 cm.\nThe GUI allows to move the axes in the unit of millimeters by\ninserting the desired value and clicking on the corresponding\nbutton (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions of\nthe axes are checked and updated in the GUI every second."
-		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. These positions can be changed via the win-\ndow 'Settings'. By clicking on the 'Ok' Button, the new\npositions will be saved.\nThe arrow shows indicates the distance between the end of\nthe array and the target.\n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI"
+		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup\n\nwhich are represented by the four colored\nrectangulars.\nThe coordinate system of the GUI is in millimeters,\n and is centered around the middle of the magnet.\nThis means, that the limits are +-2730/2 mm = +-1365 mm.\nThe GUI allows to move the axes in the unit of millimeters by\ninserting the desired value and clicking on the corresponding\nbutton (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions of\nthe axes are checked and updated in the GUI every second."
+		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. These positions can be changed via the win-\ndow 'Settings'. By clicking on the 'Ok' Button, the new\npositions will be saved.\nThe arrow shows indicates the distance between the end of\nthe array and the target.\n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI\n- Datum search: The home/zero position on the axis will be\nsearched. Should be done after switching on the system.\nCheck then with the command OD if the datum position is\nequal to zero. If not use DA-x with x being the datum position\nto set it to zero."
 		text3="\n\nFurthermore in the top left corner of the GUI, there is the\nopportunity to send any kind of command (all available\ncommands can be found in the Drive System's handbook)."
 		text4="IMPORTANT NOTE: "
 		text5="If you want to move axes 1 and 2 via the 'Send' button or the\ncontrol stick in the experimental hall,\nplease note that the GUI's coordinate system is only correct\nfor axes 3 and 4. For axes 1 and 2, it is in the opposite direc-\ntion, so if you want to move them according to the GUI's\ncoordinate system you have to enter the negative value."

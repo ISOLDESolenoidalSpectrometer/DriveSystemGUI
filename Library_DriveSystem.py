@@ -247,7 +247,6 @@ class DriveSystem():
 
 	# check encoder positions
 	def check_encoder_pos( self ):
-		pos=[]
 		for i in range(4):
 			self.check_encoder_pos_axis(i+1)
 		return self.positions
