@@ -256,7 +256,7 @@ class DriveView:
 		x2=self.array.get_x()+arrayW
 		height=oneH/2+1
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
-		text="d = "+str((x1-x2)*10)+" mm"
+		text="d = "+str((x1-x2))+" mm"
 		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
