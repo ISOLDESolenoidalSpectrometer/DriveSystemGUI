@@ -485,7 +485,7 @@ class ControlView(wx.Panel):
 		self.moveMinus3Button.Bind(wx.EVT_BUTTON, self.moveMinus3B)
 
 		#Detector Option
-		self.detectorList=["dE","dE/dx"]
+		self.detectorList=["dE/dx","FC"]
 		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 2, wx.RA_SPECIFY_COLS)		
 		self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
 		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(55, -1))
@@ -733,10 +733,10 @@ class SettingsWindow(wx.Frame):
 
 		#Detector Positions
 		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
-		det1label = wx.StaticText(self.panel, wx.ID_ANY, 'dE')
+		det1label = wx.StaticText(self.panel, wx.ID_ANY, 'dE/dx')
 		pos1=str(self.parent.detectorPositions[0])
 		self.det1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos1)
-		det2label = wx.StaticText(self.panel, wx.ID_ANY, 'dE/dx')
+		det2label = wx.StaticText(self.panel, wx.ID_ANY, 'FC')
 		pos2=str(self.parent.detectorPositions[1])
 		self.det2input = wx.TextCtrl(self.panel, wx.ID_ANY, pos2)
 		
