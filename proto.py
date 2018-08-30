@@ -610,7 +610,8 @@ class ControlView(wx.Panel):
 	def move1(self):
 		moveDis = float(self.move1Insert.GetValue())
 		print("The motor of axis 1 is defect")
-		#self.matplotpanel.move1(moveDis)
+		#if the motor works again:
+		#self.driveSystem.move_rel(1,int(moveDis*200))
 	
 	def move2B(self,event):
 		element=Element('M',2)
@@ -619,7 +620,7 @@ class ControlView(wx.Panel):
 		moveDis = float(self.move2Insert.GetValue())
 		print("Move 2")
 		#assume that moveDis is in mm
-		self.driveSystem.move_rel(2,moveDis*200)
+		self.driveSystem.move_rel(2,int(moveDis*200))
 
 	def setTargetPosB(self,event):
 		element=Element('M',3)

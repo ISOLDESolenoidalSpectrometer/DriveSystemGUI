@@ -146,7 +146,7 @@ class DriveSystem():
 	# move relative
 	def move_rel( self, axis,steps):
 		print( "Moving ", steps," on axis ",str(axis) )
-		in_cmd = ( str(axis) + 'mr\r'+str(steps) ).encode()
+		in_cmd = ( str(axis) + 'mr'+str(steps)+ '\r').encode()
 		print( in_cmd )
 		self.serial_port.write( in_cmd )
 		time.sleep(0.1)
