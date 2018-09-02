@@ -135,6 +135,7 @@ class CheckPositions(threading.Thread):
 					t=t+REAC_TIME
 			else:
 				time.sleep(1)
+		
 	def checkQ(self):
 		while self._parent.q.empty()==False:
 			item = self._parent.q.get()
@@ -206,23 +207,23 @@ class DriveView:
 		#ax.grid()
 		
 		#Adding the four rectangles + array which belongs to ax 2
-		self.one = plt.Rectangle((self.xmin, -oneH/2), oneW, oneH, fc=oneC)
+		self.one = plt.Rectangle((self.xmax-600, -oneH/2), oneW, oneH, fc=oneC)
 		self.ax.add_patch(self.one)
-		self.two = plt.Rectangle((self.xmax-twoW-30, -twoH/2), twoW, twoH, fc=twoC)
+		self.two = plt.Rectangle((self.xmin+300, -twoH/2), twoW, twoH, fc=twoC)
 		self.ax.add_patch(self.two)
-		self.four = plt.Rectangle((self.xmin+detector_sidespace, -threeH/2), threeW, threeH, fc=fourC)
+		self.four = plt.Rectangle((self.xmax-600+oneW-detector_sidespace-fourW, -threeH/2), threeW, threeH, fc=fourC)
 		self.ax.add_patch(self.four)
-		self.three = plt.Rectangle((self.xmin+oneW-target_sidespace-threeW, -threeH/2), threeW, threeH, fc=threeC)
+		self.three = plt.Rectangle((self.xmax-600+target_sidespace, -threeH/2), threeW, threeH, fc=threeC)
 		self.ax.add_patch(self.three)
-		self.array = plt.Rectangle((self.xmax-twoW-30+twoW, -arrayH/2), arrayW, arrayH, fc=arrayC)
+		self.array = plt.Rectangle((self.xmin+300+array_sidespace,-arrayH/2), arrayW, arrayH, fc=arrayC)
 		self.ax.add_patch(self.array)
 		
 		#Adding numbers to the rectangulars
 		self.placeNumbers()
 
 		#Adding information about position
-		dis=90
 		rand=2
+		dis=70*10
 		plt.rcParams.update({'font.size': 12})
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,"Position 1: "+str(self.one.get_x()),color=oneC)
 		self.position2=self.ax.text(self.xmin+dis-5,self.ymax-rand,"Position 2: "+str(self.two.get_x()),color=twoC)
