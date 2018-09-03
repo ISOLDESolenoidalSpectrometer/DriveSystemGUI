@@ -46,19 +46,21 @@ home2=-magL/2+115*10-74.85*10+35129/200
 homePositions=np.array([home1,home2,0,0])
 
 #Colours
-
+#Basic matplot colour scheme
+'''
 oneC='y'
 twoC='r'
 threeC='g'
 fourC='b'
 arrayC='brown'
 '''
-oneC='#66B2FF'
-twoC='#E0E0E0'
-threeC='#FFFF00'
-fourC='#33FF33'
-arrayC='#FF0000'
-'''
+#self elected colour scheme
+oneC='#0DE30B'#FDD11F'
+twoC='#FDD11F'#E0E0E0'#FFFFE0 #'#910BE3'
+threeC='#00A7FA'
+fourC='#910BE3'
+arrayC='#FD3F0D'
+
 #Frequency por the positons checking
 UPDATE_TIME=1
 REAC_TIME=0.1
@@ -225,19 +227,19 @@ class DriveView:
 		rand=2
 		dis=70*10
 		plt.rcParams.update({'font.size': 12})
-		self.position1=self.ax.text(self.xmin,self.ymax-rand,"Position 1: "+str(self.one.get_x()),color=oneC)
-		self.position2=self.ax.text(self.xmin+dis-5,self.ymax-rand,"Position 2: "+str(self.two.get_x()),color=twoC)
-		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,"Position 3: "+str(self.three.get_y()),color=threeC)
-		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+str(self.four.get_y()),color=fourC)
+		self.position1=self.ax.text(self.xmin,self.ymax-rand,"Position 1: "+str(self.one.get_x())+" mm",color=oneC)
+		self.position2=self.ax.text(self.xmin+dis-5,self.ymax-rand,"Position 2: "+str(self.two.get_x())+" mm",color=arrayC)
+		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,"Position 3: "+str(self.three.get_y())+" mm",color=threeC)
+		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+str(self.four.get_y())+" mm",color=fourC)
 
 		#Beam Arrow
 		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20), (self.xmin+30*10, self.ymax-20),arrowprops={'arrowstyle':'<-'} )
 		text="BEAM"
 		self.beamText=self.ax.text(self.xmin+7*10, self.ymax-18,text)
-		
-		#self.targetPos=self.ax.text(xmin+2*dis,ymax-10,"Target Position: "+str(1),color=threeC)
-		#self.detectorPos=self.ax.text(xmin+3*dis,ymax-10,"Detector Position: dE or dE/dx",color=fourC)
 
+		#Conversion coefficients
+		self.conversionText1=self.ax.text(self.xmin, -self.ymax+4,"1 mm = 200 steps")
+		self.conversionText2=self.ax.text(self.xmin, -self.ymax,"1 step = 0.005 mm")
 		#Arrow who shows the distance
 		self.arrow=self.ax.annotate ('', (-100, 100), (100, 100), arrowprops={'arrowstyle':'<->'})
 		self.distanceArrow=self.ax.text(0,0,"")
@@ -245,8 +247,6 @@ class DriveView:
 
 		#Makes the space at the sides of the diagrams smaller
 		self.fig.tight_layout()
-
-		
 
 	def get_figure(self):
 		return self.fig
@@ -288,7 +288,6 @@ class DriveView:
 		text="Position 1: "+str(pos[0])+" mm"
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
 		
-		
 		self.position2.remove()
 		text="Position 2: "+str(pos[1])+" mm"
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=arrayC)
@@ -300,14 +299,12 @@ class DriveView:
 		text="Position 3: "+str(pos[2])+" mm"
 		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
 		self.three.set_y(pos[2]*0.1-threeH/2)
-		#self.three.set_x(pos1+oneW-target_sidespace-threeW)
 		self.three.set_x(pos1+detector_sidespace)
 		
 		self.position4.remove()
 		text="Position 4: "+str(pos[3])+" mm"
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
 		self.four.set_y(pos[3]*0.1-fourH/2)
-		#self.four.set_x(pos1+detector_sidespace)
 		self.four.set_x(pos1+oneW-target_sidespace-threeW)
 		self.drawArrow()
 		self.number1.remove()
@@ -324,33 +321,6 @@ class DriveView:
 		self.number3=self.ax.text(self.three.get_x()+threeW/2,self.three.get_y()+0.7*threeH,"3",fontsize=nSize,horizontalalignment='center')
 		self.number4=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()+0.7*fourH,"4",fontsize=nSize,horizontalalignment='center')
 		
-	'''
-	def changeText(self,number):
-		rand=2
-		dis=80
-		if number==1:
-			self.position1.remove()
-			self.position3.remove()
-			self.position4.remove()
-			text="Position 1: "+str(self.one.get_x())
-			self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
-			text="Position 3: "+str(self.three.get_y())
-			self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
-			text="Position 4: "+str(self.four.get_y())
-			self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
-		if number==2:
-			self.position2.remove()
-			text="Position 2: "+str(self.two.get_x())
-			self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=twoC)
-		if number==3:
-			self.position3.remove()
-			text="Position 3: "+str(self.three.get_y())
-			self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
-		if number==4:
-			self.position4.remove()
-			text="Position 4: "+str(self.four.get_y())
-			self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
-	'''
 
 class MatplotPanel(wx.Panel):
 	def __init__(self, parent):
@@ -386,7 +356,6 @@ class ControlView(wx.Panel):
 	def __init__(self,parent,matplotpanel,frame):
 		self.driveSystem=Library_DriveSystem.DriveSystem()
 		
-		
 		self.frame=frame
 		sizeX=100
 		sizeY=100
@@ -411,7 +380,7 @@ class ControlView(wx.Panel):
 		#Abort/Reset Buttons
 		self.aborted=False
 		self.abortAllButton = wx.Button(self, wx.ID_ANY, "ABORT", (writeSize+15+100, a))
-		self.abortAllButton.SetBackgroundColour("#EE4000") 
+		self.abortAllButton.SetBackgroundColour("#FD3F0D") 
 		self.abortAllButton.Bind(wx.EVT_BUTTON, self.abortAll)
 		
 		self.resetAllButton = wx.Button(self, wx.ID_ANY, "RESET", (writeSize+15+200, a)) 
@@ -433,16 +402,16 @@ class ControlView(wx.Panel):
 
 		self.quitButton = wx.Button(self, wx.ID_ANY, "QUIT", (frameWidth-buttonW,sizey*4),(buttonW,sizey))
 		self.quitButton.Bind(wx.EVT_BUTTON, self.quitB)
-		self.quitButton.SetBackgroundColour("#FF3030")# #DC143C
+		self.quitButton.SetBackgroundColour("#FD3F0D")# #DC143C #FF3030
 
 		self.helpButton = wx.Button(self, wx.ID_ANY, "HELP", (frameWidth-buttonW,sizey*3),(buttonW,sizey))
 		self.helpButton.Bind(wx.EVT_BUTTON, self.openHelp)
 
 		if self.driveSystem.checkConnection()==True:
-			self.disconnectButton.SetBackgroundColour("#EE4000") 
+			self.disconnectButton.SetBackgroundColour("#FD3F0D") #EE4000
 			self.connectButton.Enable(False)
 		else:
-			self.connectButton.SetBackgroundColour("#7FFF00")
+			self.connectButton.SetBackgroundColour("#7FFF00")#'#0DE30B'
 			self.disconnectButton.Enable(False)
 		
 		#Settings
@@ -466,8 +435,8 @@ class ControlView(wx.Panel):
 		
 		disy=sizeY+30
 		#Move 1 and 2
-		self.move1Insert = wx.TextCtrl(self, wx.ID_ANY, "", (0,disy))
-		self.move1Button = wx.Button(self, wx.ID_ANY, "Move 1 \n [mm]", (100, disy-12))
+		self.move1Insert = wx.TextCtrl(self, wx.ID_ANY, "", (5,disy))
+		self.move1Button = wx.Button(self, wx.ID_ANY, "Move 1 \n [mm]", (105, disy-12))
 		self.move1Button.Bind(wx.EVT_BUTTON, self.move1B)
 		self.move2Insert = wx.TextCtrl(self, wx.ID_ANY, "", (dis,disy))
 		self.move2Button = wx.Button(self, wx.ID_ANY, "Move 2 \n [mm]", (dis+100, disy-12))
@@ -529,7 +498,7 @@ class ControlView(wx.Panel):
 			self.connectButton.SetBackgroundColour("grey") 
 			self.disconnectButton.Enable(True)
 		else:
-			self.connectButton.SetBackgroundColour("#7FFF00")
+			self.connectButton.SetBackgroundColour("#7FFF00")#'#0DE30B'
 			self.disconnectButton.Enable(False)
 			self.disconnectButton.SetBackgroundColour("grey") 
 			self.connectButton.Enable(True)
@@ -552,10 +521,7 @@ class ControlView(wx.Panel):
 		self.driveSystem.connect_to_port()
 		event = DisConnectEvent(myEVT_DISCONNECT, -1, 1)
 		wx.PostEvent(self, event)
-	def connect(self):
-		#nothing
-		print("connect")
-
+	
 	def disconnectB(self,event):
 		element=Element('D')
 		self.q.put(element)
@@ -846,7 +812,7 @@ class SettingsWindow(wx.Frame):
 
 class HelpWindow(wx.Frame):
 	def __init__(self, parent, mytitle):
-		self.width=400
+		self.width=430
 		self.height=500
 		super(HelpWindow, self).__init__(parent, title=mytitle,size=(self.width,self.height))
 		self.InitUI()
@@ -873,8 +839,8 @@ class TestPanel(scrolled.ScrolledPanel):
 		self.parent=parent
 	
 		vbox = wx.BoxSizer(wx.VERTICAL)
-		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup\n\nwhich are represented by the four colored\nrectangulars.\nThe coordinate system of the GUI is in millimeters,\n and is centered around the middle of the magnet.\nThis means, that the limits are +-2730/2 mm = +-1365 mm.\nThe GUI allows to move the axes in the unit of millimeters by\ninserting the desired value and clicking on the corresponding\nbutton (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions of\nthe axes are checked and updated in the GUI every second."
-		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. These positions can be changed via the win-\ndow 'Settings'. By clicking on the 'Ok' Button, the new\npositions will be saved.\nThe arrow shows indicates the distance between the end of\nthe array and the target.\n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI\n- Datum search: The home/zero position on the axis will be\nsearched. Should be done after switching on the system.\nCheck then with the command OD if the datum position is\nequal to zero. If not use DA-x with x being the datum position\nto set it to zero."
+		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup and dE/dx detector\n\nwhich are represented by the four colored\nrectangulars.\nThe coordinate system of the GUI is in millimeters,\nand is centered around the middle of the magnet.\nThis means, that the limits are +-2730/2 mm = +-1365 mm.\nThe GUI allows to move the objects on the axes in the unit\nof millimeters by inserting the desired value and clicking on\nthe corresponding button (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions on\nthe axes are checked and updated in the GUI every second."
+		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. The corresponding encoder positions can be\nchanged via the window 'Settings'. By clicking on the 'Ok'\nButton, the new positions will be saved.\nThe arrow indicates the distance between the end of\nthe array and the target.\n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI\n- Datum search: The datum/zero position on the axis will be\nsearched. When the datum position is found,\ncheck with the command OD if the datum position is\nequal to zero. If not use DA-x with x being the datum position\nto set it to zero."
 		text3="\n\nFurthermore in the top left corner of the GUI, there is the\nopportunity to send any kind of command (all available\ncommands can be found in the Drive System's handbook)."
 		text4="IMPORTANT NOTE: "
 		text5="If you want to move axes 1 and 2 via the 'Send' button or the\ncontrol stick in the experimental hall,\nplease note that the GUI's coordinate system is only correct\nfor axes 3 and 4. For axes 1 and 2, it is in the opposite direc-\ntion, so if you want to move them according to the GUI's\ncoordinate system you have to enter the negative value."

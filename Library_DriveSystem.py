@@ -1,12 +1,11 @@
 import serial
-import time
-import re
 from serial.tools import list_ports
+import time #for time.sleep()
+import re #Real Expressions -> interpret the drive system's command
 import requests
 import urllib3
-import numpy as np
-import urllib3
 urllib3.disable_warnings()
+import numpy as np
 
 
 class DriveSystem():
