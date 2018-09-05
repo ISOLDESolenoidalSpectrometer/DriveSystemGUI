@@ -19,14 +19,14 @@ class DriveSystem():
 		
 		# Port option lists
 		
-		
+		'''
 		self.set_defaults()
 		if self.serial_port.is_open == True:
 			print("Already connected to"+ self.portalias)
 		else:
 			self.connect_to_port()
 		#self.set_defaultMovingOptions()
-		
+		'''
 		
 		
 	

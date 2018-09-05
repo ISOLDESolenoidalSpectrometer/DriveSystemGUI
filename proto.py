@@ -22,16 +22,16 @@ controlViewSize=200
 
 #Rectangles
 oneW=40*10
-oneH=27
+oneH=27*10
 twoW=35*10
-twoH=19.5
+twoH=19.5*10
 arrayW=74.85*10
-arrayH=5
+arrayH=5*10
 array_sidespace=2.07*10
 threeW=8*10
-threeH=13
+threeH=13*10
 fourW=8*10
-fourH=13
+fourH=13*10
 target_sidespace=2*10
 detector_sidespace=2*10
 #one_sidespace=100
@@ -44,6 +44,14 @@ home1=magL/2-39.2*10+detector_sidespace-oneW-110932/200
 #home2=magL/2-145.2-arrayW-array_sidespace
 home2=-magL/2+115*10-74.85*10+35129/200
 homePositions=np.array([home1,home2,0,0])
+
+#FC and dE/dx detector 
+#Negative encoder position of the center
+fcH=-11497.0/200
+dEH=12603.0/200
+#Radius
+fcR=21
+dER=20
 
 #Colours
 #Basic matplot colour scheme
@@ -188,8 +196,8 @@ class DriveView:
 		self.fig.set_size_inches(10, 5.3)
 		
 		#Setting properties of the axes
-		self.ymin=-40
-		self.ymax=40
+		self.ymin=-40*10
+		self.ymax=40*10
 		self.xmin=-magL*0.5
 		self.xmax=magL*0.5
 		
@@ -219,26 +227,31 @@ class DriveView:
 		self.ax.add_patch(self.three)
 		self.array = plt.Rectangle((self.xmin+300+array_sidespace,-arrayH/2), arrayW, arrayH, fc=arrayC)
 		self.ax.add_patch(self.array)
+		#Adding FC and dE/dx detector
+		self.FC=plt.Circle(xy=(self.four.get_x()+0.5*fourW,fcH),radius=fcR,fc=twoC)
+		self.dE=plt.Circle(xy=(self.four.get_x()+0.5*fourW,dEH),radius=dER,fc=twoC)
+		#self.ax.add_patch(self.FC)
+		#self.ax.add_patch(self.dE)
 		
 		#Adding numbers to the rectangulars
 		self.placeNumbers()
 
 		#Adding information about position
-		rand=2
+		rand=2*10
 		dis=70*10
 		plt.rcParams.update({'font.size': 12})
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,"Position 1: "+str(self.one.get_x())+" mm",color=oneC)
 		self.position2=self.ax.text(self.xmin+dis-5,self.ymax-rand,"Position 2: "+str(self.two.get_x())+" mm",color=arrayC)
-		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,"Position 3: "+str(self.three.get_y())+" mm",color=threeC)
-		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+str(self.four.get_y())+" mm",color=fourC)
+		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,"Position 3: "+str(0)+" mm",color=threeC)
+		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+str(0)+" mm",color=fourC)
 
 		#Beam Arrow
-		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20), (self.xmin+30*10, self.ymax-20),arrowprops={'arrowstyle':'<-'} )
+		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20*10), (self.xmin+30*10, self.ymax-20*10),arrowprops={'arrowstyle':'<-'} )
 		text="BEAM"
-		self.beamText=self.ax.text(self.xmin+7*10, self.ymax-18,text)
+		self.beamText=self.ax.text(self.xmin+7*10, self.ymax-18*10,text)
 
 		#Conversion coefficients
-		self.conversionText1=self.ax.text(self.xmin, -self.ymax+4,"1 mm = 200 steps")
+		self.conversionText1=self.ax.text(self.xmin, -self.ymax+4*10,"1 mm = 200 steps")
 		self.conversionText2=self.ax.text(self.xmin, -self.ymax,"1 step = 0.005 mm")
 		#Arrow who shows the distance
 		self.arrow=self.ax.annotate ('', (-100, 100), (100, 100), arrowprops={'arrowstyle':'<->'})
@@ -255,10 +268,10 @@ class DriveView:
 		self.distanceArrow.remove()
 		x1=self.three.get_x()+threeW
 		x2=self.array.get_x()+arrayW
-		height=oneH/2+1
+		height=oneH/2+1*10
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
 		text="d = "+str((x1-x2))+" mm"
-		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3,text)
+		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3*10,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
 		self.one.set_x(xcurr+moveDis)
@@ -298,13 +311,13 @@ class DriveView:
 		self.position3.remove()
 		text="Position 3: "+str(pos[2])+" mm"
 		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
-		self.three.set_y(pos[2]*0.1-threeH/2)
+		self.three.set_y(pos[2]-threeH/2)
 		self.three.set_x(pos1+detector_sidespace)
 		
 		self.position4.remove()
 		text="Position 4: "+str(pos[3])+" mm"
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
-		self.four.set_y(pos[3]*0.1-fourH/2)
+		self.four.set_y(pos[3]-fourH/2)
 		self.four.set_x(pos1+oneW-target_sidespace-threeW)
 		self.drawArrow()
 		self.number1.remove()
@@ -444,8 +457,8 @@ class ControlView(wx.Panel):
 
 		#Target Position Selection
 		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
-		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3-40), size=(50,-1),choices=["1","2","3","4","5","6","7","8"])
-		self.targetChoice.SetSelection(1)
+		#alpha=r'$\alpha_i$'
+		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3-40), size=(50,-1),choices=["alpha","1","2","3","4","5","6","7","8"])
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
 		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
 		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
@@ -455,8 +468,9 @@ class ControlView(wx.Panel):
 		self.moveMinus3Button.Bind(wx.EVT_BUTTON, self.moveMinus3B)
 
 		#Detector Option
-		self.detectorList=["dE/dx","FC"]
-		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 2, wx.RA_SPECIFY_COLS)		
+		self.detectorList=["dE/dx","FC","Center"]
+		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 3, wx.RA_SPECIFY_COLS)		
+		self.detectorChoice.SetSelection(2)
 		self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
 		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(55, -1))
 		self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (3*dis+105,disy),size=(40, -1))
@@ -467,8 +481,6 @@ class ControlView(wx.Panel):
 
 
 		#Positions Constants
-		#self.detectorPositions=np.ones(8)		
-		#self.targetPositions=np.ones(8)
 		data=np.genfromtxt('Positions.txt')
 		self.detectorPositions=data[:,1]
 		self.targetPositions=data[:,0]
@@ -486,8 +498,8 @@ class ControlView(wx.Panel):
 		#Event Handlers
 		self.Bind(EVT_DISCONNECT, self.changeViewDisconnect)
 		#Start Thread which checks continously the positions
-		self.positionsChecker=CheckPositions(self,self.driveSystem)#
-		self.positionsChecker.start()
+		#self.positionsChecker=CheckPositions(self,self.driveSystem)#
+		#self.positionsChecker.start()
 		
 	
 	def changeViewDisconnect(self,event):
@@ -677,34 +689,38 @@ class SettingsWindow(wx.Frame):
 
 		#Target Positions
 		pos=[]
-		for i in range(8):
+		for i in range(9):
 			pos+=[str(self.parent.targetPositions[i])]
 		targTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Target Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
+		targ0label = wx.StaticText(self.panel, wx.ID_ANY, 'Alpha\nsource')
+		self.targ0input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[0])
 		targ1label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 1')
-		self.targ1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[0])
-		#targ1unit = wx.StaticText(self.panel, wx.ID_ANY, '\nmm')
+		self.targ1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[1])
 		targ2label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 2')
-		self.targ2input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[1])
+		self.targ2input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[2])
 		targ3label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 3')
-		self.targ3input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[2])
+		self.targ3input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[3])
 		targ4label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 4')
-		self.targ4input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[3])
+		self.targ4input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[4])
 		targ5label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 5')
-		self.targ5input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[4])
+		self.targ5input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[5])
 		targ6label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 6')
-		self.targ6input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[5])
+		self.targ6input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[6])
 		targ7label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 7')
-		self.targ7input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[6])
+		self.targ7input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[7])
 		targ8label = wx.StaticText(self.panel, wx.ID_ANY, 'Pos 8')
-		self.targ8input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[7])
+		self.targ8input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[8])
 
 		#Detector Positions
 		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
-		det1label = wx.StaticText(self.panel, wx.ID_ANY, 'dE/dx')
-		pos1=str(self.parent.detectorPositions[0])
+		det0label = wx.StaticText(self.panel, wx.ID_ANY, 'dE/dx')
+		pos0=str(self.parent.detectorPositions[0])
+		self.det0input = wx.TextCtrl(self.panel, wx.ID_ANY, pos0)
+		det1label = wx.StaticText(self.panel, wx.ID_ANY, 'FC')
+		pos1=str(self.parent.detectorPositions[1])
 		self.det1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos1)
-		det2label = wx.StaticText(self.panel, wx.ID_ANY, 'FC')
-		pos2=str(self.parent.detectorPositions[1])
+		det2label = wx.StaticText(self.panel, wx.ID_ANY, 'Center')
+		pos2=str(self.parent.detectorPositions[2])
 		self.det2input = wx.TextCtrl(self.panel, wx.ID_ANY, pos2)
 		
 		#Ok and Cancel Buttons
@@ -716,6 +732,7 @@ class SettingsWindow(wx.Frame):
 		#Defining the boxes		
 		topSizer        = wx.BoxSizer(wx.VERTICAL)
 		targTitleSizer      = wx.BoxSizer(wx.HORIZONTAL)
+		targ0Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ1Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ2Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ3Sizer   = wx.BoxSizer(wx.HORIZONTAL)
@@ -725,12 +742,15 @@ class SettingsWindow(wx.Frame):
 		targ7Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ8Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		detTitleSizer      = wx.BoxSizer(wx.HORIZONTAL)
+		det0Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		det1Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		det2Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		btnSizer        = wx.BoxSizer(wx.HORIZONTAL)
 
 		#Adding the items to the boxes
 		targTitleSizer.Add(targTitle, 0, wx.ALL, 5)
+		targ0Sizer.Add(targ0label, 0, wx.ALL, 5)
+		targ0Sizer.Add(self.targ0input, 1, wx.ALL|wx.EXPAND, 5)
 		targ1Sizer.Add(targ1label, 0, wx.ALL, 5)
 		targ1Sizer.Add(self.targ1input, 1, wx.ALL|wx.EXPAND, 5)
 		#targ1Sizer.Add(targ1unit, 0, wx.ALL, 5)
@@ -749,6 +769,8 @@ class SettingsWindow(wx.Frame):
 		targ8Sizer.Add(targ8label, 0, wx.ALL, 5)
 		targ8Sizer.Add(self.targ8input, 1, wx.ALL|wx.EXPAND, 5)
 		detTitleSizer.Add(detTitle, 0, wx.ALL, 5)
+		det0Sizer.Add(det0label, 0, wx.ALL, 5)
+		det0Sizer.Add(self.det0input, 1, wx.ALL|wx.EXPAND, 5)
 		det1Sizer.Add(det1label, 0, wx.ALL, 5)
 		det1Sizer.Add(self.det1input, 1, wx.ALL|wx.EXPAND, 5)
 		det2Sizer.Add(det2label, 0, wx.ALL, 5)
@@ -759,6 +781,7 @@ class SettingsWindow(wx.Frame):
 		#Adding the horizontal boxes to the vertical box
 		topSizer.Add(targTitleSizer, 0, wx.CENTER)
 		topSizer.Add(wx.StaticLine(self.panel,), 0, wx.ALL|wx.EXPAND, 5)
+		topSizer.Add(targ0Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ1Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ2Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ3Sizer, 0, wx.ALL|wx.EXPAND, 5)
@@ -770,6 +793,7 @@ class SettingsWindow(wx.Frame):
 		topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(detTitleSizer, 0, wx.CENTER)
 		topSizer.Add(wx.StaticLine(self.panel,), 0, wx.ALL|wx.EXPAND, 5)
+		topSizer.Add(det0Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(det1Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(det2Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
@@ -781,16 +805,18 @@ class SettingsWindow(wx.Frame):
 	def onOK(self, event):
 		# Do something
 		print("Saved new positions")
-		self.parent.detectorPositions[0]=float(self.det1input.GetValue())
-		self.parent.detectorPositions[1]=float(self.det2input.GetValue())
-		self.parent.targetPositions[0]=float(self.targ1input.GetValue())
-		self.parent.targetPositions[1]=float(self.targ2input.GetValue())
-		self.parent.targetPositions[2]=float(self.targ3input.GetValue())
-		self.parent.targetPositions[3]=float(self.targ4input.GetValue())
-		self.parent.targetPositions[4]=float(self.targ5input.GetValue())
-		self.parent.targetPositions[5]=float(self.targ6input.GetValue())
-		self.parent.targetPositions[6]=float(self.targ7input.GetValue())
-		self.parent.targetPositions[7]=float(self.targ8input.GetValue())
+		self.parent.detectorPositions[0]=float(self.det0input.GetValue())
+		self.parent.detectorPositions[1]=float(self.det1input.GetValue())
+		self.parent.detectorPositions[2]=float(self.det2input.GetValue())
+		self.parent.targetPositions[0]=float(self.targ0input.GetValue())
+		self.parent.targetPositions[1]=float(self.targ1input.GetValue())
+		self.parent.targetPositions[2]=float(self.targ2input.GetValue())
+		self.parent.targetPositions[3]=float(self.targ3input.GetValue())
+		self.parent.targetPositions[4]=float(self.targ4input.GetValue())
+		self.parent.targetPositions[5]=float(self.targ5input.GetValue())
+		self.parent.targetPositions[6]=float(self.targ6input.GetValue())
+		self.parent.targetPositions[7]=float(self.targ7input.GetValue())
+		self.parent.targetPositions[8]=float(self.targ8input.GetValue())
 
 		'''
 		#Write values to a hidden file
@@ -801,7 +827,7 @@ class SettingsWindow(wx.Frame):
 		'''
 		#Write values to a file
 		f=open("Positions.txt","w")
-		for i in range(8):
+		for i in range(9):
 			f.write(str(self.parent.targetPositions[i])+' '+str(self.parent.detectorPositions[i])+'\n')
 		self.Destroy()
 		self.Close()
