@@ -484,6 +484,8 @@ class ControlView(wx.Panel):
 		data=np.genfromtxt('Positions.txt')
 		self.detectorPositions=data[:,1]
 		self.targetPositions=data[:,0]
+		self.checkPositionsOn34()
+
 		'''
 		with open(os.path.expanduser('~.positions.txt'),'r') as f:
 			data=np.genfromtxt(f,skip_header=0)
@@ -498,8 +500,8 @@ class ControlView(wx.Panel):
 		#Event Handlers
 		self.Bind(EVT_DISCONNECT, self.changeViewDisconnect)
 		#Start Thread which checks continously the positions
-		#self.positionsChecker=CheckPositions(self,self.driveSystem)#
-		#self.positionsChecker.start()
+		self.positionsChecker=CheckPositions(self,self.driveSystem)#
+		self.positionsChecker.start()
 		
 	
 	def changeViewDisconnect(self,event):
@@ -615,9 +617,11 @@ class ControlView(wx.Panel):
 	def setDetectorPos(self):
 		newposition=self.detectorChoice.GetSelection()
 		if newposition==0:
-			print("Detector position change to position dE")
-		else:
 			print("Detector position change to position dE/dx")
+		elif newposition==1:
+			print("Detector position change to position Faraday cup")
+		elif newposition==2:
+			print("dE/dx detector and FC moves out of the way")
 		self.driveSystem.select_pos(4,self.detectorPositions[newposition]*200)
 	
 	def movePlus3B(self,event):
@@ -659,6 +663,20 @@ class ControlView(wx.Panel):
 	def resetAll(self,event):
 		self.driveSystem.resetAll()
 		self.aborted=False
+	def checkPositionsOn34(self):
+		self.driveSystem.check_encoder_pos_axis( 3 )
+		self.driveSystem.check_encoder_pos_axis( 4 )
+		pos3=self.driveSystem.positions[2]
+		pos4=self.driveSystem.positions[3]
+		for i in range(9):
+			if (pos3/200) < (self.targetPositions[i]+0.1) && (pos3/200) < (self.targetPositions[i]-0.1):
+				self.targetChoice.SetSelection(i)
+				break
+		for i in range(3):
+			if (pos4/200) < (self.dectectorPositions[i]+0.1) && (pos3/200) < (self.detectorPositions[i]-0.1):
+				self.detectorPositions.SetSelection(i)
+				break
+		
 		
 
 class DriveSystemGUI(wx.Frame):
