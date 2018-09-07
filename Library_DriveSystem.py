@@ -247,6 +247,9 @@ class DriveSystem():
 			#self.out_now.set( pattern.group(2) )
 			return pattern.group(1),pattern.group(2)
 		#self.check_encoder_pos()
+		else:
+			print("No response was sent")
+			return None,None
 
 	# check encoder positions
 	def check_encoder_pos( self ):
@@ -263,7 +266,7 @@ class DriveSystem():
 		outputline = self.serial_port.readline()
 		outputline.decode('utf8')
 		#outputline = "3oa\\r03:0\\r\\n"
-		print( outputline )
+		#print( outputline )
 		pattern = re.match(b'.*\\r(\d*):(-?\d*).*\\r\\n', outputline, re.IGNORECASE)
 		#print( pattern )
 		if pattern is not None:

@@ -20,14 +20,16 @@ frameHeight=740
 frameWidth=1000
 controlViewSize=200
 
-#Rectangles
-oneW=40*10
+#Rectangles W=width, H=heigth, sidespace=space between trolley border and axis 3/4
+oneW=45*10
 oneH=27*10
 twoW=35*10
 twoH=19.5*10
-arrayW=74.85*10
+arrayW=74.85*10 
 arrayH=5*10
 array_sidespace=2.07*10
+arrayEdge_H=arrayH
+arrayEdge_W=71.01 #distance from end of array to edge of Si (y+z in drawing)
 threeW=8*10
 threeH=13*10
 fourW=8*10
@@ -40,10 +42,10 @@ detector_sidespace=2*10
 magL=273*10
 
 #Home positions
-home1=magL/2-39.2*10+detector_sidespace-oneW-110932/200
-#home2=magL/2-145.2-arrayW-array_sidespace
-home2=-magL/2+115*10-74.85*10+35129/200
-homePositions=np.array([home1,home2,0,0])
+#home1=magL/2-39.2*10+detector_sidespace-oneW-110932/200
+#home2=-magL/2+115*10-74.85*10+35129/200
+home2=-magL/2+1150+35129/200 #at encoder position 35129, the end of the array was at a distance of 1.15m from the magnet wall.
+#homePositions=np.array([home1,home2,0,0])
 
 #FC and dE/dx detector 
 #Negative encoder position of the center
@@ -54,22 +56,14 @@ fcR=21
 dER=20
 
 #Colours
-#Basic matplot colour scheme
-'''
-oneC='y'
-twoC='r'
-threeC='g'
-fourC='b'
-arrayC='brown'
-'''
-#self elected colour scheme
 oneC='#0DE30B'#FDD11F'
 twoC='#FDD11F'#E0E0E0'#FFFFE0 #'#910BE3'
 threeC='#00A7FA'
 fourC='#910BE3'
 arrayC='#FD3F0D'
+arrayEdge_C=fourC
 
-#Frequency por the positons checking
+#Frequency for the positons checking
 UPDATE_TIME=1
 REAC_TIME=0.1
 
@@ -134,10 +128,12 @@ class CheckPositions(threading.Thread):
 		"""
 		while 1:
 			if self._driveSystem.port_open == True and self._parent.aborted==False:
+				
 				self._driveSystem.check_encoder_pos()
 				pos=self._driveSystem.positions
 				event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
 				wx.PostEvent(self._parent.matplotpanel, event)
+				
 				t=0
 				while t<UPDATE_TIME:
 					self.checkQ()
@@ -207,7 +203,7 @@ class DriveView:
 		self.ax.spines['top'].set_color('none')
 		self.ax.set_yticks([])
 		self.ax.spines['left'].set_color('none')
-		self.ax.spines['bottom'].set_position(('data',0))
+		self.ax.spines['bottom'].set_position(('data',-2.765))
 		majorLocator = MultipleLocator(500)
 		minorLocator = MultipleLocator(100)
 		self.ax.xaxis.set_major_locator(majorLocator)
@@ -221,17 +217,19 @@ class DriveView:
 		self.ax.add_patch(self.one)
 		self.two = plt.Rectangle((self.xmin+300, -twoH/2), twoW, twoH, fc=twoC)
 		self.ax.add_patch(self.two)
-		self.four = plt.Rectangle((self.xmax-600+oneW-detector_sidespace-fourW, -threeH/2), threeW, threeH, fc=fourC)
+		self.four = plt.Rectangle((self.xmax-600+oneW-detector_sidespace-fourW, -fourH/2), fourW, threeH, fc=fourC)
 		self.ax.add_patch(self.four)
 		self.three = plt.Rectangle((self.xmax-600+target_sidespace, -threeH/2), threeW, threeH, fc=threeC)
 		self.ax.add_patch(self.three)
 		self.array = plt.Rectangle((self.xmin+300+array_sidespace,-arrayH/2), arrayW, arrayH, fc=arrayC)
 		self.ax.add_patch(self.array)
+		self.arrayEdge = plt.Rectangle((self.array.get_x()+arrayW-arrayEdge_W,-arrayH/2), arrayEdge_W, arrayEdge_H, fc=arrayEdge_C)
+		self.ax.add_patch(self.arrayEdge)
 		#Adding FC and dE/dx detector
 		self.FC=plt.Circle(xy=(self.four.get_x()+0.5*fourW,fcH),radius=fcR,fc=twoC)
 		self.dE=plt.Circle(xy=(self.four.get_x()+0.5*fourW,dEH),radius=dER,fc=twoC)
-		#self.ax.add_patch(self.FC)
-		#self.ax.add_patch(self.dE)
+		self.ax.add_patch(self.FC)
+		self.ax.add_patch(self.dE)
 		
 		#Adding numbers to the rectangulars
 		self.placeNumbers()
@@ -256,21 +254,22 @@ class DriveView:
 		#Arrow who shows the distance
 		self.arrow=self.ax.annotate ('', (-100, 100), (100, 100), arrowprops={'arrowstyle':'<->'})
 		self.distanceArrow=self.ax.text(0,0,"")
-		self.drawArrow()
+		self.drawArrow(self.three.get_x()-self.two.get_x())
 
 		#Makes the space at the sides of the diagrams smaller
 		self.fig.tight_layout()
 
 	def get_figure(self):
 		return self.fig
-	def drawArrow(self):
+	def drawArrow(self,dis2_3):
 		self.arrow.remove()
 		self.distanceArrow.remove()
-		x1=self.three.get_x()+threeW
-		x2=self.array.get_x()+arrayW
+		x1=self.three.get_x()
+		x2=self.array.get_x()+arrayW-30.48-40.53
 		height=oneH/2+1*10
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
-		text="d = "+str((x1-x2))+" mm"
+		#text="d = "+str((x1-x2))+" mm"
+		text="d = "+str(dis2_3)+" mm"
 		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3*10,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
@@ -291,35 +290,50 @@ class DriveView:
 		self.four.set_y(newpos)
 		self.changeText(4)
 	def updatePositions(self,pos):
-		pos[0]=-1*pos[0]
-		pos[1]=-1*pos[1]
+		#pos[0]=-1*pos[0]
+		#pos[1]=-1*pos[1]
 		rand=2
 		dis=70*10
-		pos=pos*0.005
+		#pos=pos
+		coord2=home2-pos[1]/200 #edge of array
+		dis2_3=1037.18+(pos[1]-35115+(-101708-pos[0]))/200 #distance of 1037.18 at encoder positions 35115 and -101708
+		coord3=coord2+dis2_3 #left side of target
+		#coord4=magL/2-392.47+(-110932-pos[0])/200 #right side of FC, FC cup at distance 392.47mm at encoder position -110932 from trolley		
+		coord1=coord3-target_sidespace
+		coord4=coord1+oneW-detector_sidespace
 		self.position1.remove()
-		self.one.set_x(pos[0]+homePositions[0])
-		text="Position 1: "+str(pos[0])+" mm"
+		#self.one.set_x(pos[0]+homePositions[0])
+		self.one.set_x(coord1)
+		text="Position 1: "+str(-pos[0]*0.005)+" mm"
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
 		
 		self.position2.remove()
-		text="Position 2: "+str(pos[1])+" mm"
+		text="Position 2: "+str(-pos[1]*0.005)+" mm"
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=arrayC)
-		self.array.set_x(pos[1]+homePositions[1])
-		self.two.set_x(self.array.get_x()-array_sidespace)		
+		#self.array.set_x(pos[1]+homePositions[1])
+		self.array.set_x(coord2+40.53-717.5)
+		self.two.set_x(self.array.get_x()-array_sidespace)
+		self.arrayEdge.set_x(self.array.get_x()+arrayW-arrayEdge_W)
 
 		pos1=self.one.get_x()
 		self.position3.remove()
-		text="Position 3: "+str(pos[2])+" mm"
+		text="Position 3: "+str(pos[2]*0.005)+" mm"
 		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
-		self.three.set_y(pos[2]-threeH/2)
-		self.three.set_x(pos1+detector_sidespace)
+		self.three.set_y(pos[2]*0.005-threeH/2)
+		#self.three.set_x(pos1+detector_sidespace)
+		self.three.set_x(coord3)
 		
 		self.position4.remove()
-		text="Position 4: "+str(pos[3])+" mm"
+		text="Position 4: "+str(pos[3]*0.005)+" mm"
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
-		self.four.set_y(pos[3]-fourH/2)
-		self.four.set_x(pos1+oneW-target_sidespace-threeW)
-		self.drawArrow()
+		self.four.set_y(pos[3]*0.005-fourH/2)
+		#self.four.set_x(pos1+oneW-target_sidespace-threeW)
+		self.four.set_x(coord4-fourW)
+		self.FC.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+fcH
+		self.dE.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+dEH
+		
+		
+		self.drawArrow(dis2_3)
 		self.number1.remove()
 		self.number2.remove()
 		self.number3.remove()
@@ -458,7 +472,7 @@ class ControlView(wx.Panel):
 		#Target Position Selection
 		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
 		#alpha=r'$\alpha_i$'
-		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+120,disy-3-40), size=(50,-1),choices=["alpha","1","2","3","4","5","6","7","8"])
+		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+110,disy-3-40), size=(80,-1),choices=["alpha","1","2","3","4","5","6","7","8"])
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
 		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
 		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
@@ -527,8 +541,9 @@ class ControlView(wx.Panel):
 		command=cmd
 		print("Send command "+command.decode())
 		ax,answer=self.driveSystem.executeCommand(command)
-		self.currentAx.SetValue(ax)
-		self.commandResponse.SetValue(answer)
+		if ax!=None:
+			self.currentAx.SetValue(ax)
+			self.commandResponse.SetValue(answer)
 
 	def connectB(self,event):
 		print("Connect")
@@ -589,7 +604,7 @@ class ControlView(wx.Panel):
 		element=Element('M',1)
 		self.q.put(element)
 	def move1(self):
-		moveDis = float(self.move1Insert.GetValue())
+		moveDis = -1*float(self.move1Insert.GetValue())
 		print("The motor of axis 1 is defect")
 		#if the motor works again:
 		#self.driveSystem.move_rel(1,int(moveDis*200))
@@ -598,7 +613,7 @@ class ControlView(wx.Panel):
 		element=Element('M',2)
 		self.q.put(element)
 	def move2(self):
-		moveDis = float(self.move2Insert.GetValue())
+		moveDis = -1*float(self.move2Insert.GetValue())
 		print("Move 2")
 		#assume that moveDis is in mm
 		self.driveSystem.move_rel(2,int(moveDis*200))
@@ -669,12 +684,12 @@ class ControlView(wx.Panel):
 		pos3=self.driveSystem.positions[2]
 		pos4=self.driveSystem.positions[3]
 		for i in range(9):
-			if (pos3/200) < (self.targetPositions[i]+0.1) && (pos3/200) < (self.targetPositions[i]-0.1):
+			if (pos3/200) < (self.targetPositions[i]+0.1) and (pos3/200) > (self.targetPositions[i]-0.1):
 				self.targetChoice.SetSelection(i)
 				break
 		for i in range(3):
-			if (pos4/200) < (self.dectectorPositions[i]+0.1) && (pos3/200) < (self.detectorPositions[i]-0.1):
-				self.detectorPositions.SetSelection(i)
+			if (pos4/200) < (self.detectorPositions[i]+0.1) and (pos4/200) > (self.detectorPositions[i]-0.1):
+				self.detectorChoice.SetSelection(i)
 				break
 		
 		
