@@ -131,6 +131,10 @@ class CheckPositions(threading.Thread):
 				
 				self._driveSystem.check_encoder_pos()
 				pos=self._driveSystem.positions
+				if self._parent.printRequest==True: #Print positions when print Button was pressed
+					output="Axis 1: "+str(pos[0])+"\nAxis 2: "+str(pos[1])+"\nAxis 3: "+str(pos[2])+"\nAxis 4: "+str(pos[3])
+					print(output)
+					self._parent.printRequest=False
 				event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
 				wx.PostEvent(self._parent.matplotpanel, event)
 				
@@ -292,7 +296,7 @@ class DriveView:
 	def updatePositions(self,pos):
 		#pos[0]=-1*pos[0]
 		#pos[1]=-1*pos[1]
-		rand=2
+		rand=6
 		dis=70*10
 		#pos=pos
 		coord2=home2-pos[1]/200 #edge of array
@@ -413,6 +417,12 @@ class ControlView(wx.Panel):
 		self.resetAllButton = wx.Button(self, wx.ID_ANY, "RESET", (writeSize+15+200, a)) 
 		self.resetAllButton.Bind(wx.EVT_BUTTON, self.abortAll)
 
+		#Print Encoder positions
+		#self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+300, a))
+		self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+60, 78)) 
+		self.printPos.Bind(wx.EVT_BUTTON, self.printPosB)
+		self.printRequest=False
+
 		#Connect/Disconnect Buttons
 		space=30
 		offset=100
@@ -530,6 +540,9 @@ class ControlView(wx.Panel):
 			self.disconnectButton.Enable(False)
 			self.disconnectButton.SetBackgroundColour("grey") 
 			self.connectButton.Enable(True)
+
+	def printPosB(self,event):
+		self.printRequest=True
 	
 	def sendingCommandB(self,event):
 		command = self.writeCommand.GetValue() + '\r'
