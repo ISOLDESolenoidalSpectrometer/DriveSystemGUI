@@ -301,7 +301,7 @@ class DriveView:
 		#pos=pos
 		coord2=home2-pos[1]/200 #edge of array
 		dis2_3=1037.18+(pos[1]-35115+(-101708-pos[0]))/200 #distance of 1037.18 at encoder positions 35115 and -101708
-		coord3=coord2+dis2_3 #left side of target
+		coord3=coord2+dis2_3-arrayEdge_W #left side of target
 		#coord4=magL/2-392.47+(-110932-pos[0])/200 #right side of FC, FC cup at distance 392.47mm at encoder position -110932 from trolley		
 		coord1=coord3-target_sidespace
 		coord4=coord1+oneW-detector_sidespace
