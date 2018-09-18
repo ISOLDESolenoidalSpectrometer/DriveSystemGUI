@@ -687,7 +687,7 @@ class ControlView(wx.Panel):
 
 	def abortAll(self,event):
 		self.driveSystem.abortAll()
-		self.aborted=True
+		self.aborted=False
 	def resetAll(self,event):
 		self.driveSystem.resetAll()
 		self.aborted=False
