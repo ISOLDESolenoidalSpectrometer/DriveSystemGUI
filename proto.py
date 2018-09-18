@@ -16,7 +16,7 @@ import os
 
 #----------Constants-------------------
 #Frame size constants
-frameHeight=740
+frameHeight=780
 frameWidth=1000
 controlViewSize=200
 
@@ -415,7 +415,7 @@ class ControlView(wx.Panel):
 		self.abortAllButton.Bind(wx.EVT_BUTTON, self.abortAll)
 		
 		self.resetAllButton = wx.Button(self, wx.ID_ANY, "RESET", (writeSize+15+200, a)) 
-		self.resetAllButton.Bind(wx.EVT_BUTTON, self.abortAll)
+		self.resetAllButton.Bind(wx.EVT_BUTTON, self.resetAll)
 
 		#Print Encoder positions
 		#self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+300, a))
