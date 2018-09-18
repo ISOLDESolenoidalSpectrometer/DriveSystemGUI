@@ -118,7 +118,7 @@ class DriveSystem():
 	def abortAll(self):
 		print( "Abort command on all axes")
 		for i in range(4):
-			axis=i=1
+			axis=i+1
 			in_cmd = ( str(axis) + 'ab'+ '\r' ).encode()
 			print( in_cmd )
 			self.serial_port.write( in_cmd )
@@ -128,7 +128,7 @@ class DriveSystem():
 	def resetAll(self):
 		print( "Reset all axes")
 		for i in range(4):
-			axis=i=1
+			axis=i+1
 			in_cmd = ( str(axis) + 'rs'+ '\r' ).encode()
 			print( in_cmd )
 			self.serial_port.write( in_cmd )
