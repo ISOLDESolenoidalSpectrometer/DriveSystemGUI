@@ -246,10 +246,19 @@ class DriveSystem():
 			#self.axis_now.set( pattern.group(1) )
 			#self.out_now.set( pattern.group(2) )
 			return pattern.group(1),pattern.group(2)
-		#self.check_encoder_pos()
+
 		else:
-			print("No response was sent")
-			return None,None
+			pattern = re.match(b'.*\\r(\d*)Mclennan(.*)', outputline, re.IGNORECASE)
+			if pattern is not None:
+				outputline = self.serial_port.readline()
+				endline = ('').encode()
+				while outputline != endline:
+					print( outputline )
+					outputline = self.serial_port.readline()
+				return pattern.group(1),'info in terminal'
+			else:
+				print("No response was sent")
+				return None,None
 
 	# check encoder positions
 	def check_encoder_pos( self ):
