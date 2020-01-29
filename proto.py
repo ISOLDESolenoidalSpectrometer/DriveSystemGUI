@@ -25,7 +25,7 @@ oneW=45*10
 oneH=27*10
 twoW=35*10
 twoH=19.5*10
-arrayW=74.85*10 
+arrayW=74.85*10
 arrayH=5*10
 array_sidespace=2.07*10
 arrayEdge_H=arrayH
@@ -47,7 +47,7 @@ magL=273*10
 home2=-magL/2+1150+35129/200 #at encoder position 35129, the end of the array was at a distance of 1.15m from the magnet wall.
 #homePositions=np.array([home1,home2,0,0])
 
-#FC and dE/dx detector 
+#FC and dE/dx detector
 #Negative encoder position of the center
 fcH=-11497.0/200
 dEH=12603.0/200
@@ -85,11 +85,11 @@ class PosUpdateEvent(wx.PyCommandEvent):
             """Creates the event object"""
             wx.PyCommandEvent.__init__(self, etype, eid)
             self._value = value
-    
+
        def GetValue(self):
            """Returns the value from the event.
            @return: the value of this event
-   
+
            """
            return self._value
 
@@ -101,11 +101,11 @@ class DisConnectEvent(wx.PyCommandEvent):
             """Creates the event object"""
             wx.PyCommandEvent.__init__(self, etype, eid)
             self._value = value
-    
+
        def GetValue(self):
            """Returns the value from the event.
            @return: the value of this event
-   
+
            """
            return self._value
 
@@ -120,15 +120,15 @@ class CheckPositions(threading.Thread):
 		threading.Thread.__init__(self)
 		self._parent = controlView
 		self._driveSystem=driveSystem
-		#self._updateCounter=0	#will increase after every time.sleep until it's equal to the UPDATE_TIME                          
-   
+		#self._updateCounter=0	#will increase after every time.sleep until it's equal to the UPDATE_TIME
+
 	def run(self):
 		"""Overrides Thread.run. Don't call this directly its called internally
 		when you call Thread.start().
 		"""
 		while 1:
 			if self._driveSystem.port_open == True and self._parent.aborted==False:
-				
+
 				self._driveSystem.check_encoder_pos()
 				pos=self._driveSystem.positions
 				if self._parent.printRequest==True: #Print positions when print Button was pressed
@@ -137,7 +137,7 @@ class CheckPositions(threading.Thread):
 					self._parent.printRequest=False
 				event = PosUpdateEvent(myEVT_POSUPDATE, -1, pos)
 				wx.PostEvent(self._parent.matplotpanel, event)
-				
+
 				t=0
 				while t<UPDATE_TIME:
 					self.checkQ()
@@ -145,7 +145,7 @@ class CheckPositions(threading.Thread):
 					t=t+REAC_TIME
 			else:
 				time.sleep(1)
-		
+
 	def checkQ(self):
 		while self._parent.q.empty()==False:
 			item = self._parent.q.get()
@@ -156,7 +156,7 @@ class CheckPositions(threading.Thread):
 			self._parent.quit()
 		elif element.mode=='S':
 			self._parent.sendingCommand(element.command)
-		
+
 		elif element.mode=='M':
 			if element.axis==1:
 				self._parent.move1()
@@ -169,7 +169,7 @@ class CheckPositions(threading.Thread):
 		elif element.mode=='M+-':
 			steps=element.command
 			self._parent.movePlusMinus(element.axis,steps)
-			
+
 		elif element.mode=='H':
 			if element.axis==1:
 				self._parent.home1()
@@ -194,13 +194,13 @@ class DriveView:
 		self.fig = plt.figure()
 		self.fig.set_dpi(100)
 		self.fig.set_size_inches(10, 5.3)
-		
+
 		#Setting properties of the axes
 		self.ymin=-40*10
 		self.ymax=40*10
 		self.xmin=-magL*0.5
 		self.xmax=magL*0.5
-		
+
 		#Ax design
 		self.ax = plt.axes(xlim=(self.xmin, self.xmax), ylim=(self.ymin,self.ymax))
 		self.ax.spines['right'].set_color('none')
@@ -215,7 +215,7 @@ class DriveView:
 		self.ax.xaxis.set_minor_locator(minorLocator)
 		self.ax.set_xlabel("[mm]")
 		#ax.grid()
-		
+
 		#Adding the four rectangles + array which belongs to ax 2
 		self.one = plt.Rectangle((self.xmax-600, -oneH/2), oneW, oneH, fc=oneC)
 		self.ax.add_patch(self.one)
@@ -234,7 +234,7 @@ class DriveView:
 		self.dE=plt.Circle(xy=(self.four.get_x()+0.5*fourW,dEH),radius=dER,fc=twoC)
 		self.ax.add_patch(self.FC)
 		self.ax.add_patch(self.dE)
-		
+
 		#Adding numbers to the rectangulars
 		self.placeNumbers()
 
@@ -302,7 +302,7 @@ class DriveView:
 		coord2=home2-pos[1]/200 #edge of array
 		dis2_3=1037.18+(pos[1]-35115+(-101708-pos[0]))/200 #distance of 1037.18 at encoder positions 35115 and -101708
 		coord3=coord2+dis2_3-arrayEdge_W #left side of target
-		#coord4=magL/2-392.47+(-110932-pos[0])/200 #right side of FC, FC cup at distance 392.47mm at encoder position -110932 from trolley		
+		#coord4=magL/2-392.47+(-110932-pos[0])/200 #right side of FC, FC cup at distance 392.47mm at encoder position -110932 from trolley
 		coord1=coord3-target_sidespace
 		coord4=coord1+oneW-detector_sidespace
 		self.position1.remove()
@@ -310,7 +310,7 @@ class DriveView:
 		self.one.set_x(coord1)
 		text="Position 1: "+str(-pos[0]*0.005)+" mm"
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
-		
+
 		self.position2.remove()
 		text="Position 2: "+str(-pos[1]*0.005)+" mm"
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=arrayC)
@@ -326,7 +326,7 @@ class DriveView:
 		self.three.set_y(pos[2]*0.005-threeH/2)
 		#self.three.set_x(pos1+detector_sidespace)
 		self.three.set_x(coord3)
-		
+
 		self.position4.remove()
 		text="Position 4: "+str(pos[3]*0.005)+" mm"
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
@@ -335,8 +335,8 @@ class DriveView:
 		self.four.set_x(coord4-fourW)
 		self.FC.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+fcH
 		self.dE.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+dEH
-		
-		
+
+
 		self.drawArrow(dis2_3)
 		self.number1.remove()
 		self.number2.remove()
@@ -344,14 +344,14 @@ class DriveView:
 		self.number4.remove()
 		self.placeNumbers()
 		self.matplotpanel.canvas.draw()
-	
+
 	def placeNumbers(self):
 		nSize=18
 		self.number1=self.ax.text(self.one.get_x()+oneW/2,self.one.get_y()+0.75*oneH,"1",fontsize=nSize,horizontalalignment='center')
 		self.number2=self.ax.text(self.two.get_x()+twoW/2,self.two.get_y()+0.75*twoH,"2",fontsize=nSize,horizontalalignment='center')
 		self.number3=self.ax.text(self.three.get_x()+threeW/2,self.three.get_y()+0.7*threeH,"3",fontsize=nSize,horizontalalignment='center')
 		self.number4=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()+0.7*fourH,"4",fontsize=nSize,horizontalalignment='center')
-		
+
 
 class MatplotPanel(wx.Panel):
 	def __init__(self, parent):
@@ -363,7 +363,7 @@ class MatplotPanel(wx.Panel):
 		self.Bind(EVT_POSUPDATE, self.updatePositions)
 
 	def updatePositions(self,event):
-		pos=event.GetValue()		
+		pos=event.GetValue()
 		self.driveView.updatePositions(pos)
 	def move1(self,moveDis):
 		self.driveView.move1(moveDis)
@@ -377,16 +377,16 @@ class MatplotPanel(wx.Panel):
 	def move4(self,newpos):
 		self.driveView.move4(newpos)
 		self.canvas.draw()
-		
 
-class ControlView(wx.Panel):	
+
+class ControlView(wx.Panel):
 	"""
 	Class that displays the upper part of the GUI with the buttons
 	"""
-   
+
 	def __init__(self,parent,matplotpanel,frame):
 		self.driveSystem=Library_DriveSystem.DriveSystem()
-		
+
 		self.frame=frame
 		sizeX=100
 		sizeY=100
@@ -411,15 +411,15 @@ class ControlView(wx.Panel):
 		#Abort/Reset Buttons
 		self.aborted=False
 		self.abortAllButton = wx.Button(self, wx.ID_ANY, "ABORT", (writeSize+15+100, a))
-		self.abortAllButton.SetBackgroundColour("#FD3F0D") 
+		self.abortAllButton.SetBackgroundColour("#FD3F0D")
 		self.abortAllButton.Bind(wx.EVT_BUTTON, self.abortAll)
-		
-		self.resetAllButton = wx.Button(self, wx.ID_ANY, "RESET", (writeSize+15+200, a)) 
+
+		self.resetAllButton = wx.Button(self, wx.ID_ANY, "RESET", (writeSize+15+200, a))
 		self.resetAllButton.Bind(wx.EVT_BUTTON, self.resetAll)
 
 		#Print Encoder positions
 		#self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+300, a))
-		self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+60, 78)) 
+		self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+60, 78))
 		self.printPos.Bind(wx.EVT_BUTTON, self.printPosB)
 		self.printRequest=False
 
@@ -431,11 +431,11 @@ class ControlView(wx.Panel):
 		sizey=(sizeY+offset)/5
 		self.connectButton = wx.Button(self, wx.ID_ANY, "CONNECT", (frameWidth-buttonW,0),(buttonW,sizey))
 		self.connectButton.Bind(wx.EVT_BUTTON, self.connectB)
-		 
+
 
 		self.disconnectButton = wx.Button(self, wx.ID_ANY, "DISCONNECT", (frameWidth-buttonW,sizey),(buttonW,sizey))
 		self.disconnectButton.Bind(wx.EVT_BUTTON, self.disconnectB)
-		
+
 
 		self.quitButton = wx.Button(self, wx.ID_ANY, "QUIT", (frameWidth-buttonW,sizey*4),(buttonW,sizey))
 		self.quitButton.Bind(wx.EVT_BUTTON, self.quitB)
@@ -450,12 +450,12 @@ class ControlView(wx.Panel):
 		else:
 			self.connectButton.SetBackgroundColour("#7FFF00")#'#0DE30B'
 			self.disconnectButton.Enable(False)
-		
+
 		#Settings
 		self.settingsButton = wx.Button(self, wx.ID_ANY, "Settings", (frameWidth-buttonW,sizey*2),(buttonW,sizey))
 		self.settingsButton.Bind(wx.EVT_BUTTON, self.settingConstants)
 
-		#Home Buttons		
+		#Home Buttons
 		h=-70
 		dx=(frameWidth-buttonW)/4
 		dy=29
@@ -469,7 +469,7 @@ class ControlView(wx.Panel):
 		self.Home4Button = wx.Button(self, wx.ID_ANY, "DATUM 4", (3*dis,sizeY-h),(dx,dy))
 		self.Home4Button.Bind(wx.EVT_BUTTON, self.home4B)
 
-		
+
 		disy=sizeY+30
 		#Move 1 and 2
 		self.move1Insert = wx.TextCtrl(self, wx.ID_ANY, "", (5,disy))
@@ -493,7 +493,7 @@ class ControlView(wx.Panel):
 
 		#Detector Option
 		self.detectorList=["dE/dx","FC","Center"]
-		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 3, wx.RA_SPECIFY_COLS)		
+		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 3, wx.RA_SPECIFY_COLS)
 		self.detectorChoice.SetSelection(2)
 		self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
 		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(55, -1))
@@ -502,6 +502,19 @@ class ControlView(wx.Panel):
 		self.moveMinus4Button = wx.Button(self, wx.ID_ANY, "-", (3*dis,disy),size=(40, -1))
 		self.movePlus4Button.Bind(wx.EVT_BUTTON, self.movePlus4B)
 		self.moveMinus4Button.Bind(wx.EVT_BUTTON, self.moveMinus4B)
+
+		# Check that the positions file exists
+		try:
+			with open('Positions.txt') as f:
+				print('Positions file exists, values:')
+				print(f.readlines())
+				f.close()
+		except FileNotFoundError:
+				print('Positions file does not exists, creating file.')
+				f=open("Positions.txt","w")
+				for i in range(9):
+					f.write('0 0\n')
+				f.close()
 
 
 		#Positions Constants
@@ -526,24 +539,24 @@ class ControlView(wx.Panel):
 		#Start Thread which checks continously the positions
 		self.positionsChecker=CheckPositions(self,self.driveSystem)#
 		self.positionsChecker.start()
-		
-	
+
+
 	def changeViewDisconnect(self,event):
 		value=event.GetValue()
 		if value==1:
-			self.disconnectButton.SetBackgroundColour("#EE4000") 
+			self.disconnectButton.SetBackgroundColour("#EE4000")
 			self.connectButton.Enable(False)
-			self.connectButton.SetBackgroundColour("grey") 
+			self.connectButton.SetBackgroundColour("grey")
 			self.disconnectButton.Enable(True)
 		else:
 			self.connectButton.SetBackgroundColour("#7FFF00")#'#0DE30B'
 			self.disconnectButton.Enable(False)
-			self.disconnectButton.SetBackgroundColour("grey") 
+			self.disconnectButton.SetBackgroundColour("grey")
 			self.connectButton.Enable(True)
 
 	def printPosB(self,event):
 		self.printRequest=True
-	
+
 	def sendingCommandB(self,event):
 		command = self.writeCommand.GetValue() + '\r'
 		command = bytes( command.encode('ascii') )
@@ -563,7 +576,7 @@ class ControlView(wx.Panel):
 		self.driveSystem.connect_to_port()
 		event = DisConnectEvent(myEVT_DISCONNECT, -1, 1)
 		wx.PostEvent(self, event)
-	
+
 	def disconnectB(self,event):
 		element=Element('D')
 		self.q.put(element)
@@ -578,13 +591,13 @@ class ControlView(wx.Panel):
 			self.q.put(element)
 		else:
 			self.quit()
-		
+
 	def quit(self):
 		print("Quit")
 		self.frame.Destroy()
 		self.frame.closeProgram()
 		exit()
-	
+
 	def home1B(self,event):
 		element=Element('H',1)
 		self.q.put(element)
@@ -598,7 +611,7 @@ class ControlView(wx.Panel):
 	def home2(self):
 		print("Home 2")
 		self.driveSystem.datum_search(2)
-		
+
 	def home3B(self,event):
 		element=Element('H',3)
 		self.q.put(element)
@@ -612,7 +625,7 @@ class ControlView(wx.Panel):
 	def home4(self):
 		print("Home 4")
 		self.driveSystem.datum_search(4)
-	
+
 	def move1B(self,event):
 		element=Element('M',1)
 		self.q.put(element)
@@ -621,7 +634,7 @@ class ControlView(wx.Panel):
 		print("The motor of axis 1 is defect")
 		#if the motor works again:
 		#self.driveSystem.move_rel(1,int(moveDis*200))
-	
+
 	def move2B(self,event):
 		element=Element('M',2)
 		self.q.put(element)
@@ -651,33 +664,33 @@ class ControlView(wx.Panel):
 		elif newposition==2:
 			print("dE/dx detector and FC moves out of the way")
 		self.driveSystem.select_pos(4,self.detectorPositions[newposition]*200)
-	
+
 	def movePlus3B(self,event):
 		disMM = float(self.move3Insert.GetValue())
 		#Multiply distance in mm with 200 to obtain number of steps
 		element=Element('M+-',3,int(disMM*200))
 		self.q.put(element)
-	
+
 	def moveMinus3B(self,event):
 		disMM = -1*float(self.move3Insert.GetValue())
 		element=Element('M+-',3,int(disMM*200))
 		self.q.put(element)
 
-	
+
 	def movePlus4B(self,event):
 		disMM = float(self.move4Insert.GetValue())
 		element=Element('M+-',4,int(disMM*200))
 		self.q.put(element)
-	
+
 	def moveMinus4B(self,event):
 		disMM = -1*float(self.move4Insert.GetValue())
 		element=Element('M+-',4,int(disMM*200))
 		self.q.put(element)
-	
+
 
 	def movePlusMinus(self,axis,steps):
 		self.driveSystem.move_rel(axis,steps)
-	
+
 	def settingConstants(self,event):
 		secondwindow=SettingsWindow(self, "Setting Positions")
 		secondwindow.Show()
@@ -704,8 +717,8 @@ class ControlView(wx.Panel):
 			if (pos4/200) < (self.detectorPositions[i]+0.1) and (pos4/200) > (self.detectorPositions[i]-0.1):
 				self.detectorChoice.SetSelection(i)
 				break
-		
-		
+
+
 
 class DriveSystemGUI(wx.Frame):
 	def __init__(self, parent, mytitle):
@@ -715,13 +728,13 @@ class DriveSystemGUI(wx.Frame):
 
 	def InitUI(self):
 		self.split_win = wx.SplitterWindow(self)
-		self.bottom_split = MatplotPanel(self.split_win) 
+		self.bottom_split = MatplotPanel(self.split_win)
 		self.top_split = ControlView(self.split_win,self.bottom_split,self)
 		self.split_win.SplitHorizontally(self.top_split, self.bottom_split, controlViewSize)
 	def closeProgram(self):
 		self.Destroy()
 		self.Close()
-		
+
 
 class SettingsWindow(wx.Frame):
 	def __init__(self, parent, mytitle):
@@ -768,14 +781,14 @@ class SettingsWindow(wx.Frame):
 		det2label = wx.StaticText(self.panel, wx.ID_ANY, 'Center')
 		pos2=str(self.parent.detectorPositions[2])
 		self.det2input = wx.TextCtrl(self.panel, wx.ID_ANY, pos2)
-		
+
 		#Ok and Cancel Buttons
 		okBtn = wx.Button(self.panel, wx.ID_ANY, 'OK')
 		cancelBtn = wx.Button(self.panel, wx.ID_ANY, 'Cancel')
 		self.Bind(wx.EVT_BUTTON, self.onOK, okBtn)
 		self.Bind(wx.EVT_BUTTON, self.onCancel, cancelBtn)
 
-		#Defining the boxes		
+		#Defining the boxes
 		topSizer        = wx.BoxSizer(wx.VERTICAL)
 		targTitleSizer      = wx.BoxSizer(wx.HORIZONTAL)
 		targ0Sizer   = wx.BoxSizer(wx.HORIZONTAL)
@@ -875,9 +888,10 @@ class SettingsWindow(wx.Frame):
 		f=open("Positions.txt","w")
 		for i in range(9):
 			f.write(str(self.parent.targetPositions[i])+' '+str(self.parent.detectorPositions[i])+'\n')
+		f.close()
 		self.Destroy()
 		self.Close()
-	
+
 	def onCancel(self, event):
 		self.Close()
 		print("No changes in positions were made")
@@ -909,7 +923,7 @@ class TestPanel(scrolled.ScrolledPanel):
 
 		scrolled.ScrolledPanel.__init__(self, parent, -1)
 		self.parent=parent
-	
+
 		vbox = wx.BoxSizer(wx.VERTICAL)
 		text1="This is a GUI for controlling the Drive System.\nThe Drive System contains four axes:\n\nAxis 1: Trolley\nAxis 2: Array\nAxis 3: Target\nAxis 4: Faraday cup and dE/dx detector\n\nwhich are represented by the four colored\nrectangulars.\nThe coordinate system of the GUI is in millimeters,\nand is centered around the middle of the magnet.\nThis means, that the limits are +-2730/2 mm = +-1365 mm.\nThe GUI allows to move the objects on the axes in the unit\nof millimeters by inserting the desired value and clicking on\nthe corresponding button (Move1, Move2 ,+/-).\nThe smallest step is 0.005 mm = 1/200 mm. The positions on\nthe axes are checked and updated in the GUI every second."
 		text2="In the case of axis 3 and axis 4, it is possible to choose\nbetween eight target positions and two detector positions\nrespectiveley. The corresponding encoder positions can be\nchanged via the window 'Settings'. By clicking on the 'Ok'\nButton, the new positions will be saved.\nThe arrow indicates the distance between the end of\nthe array and the target.\n\nOther actions the GUI offers are:\n- Abort command on all axes\n- Reset all axes\n- Connect/Disconnect to the port\n- Quit: this will close the GUI\n- Datum search: The datum/zero position on the axis will be\nsearched. When the datum position is found,\ncheck with the command OD if the datum position is\nequal to zero. If not use DA-x with x being the datum position\nto set it to zero."
@@ -925,18 +939,18 @@ class TestPanel(scrolled.ScrolledPanel):
 		desc3.SetForegroundColour("Blue")
 		closeButton = wx.Button(self, wx.ID_ANY, 'Close')
 		self.Bind(wx.EVT_BUTTON, self.onClose, closeButton)
-	
-		
+
+
 		vbox.Add(desc1, 0, wx.ALIGN_LEFT | wx.ALL, 5)
 		vbox.Add(desc2, 0, wx.ALIGN_LEFT | wx.ALL, 5)
 		vbox.Add(desc3, 0, wx.ALIGN_LEFT | wx.ALL, 5)
 		vbox.Add(wx.StaticLine(self, -1, size=(1024, -1)), 0, wx.ALL, 5)
 		vbox.Add(closeButton)
 		vbox.Add((20, 20))
-		
+
 		self.SetSizer(vbox)
 		self.SetupScrolling()
-	
+
 	def onClose(self, event):
 		self.parent.onClose()
 
@@ -944,7 +958,7 @@ class TestPanel(scrolled.ScrolledPanel):
 
 
 
-def main():		
+def main():
 	app = wx.App()
 	gui = DriveSystemGUI(None, "Drive System")
 	gui.Show()
