@@ -46,7 +46,8 @@ detector_sidespace=2*10
 magL=2732
 
 #Home positions
-recoilpos = magL/2-109 # distance of recoil detector from back of the magnet (to be checked)
+#recoilpos = magL/2-109 # distance of silicon recoil detector from back of the magnet 
+recoilpos = magL/2-48 # distance of gas recoil detector blocker from back of the magnet 
 #home1=magL/2-39.2*10+detector_sidespace-oneW-110932/200
 #home2=-magL/2+115*10-74.85*10+35129/200
 #home2=-magL/2+1150+35129/200 #at encoder position 35129, the end of the array was at a distance of 1.15m from the magnet wall.
@@ -59,12 +60,8 @@ fcR=21
 dER=20
 
 #encoder position of the center
-#dEH=11672.0/200   # 2018
-#fcH=-12587.0/200  # 2018
-#dEH=7623.0/200 + dER  # 2021 - 30Mg
-#fcH=-7978.0/200 - fcR  # 2021 - 30Mg
-fcH=11672.0/200 - fcR  # 2021 - 212Rn
-dEH=-12587.0/200 + dER  # 2021 - 30Mg
+dEH=11672.0/200   # just for the GUI
+fcH=-12587.0/200  # no need to change
 
 
 
@@ -255,10 +252,10 @@ class DriveView:
 		rand=2*10
 		dis=70*10
 		plt.rcParams.update({'font.size': 12})
-		self.position1=self.ax.text(self.xmin,self.ymax-rand,"Position 1: "+"{:.2f}".format(self.one.get_x())+" mm",color=oneC)
-		self.position2=self.ax.text(self.xmin+dis-5,self.ymax-rand,"Position 2: "+"{:.2f}".format(self.two.get_x())+" mm",color=arrayC)
-		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,"Position 3: "+"{:.2f}".format(0)+" mm",color=threeC)
-		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+"{:.2f}".format(0)+" mm",color=fourC)
+		self.position1=self.ax.text(self.xmin,self.ymax-rand,"Position 1: "+"{:.3f}".format(self.one.get_x())+" mm",color=oneC)
+		self.position2=self.ax.text(self.xmin+dis-5,self.ymax-rand,"Position 2: "+"{:.3f}".format(self.two.get_x())+" mm",color=arrayC)
+		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,"Position 3: "+"{:.3f}".format(0)+" mm",color=threeC)
+		self.position4=self.ax.text(self.xmin+3*dis+5,self.ymax-rand,"Position 4: "+"{:.3f}".format(0)+" mm",color=fourC)
 
 		#Beam Arrow
 		self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20*10), (self.xmin+30*10, self.ymax-20*10),arrowprops={'arrowstyle':'<-'} )
@@ -292,7 +289,7 @@ class DriveView:
 		height=oneH/2+1*10
 		self.arrow=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
 		#text="d = "+str((x1-x2))+" mm"
-		text="d = "+"{:.2f}".format(dis2_3)+" mm"
+		text="d = "+"{:.3f}".format(dis2_3)+" mm"
 		self.distanceArrow=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3*10,text)
 	def drawArrow2(self,recoil_target_dist):
 		self.arrow2.remove()
@@ -302,7 +299,7 @@ class DriveView:
 		height=oneH/2+1*10
 		self.arrow2=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
 		#text="d = "+str((x1-x2))+" mm"
-		text="d = "+"{:.2f}".format(recoil_target_dist)+" mm"
+		text="d = "+"{:.3f}".format(recoil_target_dist)+" mm"
 		self.distanceArrow2=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3*10,text)
 	def move1(self,moveDis):
 		xcurr=self.one.get_x()
@@ -357,11 +354,11 @@ class DriveView:
 		self.position1.remove()
 		#self.one.set_x(pos[0]+homePositions[0])
 		self.one.set_x(coord1)
-		text="Position 1: "+"{:.2f}".format(-pos[0]*0.005)+" mm"
+		text="Position 1: "+"{:.3f}".format(-pos[0]*0.005)+" mm"
 		self.position1=self.ax.text(self.xmin,self.ymax-rand,text,color=oneC)
 
 		self.position2.remove()
-		text="Position 2: "+"{:.2f}".format(-pos[1]*0.005)+" mm"
+		text="Position 2: "+"{:.3f}".format(-pos[1]*0.005)+" mm"
 		self.position2=self.ax.text(self.xmin+dis,self.ymax-rand,text,color=arrayC)
 		#self.array.set_x(pos[1]+homePositions[1])
 		self.array.set_x(coord2)
@@ -370,14 +367,14 @@ class DriveView:
 
 		pos1=self.one.get_x()
 		self.position3.remove()
-		text="Position 3: "+"{:.2f}".format(pos[2]*0.005)+" mm"
+		text="Position 3: "+"{:.3f}".format(pos[2]*0.005)+" mm"
 		self.position3=self.ax.text(self.xmin+2*dis,self.ymax-rand,text,color=threeC)
 		self.three.set_y(pos[2]*0.005-threeH/2)
 		#self.three.set_x(pos1+detector_sidespace)
 		self.three.set_x(coord3)
 
 		self.position4.remove()
-		text="Position 4: "+"{:.2f}".format(pos[3]*0.005)+" mm"
+		text="Position 4: "+"{:.3f}".format(pos[3]*0.005)+" mm"
 		self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=fourC)
 		self.four.set_y(pos[3]*0.005-fourH/2)
 		#self.four.set_x(pos1+oneW-target_sidespace-threeW)
@@ -532,7 +529,7 @@ class ControlView(wx.Panel):
 		#Target Position Selection
 		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
 		#alpha=r'$\alpha_i$'
-		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+110,disy-3-40), size=(80,-1),choices=["aperture","1","2","3","4","5","6","7","8"])
+		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+110,disy-3-40), size=(80,-1),choices=["aperture","1","2","3","4","5","6","7","8","alpha"])
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
 		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
 		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
@@ -562,7 +559,7 @@ class ControlView(wx.Panel):
 		except FileNotFoundError:
 				print('Positions file does not exists, creating file.')
 				f=open("/home/npglocal/DriveSystemGUI/Positions.txt","w")
-				for i in range(9):
+				for i in range(10):
 					f.write('0 0\n')
 				f.close()
 
@@ -759,7 +756,7 @@ class ControlView(wx.Panel):
 		self.driveSystem.check_encoder_pos_axis( 4 )
 		pos3=self.driveSystem.positions[2]
 		pos4=self.driveSystem.positions[3]
-		for i in range(9):
+		for i in range(10):
 			if (pos3/200) < (self.targetPositions[i]+0.1) and (pos3/200) > (self.targetPositions[i]-0.1):
 				self.targetChoice.SetSelection(i)
 				break
@@ -798,7 +795,7 @@ class SettingsWindow(wx.Frame):
 
 		#Target Positions
 		pos=[]
-		for i in range(9):
+		for i in range(10):
 			pos+=[str(self.parent.targetPositions[i])]
 		targTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Target Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
 		targ0label = wx.StaticText(self.panel, wx.ID_ANY, 'Aperture')
@@ -819,6 +816,8 @@ class SettingsWindow(wx.Frame):
 		self.targ7input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[7])
 		targ8label = wx.StaticText(self.panel, wx.ID_ANY, '8')
 		self.targ8input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[8])
+		targ9label = wx.StaticText(self.panel, wx.ID_ANY, 'Alpha\nSource')
+		self.targ9input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[9])
 
 		#Detector Positions
 		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
@@ -850,6 +849,7 @@ class SettingsWindow(wx.Frame):
 		targ6Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ7Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ8Sizer   = wx.BoxSizer(wx.HORIZONTAL)
+		targ9Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		detTitleSizer      = wx.BoxSizer(wx.HORIZONTAL)
 		det0Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		det1Sizer   = wx.BoxSizer(wx.HORIZONTAL)
@@ -877,6 +877,8 @@ class SettingsWindow(wx.Frame):
 		targ7Sizer.Add(self.targ7input, 1, wx.ALL|wx.EXPAND, 5)
 		targ8Sizer.Add(targ8label, 0, wx.ALL, 5)
 		targ8Sizer.Add(self.targ8input, 1, wx.ALL|wx.EXPAND, 5)
+		targ9Sizer.Add(targ9label, 0, wx.ALL, 5)
+		targ9Sizer.Add(self.targ9input, 1, wx.ALL|wx.EXPAND, 5)
 		detTitleSizer.Add(detTitle, 0, wx.ALL, 5)
 		det0Sizer.Add(det0label, 0, wx.ALL, 5)
 		det0Sizer.Add(self.det0input, 1, wx.ALL|wx.EXPAND, 5)
@@ -899,6 +901,7 @@ class SettingsWindow(wx.Frame):
 		topSizer.Add(targ6Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ7Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ8Sizer, 0, wx.ALL|wx.EXPAND, 5)
+		topSizer.Add(targ9Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(detTitleSizer, 0, wx.CENTER)
 		topSizer.Add(wx.StaticLine(self.panel,), 0, wx.ALL|wx.EXPAND, 5)
@@ -926,6 +929,7 @@ class SettingsWindow(wx.Frame):
 		self.parent.targetPositions[6]=float(self.targ6input.GetValue())
 		self.parent.targetPositions[7]=float(self.targ7input.GetValue())
 		self.parent.targetPositions[8]=float(self.targ8input.GetValue())
+		self.parent.targetPositions[9]=float(self.targ9input.GetValue())
 
 		'''
 		#Write values to a hidden file
@@ -936,7 +940,7 @@ class SettingsWindow(wx.Frame):
 		'''
 		#Write values to a file
 		f=open("/home/npglocal/DriveSystemGUI/Positions.txt","w")
-		for i in range(9):
+		for i in range(10):
 			f.write(str(self.parent.targetPositions[i])+' '+str(self.parent.detectorPositions[i])+'\n')
 		f.close()
 		self.Destroy()
