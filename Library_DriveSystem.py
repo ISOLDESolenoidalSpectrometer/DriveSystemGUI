@@ -159,79 +159,86 @@ class DriveSystem():
 	# datum search
 	def datum_search( self, axis ):
 		
-		print( "Datum search on axis", axis )
+		#Set this to true during experiments in case the datum is pressed accidentally.
+		disable = True				
 		
-		# Set acceleration
-		in_cmd = ( str(axis) + 'sa500\r' ).encode()
-		print( in_cmd )
-		self.serial_port.write( in_cmd )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		print( outputline )
-		time.sleep(0.1)
-	
-		# Set deceleration
-		in_cmd = ( str(axis) + 'sd1000\r' ).encode()
-		print( in_cmd )
-		self.serial_port.write( in_cmd )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		print( outputline )
-		time.sleep(0.1)
-	
-		# Set velocity
-		in_cmd = ( str(axis) + 'sv1000\r' ).encode()
-		print( in_cmd )
-		self.serial_port.write( in_cmd )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		print( outputline )
-		time.sleep(0.1)
-	
-		# Set creep
-		in_cmd = ( str(axis) + 'sc200\r' ).encode()
-		print( in_cmd )
-		self.serial_port.write( in_cmd )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		print( outputline )
-		time.sleep(0.1)
-	
-		# Set datum mode
-		in_cmd = ( str(axis) + 'dm00101000\r' ).encode()
-		print( in_cmd )
-		self.serial_port.write( in_cmd )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		print( outputline )
-		time.sleep(0.1)
-	
-		# Go home to datum
-		in_cmd = ( str(axis) + 'hd\r' ).encode()
-		print( in_cmd )
-		self.serial_port.write( in_cmd )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		print( outputline )
-		time.sleep(0.1)
+		if disable == True:
+			print( "DISABLED.\nThe function datum_search() is disabled.\nYou can change this in ~/DriveSystem/Library_DriveSystem.py ")
+		
+		elif disable == False:
+			print( "Datum search on axis", axis )
+			
+			#Set acceleration
+			in_cmd = ( str(axis) + 'sa500\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+			time.sleep(0.1)
+		
+			#Set deceleration
+			in_cmd = ( str(axis) + 'sd1000\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+			time.sleep(0.1)
+		
+			#Set velocity
+			in_cmd = ( str(axis) + 'sv1000\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+			time.sleep(0.1)
+		
+			#Set creep
+			in_cmd = ( str(axis) + 'sc200\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+			time.sleep(0.1)
+		
+			#Set datum mode
+			in_cmd = ( str(axis) + 'dm00101000\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+			time.sleep(0.1)
+		
+			#Go home to datum
+			in_cmd = ( str(axis) + 'hd\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+			time.sleep(0.1)
 
-		# Check position
-		self.check_encoder_pos_axis(axis)
+			#Check position
+			self.check_encoder_pos_axis(axis)
 
-		# Display current operation
-		in_cmd = ( str(axis) + 'co\r' ).encode()
-		print( in_cmd )
-		self.serial_port.write( in_cmd )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		print( outputline )
-		time.sleep(0.1)
-	
-		# Check position
-		self.check_encoder_pos_axis(axis)
+			#Display current operation
+			in_cmd = ( str(axis) + 'co\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
+			print( outputline )
+			time.sleep(0.1)
+		
+			#Check position
+			self.check_encoder_pos_axis(axis)
 
 	# write info
-	def executeCommand( self, command):
+	def executeCommand( self, command ):
 	
 		in_cmd = command
 		print( in_cmd )

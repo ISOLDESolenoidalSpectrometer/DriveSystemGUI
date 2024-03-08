@@ -48,8 +48,7 @@ magL=2732
 
 #Home positions
 # recoil measurement to Si surface = 41.6 mm, flange thickness = 31.0 mm, flange to recoil = 62.4 mm
-recoil_target_dist = 246.2
-#recoilpos = magL/2+31.0-62.4-41.6 # distance of silicon recoil detector from back of the magnet (measured 16/06/2022)
+recoilpos = magL/2+31.0-62.4-41.6 # distance of silicon recoil detector from back of the magnet (measured 16/06/2022)
 blockerpos = (magL/2)-47.0 # distance of blocker from back of the magnet (From Mike Cordwell)
 #recoilpos -= 578.6 # difference between upstream and downstream recoil positions (measured 16/06/2022)
 #recoilpos = magL/2-48 # distance of gas recoil detector blocker from back of the magnet 
@@ -263,7 +262,7 @@ class DriveView:
 		self.ax.add_patch(self.dE)
 		
 		#Adding the recoil detector
-		self.recoil=plt.Circle(xy=(self.three.get_x()+recoil_target_dist,0),radius=recoilR,fc=recoilFC,ec=recoilEC,lw=2.5,hatch='X')
+		self.recoil=plt.Circle(xy=(recoilpos,0),radius=recoilR,fc=recoilFC,ec=recoilEC,lw=2.5,hatch='X')
 		self.ax.add_patch(self.recoil)
 		
 		#Adding the blocker
@@ -339,12 +338,12 @@ class DriveView:
 		self.arrow2.remove()
 		self.distanceArrow2.remove()
 		x1=self.three.get_x()
-		x2=x1+recoil_target_dist
+		x2=recoilpos
 		height=oneH/2+1*10
 		self.arrow2=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
 		#text="d = "+str((x1-x2))+" mm"
 		text="d_recoil = "+"{:.3f}".format(recoil_target_dist)+" mm"
-		self.distanceArrow2=self.ax.text(x1+(x2-x1)*0.5-20*10, height+8*10,text)
+		self.distanceArrow2=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3*10,text)
 		
 	def drawArrow3(self,dis_ta):
 		self.arrow3.remove()
@@ -413,20 +412,11 @@ class DriveView:
 		#dis_ta = dis2_3	# this is the distance for physics
 
 		# this is 2023 value from Survey on 25th July 2023 (elog:2891)
-		#dis2_3 = 579.7 # distance between end of array and target at encoder 0 for both axes
-		#dis2_3 += pos[1]/200.0 # add on distance of array from encoder = 0
-		#dis2_3 -= pos[0]/200.0 # add on distance of target from encoder = 0
-		#dis_ta = dis2_3 + arrayEdge_W # this is the distance for physics (end of silicon)
-		#dis2_3 -= silencerW # length of the silencer
-
-		# this is 2023 value from Survey on October 2023 (elog:3752)
-		dis2_3 = 579.0 # this is distance at axis1 = -77397 and axis2 = 1000 from target to silicon
-		dis2_3 -= 1000/200 # this is measurement position of axis2  
-		dis2_3 += -77397/200 # this is measurement position of axis1  
+		dis2_3 = 579.7 # distance between end of array and target at encoder 0 for both axes
 		dis2_3 += pos[1]/200.0 # add on distance of array from encoder = 0
 		dis2_3 -= pos[0]/200.0 # add on distance of target from encoder = 0
-		dis_ta = dis2_3 # this is the distance for physics (end of silicon)
-		dis2_3 -= silencerW + arrayEdge_W # length of the silencer
+		dis_ta = dis2_3 + arrayEdge_W # this is the distance for physics (end of silicon)
+		dis2_3 -= silencerW # length of the silencer
 
 		#coord2 = datum2 - pos[1]/200   # back of the array
 		#coord3=coord2+dis2_3+arrayW+arrayEdge_W #left side of target
@@ -439,16 +429,9 @@ class DriveView:
 
 
 		# this is 2023 value from Survey on 25th July 2023 (elog:2891)
-		#recoil_target_dist = 1161.0  # distance measured in alignment of 25/07/2023 (elog:2891)
-		#recoil_target_dist += pos[0]/200.0 # now at the current encoder position
-		#coord3 = recoilpos - recoil_target_dist
-                
-                # this is 2023 value from Survey on 25th October 2023 (elog:3752)
-		recoil_pos = pos[0]/200.0 + recoil_target_dist # now on the axis 1 carriage		
-
-		# Assuming that target at encoder position 0 is 1234.0 mm from back of magnet (elog:2891)
-		coord3 = magL/2 - 1234.0
-		coord3 -= pos[0]/200
+		recoil_target_dist = 1161.0  # distance measured in alignment of 25/07/2023 (elog:2891)
+		recoil_target_dist += pos[0]/200.0 # now at the current encoder position
+		coord3 = recoilpos - recoil_target_dist
 
 		# blocker not used in 2023 so far
 		blocker_target_dist = blockerpos - coord3
@@ -489,7 +472,6 @@ class DriveView:
 		self.four.set_x(coord4-fourW)
 		self.FC.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+fcH
 		self.dE.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+dEH
-		self.recoil.center=self.three.get_x()+recoil_target_dist,0
 
 		self.drawArrow(dis2_3)
 		self.drawArrow2(recoil_target_dist) # recoil distance arrow
