@@ -16,7 +16,7 @@ class DriveSystem():
 		self.port_open = False
 		self.parity=int(1)
 		self.positions = np.zeros(7, dtype=int )
-		self.axis_name = ['Trolley', 'Array', 'TargetH', 'FC', 'TargetV', 'BlockerH', 'BlockerV']
+		self.axis_name = ['Trolley', 'Array', 'Target H', 'FC', 'Target V', 'Blocker H', 'Blocker V']
 		
 		
 		# Port option lists

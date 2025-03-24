@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
-#XXXXX !/opt/local/bin/python
 
 #
-# Development notes (21062024):
+# Development notes (23042024):
 # ------------------
-# Reverted back to 1D target ladder configuration: 
-# TODO: 
-# - Read encoder positions from file (From Patrick's ladder?)
-# - Put above into drop down menu (as it was before)
-# - Software limits for positioning 
+# - Consolidated the multiple "arrows" function
+# - Now have some movement added for target ladder and beam blocker in beamView
+# - Next jobs, are to save positions, load positons, and link Patrick's buttons
 #global globalpos
 import matplotlib
 matplotlib.use('WXAgg')
@@ -32,12 +29,11 @@ import re
 
 from target_ladder_select import *
 
+#
 # ENCODER PARAMETERS
+#
 mm2step = 200
 step2mm = 1./mm2step
-
-# SOURCE DIRECTORY FOR VARIOUS THINGS
-SOURCE_DIRECTORY = "/home/isslocal/DriveSystemGUI"
 
 # Storage for saved parameters, format of x.x.x
 
@@ -46,7 +42,7 @@ SOURCE_DIRECTORY = "/home/isslocal/DriveSystemGUI"
 #
 # () = abbreviation used throughout, [] = Patrick's tape colour
 # axis 1: Target carriage                   (TC)   [red]
-# axis 2: Array                             (Arr)  [green]
+# axis 2: Array                             (Arr)
 # axis 3: Target ladder, horizontal         (TLH)  [yellow]
 # axis 4: Faraday cup/Zero degree detectors (Det)  [black]
 # axis 5: Target ladder, vertical           (TLV)  [brown]
@@ -91,11 +87,11 @@ axisposdict = {'bb.small' : [50,-90]}
 Arr_space    = axisdict['ArC'][1]/2 # Space between trolley border and axis 3&4
 arrayEdge_H        = axisdict['SiA'][2]
 arrayEdge_W        = 18.5             # Distance from end of array to edge of Si array
-silencerW          = 0#164.2 - 32.6   # Total length minus depth in to array of 32.6 mm
+silencerW          = 68.4-32.6        # Total length minus depth in to array of 32.6 mm
 targ_space   = 20
 Det_space = 20
 magL               = 2732             # Magnet length [mm]
-recoil_target_dist = 1167.32
+recoil_target_dist = 246.2
 blockerpos         = (magL/2)-47.0    # Distance of blocker from back of the magnet (From Mike Cordwell)
 
 # FC, ZD and recoil detectors
@@ -175,8 +171,6 @@ class DisConnectEvent(wx.PyCommandEvent):
 # Originally called "CheckPositions", probably more accurately "DriveSystemInterface"
 # Shall leave for the time being.
 class CheckPositions(threading.Thread):
-        is_running = True
-
         def __init__(self,controlView,driveSystem):
                 """
                 @param parent: The gui object that should recieve the value
@@ -191,11 +185,11 @@ class CheckPositions(threading.Thread):
                 """Overrides Thread.run. Don't call this directly its called internally
                 when you call Thread.start().
                 """
-                while self.is_running:
+                while 1:
                         if self._driveSystem.port_open == True and self._parent.aborted==False:
 
                                 self._driveSystem.check_encoder_pos()
-                                pos = self._driveSystem.positions # Position in steps
+                                pos=self._driveSystem.positions # Position in steps
                                 if self._parent.printRequest==True: # Print positions when print Button was pressed
                                         for axis in range(1,nAxes):
                                                 print("Axis "+str(axis)+": "+str(pos[axis]))
@@ -211,7 +205,6 @@ class CheckPositions(threading.Thread):
                                         t=t+REAC_TIME
                         else:
                                 time.sleep(1)
-                
 
         def checkQ(self): # Whilst q isn't empty, action it. Is "q" queue?
                 while self._parent.q.empty()==False: # Parent is controlview
@@ -221,10 +214,10 @@ class CheckPositions(threading.Thread):
 
         def action(self,element): # Decide how to action depending on element
                 if element.mode=='Q':
-                        self.is_running = False
+                        self._parent.quit()
                 elif element.mode=='S':
                         command=element.command
-                        print("SENDING COMMAND "+command)
+                        print("SENDING COMMAND "+command.decode())
                         ax,answer=self._driveSystem.executeCommand(command)
 #                        if ax!=None
 #                                self._driveSystem.currentAx.SetValue(ax)
@@ -248,27 +241,20 @@ class CheckPositions(threading.Thread):
                 else: # For pre-determined positions
                         if re.search('[0-9].[0-9].[0-9]',str(element.mode)): # isTarget:
                                 print('TARGET: '+str(element.mode))
-#                                self._driveSystem.executeCommand(str(axisdict['TLH'][4])+'rs')
-#                                self._driveSystem.executeCommand(str(axisdict['TLV'][4])+'rs')
                                 self._driveSystem.select_pos(axisdict['TLH'][4],axisposdict[str(element.mode)][0])
-#                                self._driveSystem.select_pos(axisdict['TLV'][4],axisposdict[str(element.mode)][1])
+                                self._driveSystem.select_pos(axisdict['TLV'][4],axisposdict[str(element.mode)][1])
                         elif re.search('\*_slit',str(element.mode)) or re.search('[*]_aperture',str(element.mode)): # isHoles
                                 # NOTE: this could be as above, as holes are just "targets"
                                 print('SLIT/APERTURES'+str(element.mode))
                                 self._driveSystem.select_pos(axisdict['TLH'][4],axisposdict[str(element.mode)][0])
-#                                self._driveSystem.select_pos(axisdict['TLV'][4],axisposdict[str(element.mode)][1])
+                                self._driveSystem.select_pos(axisdict['TLV'][4],axisposdict[str(element.mode)][1])
                         elif re.search('bb.*',str(element.mode)): # isBeamblocker
                                 print('BEAM BLOCKER'+str(element.mode))
                                 self._driveSystem.select_pos(axisdict['BBH'][4],axisposdict[str(element.mode)][0])
-#                                self._driveSystem.select_pos(axisdict['BBV'][4],axisposdict[str(element.mode)][1])
+                                self._driveSystem.select_pos(axisdict['BBV'][4],axisposdict[str(element.mode)][1])
                         elif re.search('bm.*',str(element.mode)): # isBeammonitor
                                 print('BEAM DETECTOR'+str(element.mode))
-#                                self._driveSystem.executeCommand(str(axisdict['Det'][4])+'rs')
                                 self._driveSystem.select_pos(axisdict['Det'][4],axisposdict[str(element.mode)][0])
-
-        def kill_thread(self):
-                element=Element('Q')
-                self._parent.q.put(element)
 
 
 #
@@ -297,8 +283,8 @@ class BeamView: # - For the looking at X-Y plane as the beam
                 self.ax.spines['bottom'].set_position(('data',-2.765))
                 self.ax.set_xlabel("[mm]")
 
-                self.ladder_image = plt.imread(f'{SOURCE_DIRECTORY}/target_ladder_trans50.png', format='png')
-                self.blockr_image = plt.imread(f'{SOURCE_DIRECTORY}/beam_blocker_trans50.png',  format='png')
+                self.ladder_image = plt.imread('/home/isslocal/DriveSystemGUI/target_ladder_trans50.png', format='png')
+                self.blockr_image = plt.imread('/home/isslocal/DriveSystemGUI/beam_blocker_trans50.png',  format='png')
 
                 # Draw images
                 # create new inset axes in data coordinates
@@ -474,7 +460,7 @@ class DriveView: # - For top down view of beam axis
                 # Beam Arrow
                 self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20*10),
                                                  (self.xmin+30*10, self.ymax-20*10),
-                                                 arrowprops={'arrowstyle':'->'} )
+                                                 arrowprops={'arrowstyle':'<-'} )
                 self.beamText=self.ax.text(self.xmin+7*10, self.ymax-18*10,'BEAM')
 
                 # Conversion coefficients
@@ -527,23 +513,14 @@ class DriveView: # - For top down view of beam axis
                 rand = 6
                 dis = 700
 
-                # this is 2024 value from Survey on Oct 2024
-                dis2_3  =  245.7 # this is distance at axis1 = 32577 and axis2 = -40122 from target to silicon
-                dis2_3 -=  -30000.0*step2mm # this is measurement position of axis2
-                dis2_3 += 4000*step2mm # this is measurement position of axis1
+                # this is 2023 value from Survey on October 2023 (elog:3752)
+                dis2_3  =  579.0 # this is distance at axis1 = -77397 and axis2 = 1000 from target to silicon
+                dis2_3 -=  1000*step2mm # this is measurement position of axis2
+                dis2_3 += -77397*step2mm # this is measurement position of axis1
                 dis2_3 += pos[1]*step2mm # add on distance of array from encoder = 1
                 dis2_3 -= pos[0]*step2mm # add on distance of target from encoder = 0
                 dis_ta  = dis2_3 # this is the distance for physics (end of silicon)
                 dis2_3 -= silencerW + arrayEdge_W # length of the silencer
-
-                # this is 2023 value from Survey on May 2024
-                #dis2_3  =  49.4 # this is distance at axis1 = 32577 and axis2 = -40122 from target to silicon
-                #dis2_3 -=  -40122*step2mm # this is measurement position of axis2
-                #dis2_3 += 32577*step2mm # this is measurement position of axis1
-                #dis2_3 += pos[1]*step2mm # add on distance of array from encoder = 1
-                #dis2_3 -= pos[0]*step2mm # add on distance of target from encoder = 0
-                #dis_ta  = dis2_3 # this is the distance for physics (end of silicon)
-                #dis2_3 -= silencerW + arrayEdge_W # length of the silencer
 
                 # this is 2023 value from Survey on 25th October 2023 (elog:3752)
                 recoil_pos = pos[0]*step2mm + recoil_target_dist # now on the axis 1 carriage
@@ -586,16 +563,16 @@ class DriveView: # - For top down view of beam axis
                 self.position4=self.ax.text(self.xmin+3*dis,self.ymax-rand,text,color=axisdict['Det'][3])
                 self.Det_rect.set_y(pos[3]*0.005-axisdict['Det'][2]/2)
                 self.Det_rect.set_x(coord4-axisdict['Det'][1])
-                self.FC_circ.center=self.Det_rect.get_x()+0.5*axisdict['Det'][1],self.Det_rect.get_y()+axisdict['Det'][2]/2+fcH
+                self.FC_circcenter=self.Det_rect.get_x()+0.5*axisdict['Det'][1],self.Det_rect.get_y()+axisdict['Det'][2]/2+fcH
                 self.dE_circ.center=self.Det_rect.get_x()+0.5*axisdict['Det'][1],self.Det_rect.get_y()+axisdict['Det'][2]/2+dEH
-                self.recoil_circle.center=self.TLH_rect.get_x()+recoil_pos,0
+                self.recoil_circle.center=self.TLH_rect.get_x()+recoil_target_dist,0
 
                 # ARROWS
                 self.x1 = [self.TLH_rect.get_x(),
                            self.TLH_rect.get_x(),
                            self.TLH_rect.get_x()]
                 self.x2 = [self.SiA_rect.get_x()+axisdict['SiA'][1]+arrayEdge_W+silencerW,
-                           self.TLH_rect.get_x()+recoil_pos,
+                           self.TLH_rect.get_x()+recoil_target_dist,
                            self.SiA_rect.get_x()+axisdict['SiA'][1]]
                 self.height = [axisdict['TaC'][2]/2+10,axisdict['TaC'][2]/2+10,-1*(axisdict['TaC'][2]/2+10)]
                 self.label = ['d_tip','d_recoil','d_si']
@@ -672,10 +649,10 @@ class PosVisPanel(wx.Panel):
                 self.Bind(EVT_POSUPDATE, self.updatePositions)
 
         def updatePositions(self,event):
-                pos = event.GetValue()
-                print( "[", ",".join([ '%6d' % x for x in pos ]), "]" )
+                pos=event.GetValue()
+                print(pos)
                 self.driveView.updatePositions(pos)
-#                self.beamView.updatePositions(pos)
+                self.beamView.updatePositions(pos)
                 self.canvas.draw()
         def move1(self,moveDis):
                 self.driveView.move1(moveDis)
@@ -704,8 +681,7 @@ class ControlView(wx.Panel):
                 sizeX = 100
                 sizeY = 100
                 wx.Panel.__init__(self, parent, size=(sizeX,sizeY))
-                self.SetBackgroundColour('#FFFFE0') 
-                # self.SetBackgroundColour('#222222') XXXXX
+                self.SetBackgroundColour('#FFFFE0')
 
                 self.posvispanel=posvispanel
 
@@ -717,39 +693,33 @@ class ControlView(wx.Panel):
                 self.writeCommand = wx.TextCtrl(self, -1, "", (5,a),size=(writeSize, -1))
                 self.sendCommand = wx.Button(self, wx.ID_ANY, "Send", (writeSize+15, a))
                 self.sendCommand.Bind(wx.EVT_BUTTON, self.sendingCommandB)
-                self.sendCommand.SetToolTip("You can put in any manual-allowed command here")
                 self.sendCommand.SetDefault()
                 self.currentAxis = wx.StaticText(self, -1, "Axis:", (520,5),style=wx.ALIGN_LEFT)
                 self.responseText = wx.StaticText(self, -1, "Response:", (580,5),style=wx.ALIGN_LEFT)
-                self.currentAx = wx.TextCtrl(self, wx.ID_ANY, "", (520,a),size=(60, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
-                self.commandResponse = wx.TextCtrl(self, wx.ID_ANY, "", (580,a),size=(200, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
+                self.currentAx = wx.TextCtrl(self, wx.ID_ANY, "", (520,30),size=(60, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
+                self.commandResponse = wx.TextCtrl(self, wx.ID_ANY, "", (580,30),size=(200, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
 
                 #Abort/Reset Buttons
                 self.aborted=False
-                self.abortAllButton = wx.Button(self, wx.ID_ANY, "ABORT ALL", (writeSize+15+100, a))
+                self.abortAllButton = wx.Button(self, wx.ID_ANY, "ABORT", (writeSize+15+100, a))
                 self.abortAllButton.SetBackgroundColour("#FD3F0D")
                 self.abortAllButton.Bind(wx.EVT_BUTTON, self.abortAll)
-                self.abortAllButton.SetToolTip("Aborts all motors, errors comes at the moment because setup for 2D not 1D ladder")
 
-                self.resetAllButton = wx.Button(self, wx.ID_ANY, "RESET ALL", (writeSize+15+200, a))
+                self.resetAllButton = wx.Button(self, wx.ID_ANY, "RESET", (writeSize+15+200, a))
                 self.resetAllButton.Bind(wx.EVT_BUTTON, self.resetAll)
-                self.resetAllButton.SetToolTip("Executes rs command for all axes")
 
                 #Print Encoder positions
-                self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+580, a))
+                self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+580, 30))
                 self.printPos.Bind(wx.EVT_BUTTON, self.printPosB)
-                self.printPos.SetToolTip("Prints positions?")
                 self.printRequest=False
 
                 # Target change button
-                self.XYElementChange = wx.Button(self, wx.ID_ANY, "IN-BEAM", (writeSize+750, a))
+                self.XYElementChange = wx.Button(self, wx.ID_ANY, "IN-BEAM", (writeSize+750, 30))
                 self.XYElementChange.SetBackgroundColour("#AA44DD")
                 self.XYElementChange.Bind(wx.EVT_BUTTON, self.XYElementChangeWindow )
-                self.XYElementChange.SetToolTip("Opens menu for target/beam selection")
 
-                self.XYElementMove = wx.Button(self, wx.ID_ANY, "Execute move", (writeSize+840, a))
+                self.XYElementMove = wx.Button(self, wx.ID_ANY, "MOVE", (writeSize+750, 60))
                 self.XYElementMove.Bind(wx.EVT_BUTTON, self.XYElementMoveAction)
-                self.XYElementMove.SetToolTip("After selecting object and hitting 'move' in the IN-BEAM window, press this to actually move")
 
                 #Connect/Disconnect Buttons
                 offset  =  100
@@ -758,20 +728,16 @@ class ControlView(wx.Panel):
 
                 self.connectButton = wx.Button(self, wx.ID_ANY, "CONNECT", (int(frameW-buttonW),int(0)),(int(buttonW),int(sizey)))
                 self.connectButton.Bind(wx.EVT_BUTTON, self.connectB)
-                self.connectButton.SetToolTip("COnnects?")
 
                 self.disconnectButton = wx.Button(self, wx.ID_ANY, "DISCONNECT", (int(frameW-buttonW),int(sizey)),(buttonW,int(sizey)))
                 self.disconnectButton.Bind(wx.EVT_BUTTON, self.disconnectB)
-                self.disconnectButton.SetToolTip("Disconnects?")
 
-                self.quitButton = wx.Button(self, wx.ID_ANY, "QUIT", (int(frameW-buttonW),int(sizey*3)),(int(buttonW),int(sizey)))
+                self.quitButton = wx.Button(self, wx.ID_ANY, "QUIT", (int(frameW-buttonW),int(sizey*4)),(int(buttonW),int(sizey)))
                 self.quitButton.Bind(wx.EVT_BUTTON, self.quitB)
                 self.quitButton.SetBackgroundColour("#FD3F0D")
-                self.quitButton.SetToolTip("Quit from program")
 
-                self.helpButton = wx.Button(self, wx.ID_ANY, "HELP", (int(frameW-buttonW),int(sizey*2)),(int(buttonW),int(sizey)))
+                self.helpButton = wx.Button(self, wx.ID_ANY, "HELP", (int(frameW-buttonW),int(sizey*3)),(int(buttonW),int(sizey)))
                 self.helpButton.Bind(wx.EVT_BUTTON, self.openHelp)
-                self.helpButton.SetToolTip("Launches help window")
 
                 if self.driveSystem.checkConnection()==True:
                         self.disconnectButton.SetBackgroundColour("#FD3F0D")
@@ -782,88 +748,37 @@ class ControlView(wx.Panel):
 
 
                 # Encoder movement buttons
-                dx  =  (frameW-buttonW)/7 # Width allowed for each datum button
-                dy  =  29                 # Height allowed for each datum button
-                dis =  dx                 # 
+                dx  =  (frameW-buttonW)/7
+                dy  =  29
+                dis =  dx
                 disy = sizeY+30
-                plusminusbuttonwidth = 40
-                horzpadding = 5
-                textwindowwidth = dx - 4*horzpadding - 2*plusminusbuttonwidth
                 self.datumButton = []
                 self.targetlabel = []
                 self.textcontrol = []
                 self.moveplus    = []
                 self.moveminus   = []
                 for i in range(nAxes):
-                        self.datumButton.append( wx.Button( self, wx.ID_ANY, 'Datum ' + str(i+1), (int(i*dis), int(sizeY)), (int(dx), int(dy) )) )
+                        self.datumButton.append(wx.Button(self,wx.ID_ANY,'Datum '+str(i+1),(int(i*dis),int(sizeY)),(int(dx),int(dy))))
                         self.datumButton[i].Bind(wx.EVT_BUTTON, lambda evt,temp=i+1, : self.datumButtonAction(evt,temp))
-                        self.datumButton[i].SetToolTip(f"DATUM {i+1} Executes datum search")
 
                         self.targetlabel.append(wx.StaticText(self, -1, "("+str(i+1)+"):\n"+axislabels[i], (int(i*dis),int(disy-70))))
-                        self.textcontrol.append(wx.TextCtrl(self, wx.ID_ANY, "", (int(i*dis+plusminusbuttonwidth + 2*horzpadding),int(disy)),size=(int(textwindowwidth),-1)))
-                        self.moveplus.append(wx.Button( self, wx.ID_ANY, "+", (int((i+1)*dis-plusminusbuttonwidth-2*horzpadding),int(disy)),size=(int(plusminusbuttonwidth),-1)))
-                        self.moveminus.append(wx.Button(self, wx.ID_ANY, "-", (int(i*dis + horzpadding),   int(disy)),size=(int(plusminusbuttonwidth),-1)))
+                        self.textcontrol.append(wx.TextCtrl(self, wx.ID_ANY, "", (int(i*dis+40),int(disy)),size=(int(55),-1)))
+                        self.moveplus.append(wx.Button( self, wx.ID_ANY, "+", (int(i*dis+80),int(disy)),size=(int(40),-1)))
+                        self.moveminus.append(wx.Button(self, wx.ID_ANY, "-", (int(i*dis),   int(disy)),size=(int(40),-1)))
                         self.moveplus[i].Bind(wx.EVT_BUTTON,  lambda evt,temp=i+1, : self.moveplusAction(evt,temp))
-                        self.moveplus[i].SetToolTip("+")
                         self.moveminus[i].Bind(wx.EVT_BUTTON, lambda evt,temp=i+1, : self.moveminusAction(evt,temp))
-                        self.moveminus[i].SetToolTip("-")
 
 
-                self.q=queue.Queue()    
+                #Create the queue that the Thread checks
+                self.q=queue.Queue()
+
                 #Event Handlers
-                self.Bind(EVT_DISCONNECT, self.changeViewDisconnect)   
+                self.Bind(EVT_DISCONNECT, self.changeViewDisconnect)
                 #Start Thread which checks continously the positions
                 self.positionsChecker=CheckPositions(self,self.driveSystem)
                 self.positionsChecker.start()
 #                self.window = XYElementSelectWindow("TITLE")
-                # ---------- END CONTROLVIEW INIT ---------------
-#		#Target Position Selection
-#        self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
-#		#alpha=r'$\alpha_i$'
-#        self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+110,disy-3-40), size=(80,-1),choices=["aperture","1","2","3","4","5","6","7","8","alpha"])
-#        self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
-#        self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
-#        self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
-#        self.UnitText3 = wx.StaticText(self, -1, "[mm]", pos=(2*dis+105+50,disy+10))
-#        self.moveMinus3Button = wx.Button(self, wx.ID_ANY, "-", (2*dis,disy),size=(40, -1))
-#        self.movePlus3Button.Bind(wx.EVT_BUTTON, self.movePlus3B)
-#        self.moveMinus3Button.Bind(wx.EVT_BUTTON, self.moveMinus3B)
-
-#		#Detector Option
-#        self.detectorList=["ZD","FC","Center"]
-#        self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 3, wx.RA_SPECIFY_COLS)
-#        self.detectorChoice.SetSelection(2)
-#        self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
-#        self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(55, -1))
-#        self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (3*dis+105,disy),size=(40, -1))
-#        self.UnitText4 = wx.StaticText(self, -1, "[mm]", pos=(3*dis+105+50,disy+10))
-#        self.moveMinus4Button = wx.Button(self, wx.ID_ANY, "-", (3*dis,disy),size=(40, -1))
-#        self.movePlus4Button.Bind(wx.EVT_BUTTON, self.movePlus4B)
-#        self.moveMinus4Button.Bind(wx.EVT_BUTTON, self.moveMinus4B)
-
-#        # Check that the positions file exists
-#        try:
-#        	with open('/home/isslocal/DriveSystemGUI/Positions.txt') as f:
-#        		print('Positions file exists, values:')
-#        		print(f.read().splitlines())
-#        		f.close()
-#        except FileNotFoundError:
-#        		print('Positions file does not exists, creating file.')
-#        		f=open("/home/isslocal/DriveSystemGUI/Positions.txt","w")
-#        		for i in range(10):
-#        			f.write('0 0\n')
-#        		f.close()
-
-
-#		#Positions Constants
-#        data=np.genfromtxt('/home/isslocal/DriveSystemGUI/Positions.txt')
-#        self.detectorPositions=data[:,1]
-#        self.targetPositions=data[:,0]
-#        self.checkPositionsOn34()
-#                #Create the queue that the Thread checks
-
-
-
+                # ---------- END CONTROLEVIEW INIT ---------------
 
         # Makes disconnect button red if not connected
         def changeViewDisconnect(self,event):
@@ -885,7 +800,7 @@ class ControlView(wx.Panel):
 
         def sendingCommandB(self,event):
                 command = self.writeCommand.GetValue() + '\r'
-                #command = bytes( command.encode('ascii') )
+                command = bytes( command.encode('ascii') )
                 element=Element('S',0,command)
                 self.q.put(element)
 
@@ -898,9 +813,18 @@ class ControlView(wx.Panel):
         def disconnectB(self,event):
                 element=Element('D')
                 self.q.put(element)
-        
         def quitB(self,event):
-                self.frame.closeProgram(event)
+                if self.driveSystem.checkConnection()==True:
+                        element=Element('Q')
+                        self.q.put(element)
+                else:
+                        self.quit()
+
+        def quit(self):
+                print("Quit")
+                self.frame.Destroy()
+                self.frame.closeProgram()
+                exit()
 
         def datumButtonAction(self,event,axis):
                 element=Element('H',axis)
@@ -908,7 +832,7 @@ class ControlView(wx.Panel):
 
         # Patrick's ladder
         def XYElementChangeWindow(self,event):
-                self.window = XYElementSelectWindow("Select X-Y element")
+                self.window = XYElementSelectWindow("TITLE")
 
         def XYElementMoveAction(self,event):
                 element=Element(str(self.window.panel.get_move_motor_panel().globalpos))
@@ -935,7 +859,6 @@ class ControlView(wx.Panel):
         def abortAll(self,event):
                 self.driveSystem.abortAll()
                 self.aborted=False
-
         def resetAll(self,event):
                 self.driveSystem.resetAll()
                 self.aborted=False
@@ -944,7 +867,6 @@ class ControlView(wx.Panel):
 class DriveSystemGUI(wx.Frame):
         def __init__(self, parent, mytitle):
                 super(DriveSystemGUI, self).__init__(parent, title=mytitle,size=(frameW,frameH))
-                self.Bind( wx.EVT_CLOSE, self.closeProgram )
                 self.InitUI()
                 self.Centre()
 
@@ -954,11 +876,9 @@ class DriveSystemGUI(wx.Frame):
                 self.top_split = ControlView(self.split_win,self.bottom_split,self)
                 self.split_win.SplitHorizontally(self.top_split, self.bottom_split, controlViewSize)
 
-        def closeProgram(self, event):
-                # Need to close thread in ControlView -> 
-                print("Exiting GUI...")
-                self.top_split.positionsChecker.kill_thread()
-                quit()
+        def closeProgram(self):
+                self.Destroy()
+                self.Close()
 
 
 class HelpWindow(wx.Frame):
@@ -998,7 +918,6 @@ class TestPanel(scrolled.ScrolledPanel):
                 desc3 = wx.StaticText(self, -1, text5)
                 desc3.SetForegroundColour("Blue")
                 closeButton = wx.Button(self, wx.ID_ANY, 'Close')
-                closeButton.SetToolTip("TODO")
                 self.Bind(wx.EVT_BUTTON, self.onClose, closeButton)
 
 
@@ -1021,10 +940,11 @@ def main():
         gui = DriveSystemGUI(None, "Drive System")
 
         # Read saved vals
-        f=open(f'{SOURCE_DIRECTORY}/id_dist_map.txt',"r")
+        f=open('/home/isslocal/DriveSystemGUI/id_dist_map.txt',"r")
         lines=f.readlines()
         for x in lines:
                 axisposdict.update({x.split(' ')[0]:[int(x.split(' ')[1]),int(x.split(' ')[2])]})
+
 
         f.close()
         gui.Show()

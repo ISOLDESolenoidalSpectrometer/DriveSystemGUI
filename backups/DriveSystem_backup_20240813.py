@@ -91,7 +91,7 @@ axisposdict = {'bb.small' : [50,-90]}
 Arr_space    = axisdict['ArC'][1]/2 # Space between trolley border and axis 3&4
 arrayEdge_H        = axisdict['SiA'][2]
 arrayEdge_W        = 18.5             # Distance from end of array to edge of Si array
-silencerW          = 0#164.2 - 32.6   # Total length minus depth in to array of 32.6 mm
+silencerW          = 41.1 - 32.6   # Total length minus depth in to array of 32.6 mm
 targ_space   = 20
 Det_space = 20
 magL               = 2732             # Magnet length [mm]
@@ -474,7 +474,7 @@ class DriveView: # - For top down view of beam axis
                 # Beam Arrow
                 self.beamArrow=self.ax.annotate ('', (self.xmin, self.ymax-20*10),
                                                  (self.xmin+30*10, self.ymax-20*10),
-                                                 arrowprops={'arrowstyle':'->'} )
+                                                 arrowprops={'arrowstyle':'<-'} )
                 self.beamText=self.ax.text(self.xmin+7*10, self.ymax-18*10,'BEAM')
 
                 # Conversion coefficients
@@ -527,23 +527,14 @@ class DriveView: # - For top down view of beam axis
                 rand = 6
                 dis = 700
 
-                # this is 2024 value from Survey on Oct 2024
-                dis2_3  =  245.7 # this is distance at axis1 = 32577 and axis2 = -40122 from target to silicon
-                dis2_3 -=  -30000.0*step2mm # this is measurement position of axis2
-                dis2_3 += 4000*step2mm # this is measurement position of axis1
+                # this is 2023 value from Survey on May 2024
+                dis2_3  =  49.4 # this is distance at axis1 = 32577 and axis2 = -40122 from target to silicon
+                dis2_3 -=  -40122*step2mm # this is measurement position of axis2
+                dis2_3 += 32577*step2mm # this is measurement position of axis1
                 dis2_3 += pos[1]*step2mm # add on distance of array from encoder = 1
                 dis2_3 -= pos[0]*step2mm # add on distance of target from encoder = 0
                 dis_ta  = dis2_3 # this is the distance for physics (end of silicon)
                 dis2_3 -= silencerW + arrayEdge_W # length of the silencer
-
-                # this is 2023 value from Survey on May 2024
-                #dis2_3  =  49.4 # this is distance at axis1 = 32577 and axis2 = -40122 from target to silicon
-                #dis2_3 -=  -40122*step2mm # this is measurement position of axis2
-                #dis2_3 += 32577*step2mm # this is measurement position of axis1
-                #dis2_3 += pos[1]*step2mm # add on distance of array from encoder = 1
-                #dis2_3 -= pos[0]*step2mm # add on distance of target from encoder = 0
-                #dis_ta  = dis2_3 # this is the distance for physics (end of silicon)
-                #dis2_3 -= silencerW + arrayEdge_W # length of the silencer
 
                 # this is 2023 value from Survey on 25th October 2023 (elog:3752)
                 recoil_pos = pos[0]*step2mm + recoil_target_dist # now on the axis 1 carriage

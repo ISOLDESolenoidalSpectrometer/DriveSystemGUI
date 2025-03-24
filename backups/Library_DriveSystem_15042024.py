@@ -6,17 +6,15 @@ import requests
 import urllib3
 urllib3.disable_warnings()
 import numpy as np
-from threading import Lock
 
-SERIAL_PORT_LOCK = Lock()
 
 class DriveSystem():
 	def __init__(self):
 		self.serial_port = serial.Serial()
 		self.port_open = False
 		self.parity=int(1)
-		self.positions = np.zeros(7, dtype=int )
-		self.axis_name = ['Trolley', 'Array', 'TargetH', 'FC', 'TargetV', 'BlockerH', 'BlockerV']
+		self.positions=np.zeros(4)
+		self.axis_name = [ 'Trolley', 'Array', 'Target', 'FC' ]
 		
 		
 		# Port option lists
@@ -30,16 +28,7 @@ class DriveSystem():
 		#self.set_defaultMovingOptions()
 		
 		
-	def serial_port_write_read( self, in_cmd ):
-		print( in_cmd )
-		SERIAL_PORT_LOCK.acquire()
-		self.serial_port.write( in_cmd.encode() )
-		time.sleep(0.1)
-		outputline = self.serial_port.readline()
-		SERIAL_PORT_LOCK.release()
-		# print( outputline )
-		# time.sleep(0.1)
-		return outputline
+		
 	
 	############
 	# Defaults #
@@ -53,42 +42,38 @@ class DriveSystem():
 
 	def set_defaultMovingOptions(self):
 		# Set acceleration
-		in_cmd = str(axis) + 'sa500\r'
-		outputline = self.serial_port_write_read( in_cmd )
-		# print( in_cmd )
-		# self.serial_port.write( in_cmd )
-		# time.sleep(0.1)
-		# outputline = self.serial_port.readline()
+		in_cmd = ( str(axis) + 'sa500\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
 		print( outputline )
 		time.sleep(0.1)
 	
 		# Set deceleration
-		in_cmd = str(axis) + 'sd1000\r'
-		outputline = self.serial_port_write_read( in_cmd )
-		# print( in_cmd )
-		# self.serial_port.write( in_cmd )
-		# time.sleep(0.1)
-		# outputline = self.serial_port.readline()
+		in_cmd = ( str(axis) + 'sd1000\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
 		print( outputline )
 		time.sleep(0.1)
 	
 		# Set velocity
-		in_cmd = str(axis) + 'sv1000\r'
-		outputline = self.serial_port_write_read( in_cmd )
-		# print( in_cmd )
-		# self.serial_port.write( in_cmd )
-		# time.sleep(0.1)
-		# outputline = self.serial_port.readline()
+		in_cmd = ( str(axis) + 'sv1000\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
 		print( outputline )
 		time.sleep(0.1)
 	
 		# Set creep
-		in_cmd = str(axis) + 'sc200\r'
-		outputline = self.serial_port_write_read( in_cmd )
-		# print( in_cmd )
-		# self.serial_port.write( in_cmd )
-		# time.sleep(0.1)
-		# outputline = self.serial_port.readline()
+		in_cmd = ( str(axis) + 'sc200\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
 		print( outputline )
 		time.sleep(0.1)
 	
@@ -130,58 +115,52 @@ class DriveSystem():
 		print( "Disconnected" )
 		#time.sleep(0.1)
 
-	# Send the abort command to 7 axes
 	def abortAll(self):
 		print( "Abort command on all axes")
-		for i in range(7):
+		for i in range(4):
 			axis=i+1
-			in_cmd = str(axis) + 'ab'+ '\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'ab'+ '\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
-
 	def resetAll(self):
 		print( "Reset all axes")
-		for i in range(7):
+		for i in range(4):
 			axis=i+1
-			in_cmd = str(axis) + 'rs'+ '\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'rs'+ '\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 
 	# go to position 1 (move absolute)
 	def select_pos( self, axis,pos ):
 		print( "Moving to position ", pos,"on axis ",str(axis) )
-		in_cmd = str(axis) + 'ma'+str(pos)+ '\r'
-		outputline = self.serial_port_write_read( in_cmd )
-		# print( in_cmd )
-		# self.serial_port.write( in_cmd )
-		# time.sleep(0.1)
-		# outputline = self.serial_port.readline()
+		in_cmd = ( str(axis) + 'ma'+str(pos)+ '\r' ).encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
 		print( outputline )
 
 	# move relative
 	def move_rel( self, axis,steps):
 		print( "Moving ", steps," on axis ",str(axis) )
-		in_cmd = str(axis) + 'mr'+str(steps)+ '\r'
-		outputline = self.serial_port_write_read( in_cmd )
-		# print( in_cmd )
-		# self.serial_port.write( in_cmd )
-		# time.sleep(0.1)
-		# outputline = self.serial_port.readline()
+		in_cmd = ( str(axis) + 'mr'+str(steps)+ '\r').encode()
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
 		print( outputline )
 		
 	# datum search
 	def datum_search( self, axis ):
 		
 		#Set this to true during experiments in case the datum is pressed accidentally.
-		disable = False				
+		disable = True				
 		
 		if disable == True:
 			print( "DISABLED.\nThe function datum_search() is disabled.\nYou can change this in ~/DriveSystem/Library_DriveSystem.py ")
@@ -190,62 +169,56 @@ class DriveSystem():
 			print( "Datum search on axis", axis )
 			
 			#Set acceleration
-			in_cmd = str(axis) + 'sa500\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'sa500\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 			time.sleep(0.1)
 		
 			#Set deceleration
-			in_cmd = str(axis) + 'sd1000\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'sd1000\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 			time.sleep(0.1)
 		
 			#Set velocity
-			in_cmd = str(axis) + 'sv1000\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'sv1000\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 			time.sleep(0.1)
 		
 			#Set creep
-			in_cmd = str(axis) + 'sc200\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'sc200\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 			time.sleep(0.1)
 		
 			#Set datum mode
-			in_cmd = str(axis) + 'dm00101000\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'dm00101000\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 			time.sleep(0.1)
 		
 			#Go home to datum
-			in_cmd = str(axis) + 'hd\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'hd\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 			time.sleep(0.1)
 
@@ -253,12 +226,11 @@ class DriveSystem():
 			self.check_encoder_pos_axis(axis)
 
 			#Display current operation
-			in_cmd = str(axis) + 'co\r'
-			outputline = self.serial_port_write_read( in_cmd )
-			# print( in_cmd )
-			# self.serial_port.write( in_cmd )
-			# time.sleep(0.1)
-			# outputline = self.serial_port.readline()
+			in_cmd = ( str(axis) + 'co\r' ).encode()
+			print( in_cmd )
+			self.serial_port.write( in_cmd )
+			time.sleep(0.1)
+			outputline = self.serial_port.readline()
 			print( outputline )
 			time.sleep(0.1)
 		
@@ -266,13 +238,13 @@ class DriveSystem():
 			self.check_encoder_pos_axis(axis)
 
 	# write info
-	def executeCommand( self, in_cmd ):
+	def executeCommand( self, command ):
 	
-		outputline = self.serial_port_write_read( in_cmd )
-		# print( in_cmd )
-		# self.serial_port.write( in_cmd )
-		# time.sleep(0.1)
-		# outputline = self.serial_port.readline()
+		in_cmd = command
+		print( in_cmd )
+		self.serial_port.write( in_cmd )
+		time.sleep(0.1)
+		outputline = self.serial_port.readline()
 		print( outputline )
 		outputline.decode('utf8')
 		pattern = re.match(b'.*\\r(\d*):(.*)\\r\\n', outputline, re.IGNORECASE)
@@ -297,23 +269,22 @@ class DriveSystem():
 
 	# check encoder positions
 	def check_encoder_pos( self ):
-		for i in range(7):
+		for i in range(4):
 			self.check_encoder_pos_axis(i+1)
 		return self.positions
 
 	# check encoder positions
 	def check_encoder_pos_axis( self, axis ):
 
-		in_cmd = '%doa\r' % axis
-		# outputline = self.serial_port_write_read( in_cmd )
-		self.serial_port.write( bytes(in_cmd.encode()) )
+		in_cmd = ( '%doa\r' % axis ).encode()
+		self.serial_port.write( bytes(in_cmd) )
 		time.sleep(0.1)
 		outputline = self.serial_port.readline()
 		outputline.decode('utf8')
-		#outputline = b"3oa\\r03:0\\r\\n"
+		#outputline = "3oa\\r03:0\\r\\n"
 		#print( outputline )
 		pattern = re.match(b'.*\\r(\d*):(-?\d*).*\\r\\n', outputline, re.IGNORECASE)
-		#print( ">>>>", pattern, "->", pattern.group(2), sep=" " )
+		#print( pattern )
 		if pattern is not None:
 			self.positions[axis-1] = int( pattern.group(2) )
 			#self.enc_disp_txt[axis-1].set( ('%d: %d' % ( axis, int( pattern.group(2) ) ) ) )

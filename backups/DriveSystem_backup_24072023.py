@@ -34,7 +34,7 @@ array_sidespace=twoW/2
 arrayEdge_H=arrayH
 #arrayEdge_W=71.01 #distance from end of array to edge of Si (y+z in drawing)  # HELIOS array
 arrayEdge_W=18.5 #distance from end of array to edge of Si # Liverpool array
-silencerW=68.4-32.6 # total length minus depth in to array of 32.6 mm
+silencerW=56.0-32.6 # total length minus depth in to array of 32.6 mm
 threeW=8*10
 threeH=13*10
 fourW=8*10
@@ -275,7 +275,7 @@ class DriveView:
 		self.placeNumbers()
 
 		#Adding FC and ZD labels
-		self.placeFCZD()
+		#self.placeFCZD()
 
 		#Adding information about position
 		rand=2*10
@@ -469,10 +469,10 @@ class DriveView:
 		self.number2.remove()
 		self.number3.remove()
 		self.number4.remove()
-		self.fc.remove() #FC label
-		self.zd.remove() #ZD label
+		#self.fc.remove() #FC label
+		#self.zd.remove() #ZD label
 		self.placeNumbers()
-		self.placeFCZD()
+		#self.placeFCZD()
 		self.matplotpanel.canvas.draw()
 
 	def placeNumbers(self):
@@ -482,10 +482,10 @@ class DriveView:
 		self.number3=self.ax.text(self.three.get_x()+threeW/2,self.three.get_y()+0.5*threeH,"3",fontsize=nSize,horizontalalignment='center')
 		self.number4=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()+0.5*fourH,"4",fontsize=nSize,horizontalalignment='center')
 
-	def placeFCZD(self):
-		fSize=10
-		self.fc=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()+1.1*fourH,"FC",fontsize=fSize,horizontalalignment='center')
-		self.zd=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()-0.3*fourH,"ZD",fontsize=fSize,horizontalalignment='center')
+	#def placeFCZD(self):
+		#fSize=10
+		#self.fc=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()+1.1*fourH,"FC",fontsize=fSize,horizontalalignment='center')
+		#self.zd=self.ax.text(self.four.get_x()+fourW/2,self.four.get_y()-0.3*fourH,"ZD",fontsize=fSize,horizontalalignment='center')
 
 
 class MatplotPanel(wx.Panel):
@@ -615,9 +615,9 @@ class ControlView(wx.Panel):
 		self.move2Button.Bind(wx.EVT_BUTTON, self.move2B)
 
 		#Target Position Selection
-		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (1.82*dis,disy+5-40))
+		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
 		#alpha=r'$\alpha_i$'
-		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(1.82*dis+110,disy-3-40), size=(140,-1),choices=["alpha", "3mm aperture","5mm aperture","1","2","3","4","5","6"])
+		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+110,disy-3-40), size=(80,-1),choices=["aperture","1","2","3","4","5","6","7","8","alpha"])
 		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
 		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
 		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
@@ -640,20 +640,20 @@ class ControlView(wx.Panel):
 
 		# Check that the positions file exists
 		try:
-			with open('/home/npglocal/DriveSystemGUI/Positions.txt') as f:
+			with open('/home/isslocal/DriveSystemGUI/Positions.txt') as f:
 				print('Positions file exists, values:')
 				print(f.read().splitlines())
 				f.close()
 		except FileNotFoundError:
 				print('Positions file does not exists, creating file.')
-				f=open("/home/npglocal/DriveSystemGUI/Positions.txt","w")
+				f=open("/home/isslocal/DriveSystemGUI/Positions.txt","w")
 				for i in range(10):
 					f.write('0 0\n')
 				f.close()
 
 
 		#Positions Constants
-		data=np.genfromtxt('/home/npglocal/DriveSystemGUI/Positions.txt')
+		data=np.genfromtxt('/home/isslocal/DriveSystemGUI/Positions.txt')
 		self.detectorPositions=data[:,1]
 		self.targetPositions=data[:,0]
 		self.checkPositionsOn34()
@@ -886,24 +886,26 @@ class SettingsWindow(wx.Frame):
 		for i in range(10):
 			pos+=[str(self.parent.targetPositions[i])]
 		targTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Target Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
-		targ0label = wx.StaticText(self.panel, wx.ID_ANY, 'alpha')
+		targ0label = wx.StaticText(self.panel, wx.ID_ANY, 'Aperture')
 		self.targ0input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[0])
-		targ1label = wx.StaticText(self.panel, wx.ID_ANY, '3mm aperture')
+		targ1label = wx.StaticText(self.panel, wx.ID_ANY, '1')
 		self.targ1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[1])
-		targ2label = wx.StaticText(self.panel, wx.ID_ANY, '5mm aperture')
+		targ2label = wx.StaticText(self.panel, wx.ID_ANY, '2')
 		self.targ2input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[2])
-		targ3label = wx.StaticText(self.panel, wx.ID_ANY, '1')
+		targ3label = wx.StaticText(self.panel, wx.ID_ANY, '3')
 		self.targ3input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[3])
-		targ4label = wx.StaticText(self.panel, wx.ID_ANY, '2')
+		targ4label = wx.StaticText(self.panel, wx.ID_ANY, '4')
 		self.targ4input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[4])
-		targ5label = wx.StaticText(self.panel, wx.ID_ANY, '3')
+		targ5label = wx.StaticText(self.panel, wx.ID_ANY, '5')
 		self.targ5input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[5])
-		targ6label = wx.StaticText(self.panel, wx.ID_ANY, '4')
+		targ6label = wx.StaticText(self.panel, wx.ID_ANY, '6')
 		self.targ6input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[6])
-		targ7label = wx.StaticText(self.panel, wx.ID_ANY, '5')
+		targ7label = wx.StaticText(self.panel, wx.ID_ANY, '7')
 		self.targ7input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[7])
-		targ8label = wx.StaticText(self.panel, wx.ID_ANY, '6')
+		targ8label = wx.StaticText(self.panel, wx.ID_ANY, '8')
 		self.targ8input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[8])
+		targ9label = wx.StaticText(self.panel, wx.ID_ANY, 'Alpha\nSource')
+		self.targ9input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[9])
 
 		#Detector Positions
 		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
@@ -935,6 +937,7 @@ class SettingsWindow(wx.Frame):
 		targ6Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ7Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ8Sizer   = wx.BoxSizer(wx.HORIZONTAL)
+		targ9Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		detTitleSizer      = wx.BoxSizer(wx.HORIZONTAL)
 		det0Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		det1Sizer   = wx.BoxSizer(wx.HORIZONTAL)
@@ -962,6 +965,8 @@ class SettingsWindow(wx.Frame):
 		targ7Sizer.Add(self.targ7input, 1, wx.ALL|wx.EXPAND, 5)
 		targ8Sizer.Add(targ8label, 0, wx.ALL, 5)
 		targ8Sizer.Add(self.targ8input, 1, wx.ALL|wx.EXPAND, 5)
+		targ9Sizer.Add(targ9label, 0, wx.ALL, 5)
+		targ9Sizer.Add(self.targ9input, 1, wx.ALL|wx.EXPAND, 5)
 		detTitleSizer.Add(detTitle, 0, wx.ALL, 5)
 		det0Sizer.Add(det0label, 0, wx.ALL, 5)
 		det0Sizer.Add(self.det0input, 1, wx.ALL|wx.EXPAND, 5)
@@ -984,6 +989,7 @@ class SettingsWindow(wx.Frame):
 		topSizer.Add(targ6Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ7Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ8Sizer, 0, wx.ALL|wx.EXPAND, 5)
+		topSizer.Add(targ9Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(detTitleSizer, 0, wx.CENTER)
 		topSizer.Add(wx.StaticLine(self.panel,), 0, wx.ALL|wx.EXPAND, 5)
@@ -1011,6 +1017,7 @@ class SettingsWindow(wx.Frame):
 		self.parent.targetPositions[6]=float(self.targ6input.GetValue())
 		self.parent.targetPositions[7]=float(self.targ7input.GetValue())
 		self.parent.targetPositions[8]=float(self.targ8input.GetValue())
+		self.parent.targetPositions[9]=float(self.targ9input.GetValue())
 
 		'''
 		#Write values to a hidden file
@@ -1020,7 +1027,7 @@ class SettingsWindow(wx.Frame):
 		f.close()
 		'''
 		#Write values to a file
-		f=open("/home/npglocal/DriveSystemGUI/Positions.txt","w")
+		f=open("/home/isslocal/DriveSystemGUI/Positions.txt","w")
 		for i in range(10):
 			f.write(str(self.parent.targetPositions[i])+' '+str(self.parent.detectorPositions[i])+'\n')
 		f.close()

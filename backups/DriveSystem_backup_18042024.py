@@ -28,27 +28,26 @@ oneH=27*10
 twoW=35*10
 twoH=19.5*10
 #arrayW=74.85*10 # HELIOS array
-arrayW=609.0 # Liverpool array
+arrayW=610.0 # Liverpool array
 arrayH=35.0
 array_sidespace=twoW/2
 arrayEdge_H=arrayH
-#arrayEdge_W=71.01 #distance from end of array to edge of Si (y+z in drawing)  # HELIOS array
 arrayEdge_W=18.5 #distance from end of array to edge of Si # Liverpool array
-silencerW=56.0-32.6 # total length minus depth in to array of 32.6 mm
+silencerW=68.4-32.6 # total length minus depth in to array of 32.6 mm
 threeW=8*10
 threeH=13*10
 fourW=8*10
 fourH=13*10
 target_sidespace=2*10
 detector_sidespace=2*10
-#one_sidespace=100
 
 #Magnetlength
 magL=2732
 
 #Home positions
 # recoil measurement to Si surface = 41.6 mm, flange thickness = 31.0 mm, flange to recoil = 62.4 mm
-recoilpos = magL/2+31.0-62.4-41.6 # distance of silicon recoil detector from back of the magnet (measured 16/06/2022)
+recoil_target_dist = 246.2
+
 blockerpos = (magL/2)-47.0 # distance of blocker from back of the magnet (From Mike Cordwell)
 #recoilpos -= 578.6 # difference between upstream and downstream recoil positions (measured 16/06/2022)
 #recoilpos = magL/2-48 # distance of gas recoil detector blocker from back of the magnet 
@@ -203,16 +202,34 @@ class CheckPositions(threading.Thread):
 				self._parent.datum3()
 			elif element.axis==4:
 				self._parent.datum4()
+			elif element.axis==5:
+				self._parent.datum5()
+			elif element.axis==6:
+				self._parent.datum6()
+			elif element.axis==7:
+				self._parent.datum7()
+
 		elif element.mode=='C':
 			self._parent.connect()
 		elif element.mode=='D':
 			self._parent.disconnect()
+
+# Frank's attempt at window
+class BeamView(wx.Panel):
+
+	def __init__(self, parent):
+		wx.Panel.__init__(self, parent=parent)
+		
+#		self.matplotpanel=panel
+	
 
 
 class DriveView:
 	def __init__(self,panel):
 		self.matplotpanel=panel
 
+#		self.split_win = wx.SplitterWindow(panel)
+#		self.vert_split = SplitVertically(self.split_win)
 		#Defining the figure
 		self.fig = plt.figure()
 		self.fig.set_dpi(100)
@@ -262,7 +279,7 @@ class DriveView:
 		self.ax.add_patch(self.dE)
 		
 		#Adding the recoil detector
-		self.recoil=plt.Circle(xy=(recoilpos,0),radius=recoilR,fc=recoilFC,ec=recoilEC,lw=2.5,hatch='X')
+		self.recoil=plt.Circle(xy=(self.three.get_x()+recoil_target_dist,0),radius=recoilR,fc=recoilFC,ec=recoilEC,lw=2.5,hatch='X')
 		self.ax.add_patch(self.recoil)
 		
 		#Adding the blocker
@@ -338,12 +355,12 @@ class DriveView:
 		self.arrow2.remove()
 		self.distanceArrow2.remove()
 		x1=self.three.get_x()
-		x2=recoilpos
+		x2=x1+recoil_target_dist
 		height=oneH/2+1*10
 		self.arrow2=self.ax.annotate ('', (x1, height), (x2, height), arrowprops={'arrowstyle':'<->'})
 		#text="d = "+str((x1-x2))+" mm"
 		text="d_recoil = "+"{:.3f}".format(recoil_target_dist)+" mm"
-		self.distanceArrow2=self.ax.text(x1+(x2-x1)*0.5-20*10, height+3*10,text)
+		self.distanceArrow2=self.ax.text(x1+(x2-x1)*0.5-20*10, height+8*10,text)
 		
 	def drawArrow3(self,dis_ta):
 		self.arrow3.remove()
@@ -399,29 +416,24 @@ class DriveView:
 		dis=70*10
 		#pos=pos
 
-		#dis2_3=1037.18+(pos[1]-35115+(-101708-pos[0]))/200 #distance of 1037.18 at encoder positions 35115 and -101708
-		#dis2_3=50+(pos[1]+40118)/200+(74808-pos[0])/200 # hard limits for array = -40118 and for trolley = 74808; distance assumed to be ~50 mm at closest approach
-
-		dis2_3 = 1586.1 - 112915.0/200.0 # distance between array support and target at encoder 0 for both axes
-		dis2_3 -= 0.3 # thickness of target frame
+		# this is 2023 value from Survey on October 2023 (elog:3752)
+		dis2_3 = 579.0 # this is distance at axis1 = -77397 and axis2 = 1000 from target to silicon
+		dis2_3 -= 1000/200 # this is measurement position of axis2  
+		dis2_3 += -77397/200 # this is measurement position of axis1  
 		dis2_3 += pos[1]/200.0 # add on distance of array from encoder = 0
 		dis2_3 -= pos[0]/200.0 # add on distance of target from encoder = 0
-		dis2_3 -= arrayW # distance from array support to end of the silicon
-		dis_ta = dis2_3	# this is the distance for physics
-		dis2_3 -= arrayEdge_W # distance from silicon to tip of array
-		dis2_3 -= silencerW # length of the silencer (56 mm total - 32.6 mm depth in array)
-		#dis2_3 += 0.92 # offset from the PEEK target ladder and the MEG
+		dis_ta = dis2_3 # this is the distance for physics (end of silicon)
+		dis2_3 -= silencerW + arrayEdge_W # length of the silencer
 
-		#coord2 = datum2 - pos[1]/200   # back of the array
-		#coord3=coord2+dis2_3+arrayW+arrayEdge_W #left side of target
 
-		#coord3 = recoilpos - 471.424 # distance measured in alignment of 17/05/2021 at encoder = -120907
-		coord3 = magL/2 - 617.8 + 31.0 # distance measured in alignment of 16/06/2022 at encoder = -112915 (flange thickness = 31.0 mm)
-		coord3 -= 0.3 # thickness of target frame
-		coord3 -= 112915.0/200.0 # coordinate at encoder = 0
-		coord3 -= pos[0]/200.0 # now at the cuurent encoder position
+                # this is 2023 value from Survey on 25th October 2023 (elog:3752)
+		recoil_pos = pos[0]/200.0 + recoil_target_dist # now on the axis 1 carriage		
 
-		recoil_target_dist = recoilpos - coord3
+		# Assuming that target at encoder position 0 is 1234.0 mm from back of magnet (elog:2891)
+		coord3 = magL/2 - 1234.0
+		coord3 -= pos[0]/200
+
+		# blocker not used in 2023 so far
 		blocker_target_dist = blockerpos - coord3
 
 		coord2 = coord3 - dis2_3 - arrayW - arrayEdge_W - silencerW
@@ -460,6 +472,7 @@ class DriveView:
 		self.four.set_x(coord4-fourW)
 		self.FC.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+fcH
 		self.dE.center=self.four.get_x()+0.5*fourW,self.four.get_y()+fourH/2+dEH
+		self.recoil.center=self.three.get_x()+recoil_target_dist,0
 
 		self.drawArrow(dis2_3)
 		self.drawArrow2(recoil_target_dist) # recoil distance arrow
@@ -514,6 +527,7 @@ class MatplotPanel(wx.Panel):
 		self.canvas.draw()
 
 
+
 class ControlView(wx.Panel):
 	"""
 	Class that displays the upper part of the GUI with the buttons
@@ -538,10 +552,10 @@ class ControlView(wx.Panel):
 		self.sendCommand = wx.Button(self, wx.ID_ANY, "Send", (writeSize+15, a))
 		self.sendCommand.Bind(wx.EVT_BUTTON, self.sendingCommandB)
 		self.sendCommand.SetDefault()
-		self.currentAxis = wx.StaticText(self, -1, "Axis:", (5,58),style=wx.ALIGN_LEFT)
-		self.responseText = wx.StaticText(self, -1, "Response:", (65,58),style=wx.ALIGN_LEFT)
-		self.currentAx = wx.TextCtrl(self, wx.ID_ANY, "", (5,78),size=(60, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
-		self.commandResponse = wx.TextCtrl(self, wx.ID_ANY, "", (65,78),size=(200, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
+		self.currentAxis = wx.StaticText(self, -1, "Axis:", (520,5),style=wx.ALIGN_LEFT)
+		self.responseText = wx.StaticText(self, -1, "Response:", (580,5),style=wx.ALIGN_LEFT)
+		self.currentAx = wx.TextCtrl(self, wx.ID_ANY, "", (520,30),size=(60, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
+		self.commandResponse = wx.TextCtrl(self, wx.ID_ANY, "", (580,30),size=(200, -1), style=wx.ALIGN_LEFT|wx.TE_READONLY)
 
 		#Abort/Reset Buttons
 		self.aborted=False
@@ -554,7 +568,7 @@ class ControlView(wx.Panel):
 
 		#Print Encoder positions
 		#self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+300, a))
-		self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+15+60, 78))
+		self.printPos = wx.Button(self, wx.ID_ANY, "Print Pos.", (writeSize+580, 30))
 		self.printPos.Bind(wx.EVT_BUTTON, self.printPosB)
 		self.printRequest=False
 
@@ -592,7 +606,7 @@ class ControlView(wx.Panel):
 
 		#Home Buttons
 		h=-70
-		dx=(frameWidth-buttonW)/4
+		dx=(frameWidth-buttonW)/7
 		dy=29
 		dis=dx
 		self.datum1Button = wx.Button(self, wx.ID_ANY, "Datum 1", (0,sizeY-h),(dx,dy))
@@ -603,57 +617,94 @@ class ControlView(wx.Panel):
 		self.datum3Button.Bind(wx.EVT_BUTTON, self.datum3B)
 		self.datum4Button = wx.Button(self, wx.ID_ANY, "Datum 4", (3*dis,sizeY-h),(dx,dy))
 		self.datum4Button.Bind(wx.EVT_BUTTON, self.datum4B)
-
+		self.datum5Button = wx.Button(self, wx.ID_ANY, "Datum 5", (4*dis,sizeY-h),(dx,dy))
+		self.datum5Button.Bind(wx.EVT_BUTTON, self.datum5B)
+		self.datum6Button = wx.Button(self, wx.ID_ANY, "Datum 6", (5*dis,sizeY-h),(dx,dy))
+		self.datum6Button.Bind(wx.EVT_BUTTON, self.datum6B)
+		self.datum7Button = wx.Button(self, wx.ID_ANY, "Datum 7", (6*dis,sizeY-h),(dx,dy))
+		self.datum7Button.Bind(wx.EVT_BUTTON, self.datum7B)
 
 		disy=sizeY+30
-		#Move 1 and 2
-		self.move1Insert = wx.TextCtrl(self, wx.ID_ANY, "", (5,disy))
-		self.move1Button = wx.Button(self, wx.ID_ANY, "Move 1 \n [mm]", (105, disy-12))
-		self.move1Button.Bind(wx.EVT_BUTTON, self.move1B)
-		self.move2Insert = wx.TextCtrl(self, wx.ID_ANY, "", (dis,disy))
-		self.move2Button = wx.Button(self, wx.ID_ANY, "Move 2 \n [mm]", (dis+100, disy-12))
-		self.move2Button.Bind(wx.EVT_BUTTON, self.move2B)
 
-		#Target Position Selection
-		self.TargetPos = wx.StaticText(self, -1, "Target Position:", (2*dis,disy+5-40))
-		#alpha=r'$\alpha_i$'
-		self.targetChoice=wx.Choice(self, wx.ID_ANY, pos=(2*dis+110,disy-3-40), size=(80,-1),choices=["aperture","1","2","3","4","5","6","7","8","alpha"])
-		self.targetChoice.Bind(wx.EVT_CHOICE, self.setTargetPosB)
-		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (2*dis+45,disy),size=(55, -1))
-		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (2*dis+105,disy),size=(40, -1))
-		self.UnitText3 = wx.StaticText(self, -1, "[mm]", pos=(2*dis+105+50,disy+10))
-		self.moveMinus3Button = wx.Button(self, wx.ID_ANY, "-", (2*dis,disy),size=(40, -1))
+		# axis 1 TARGET CARRIAGE
+		fac_1 = 0 # positioning factor for axis 4
+		self.TargetPos = wx.StaticText(self, -1, "(1):", (fac_1*dis,disy-50))
+		self.move1Insert = wx.TextCtrl(self, wx.ID_ANY, "", (fac_1*dis+40,disy),size=(55, -1))
+		self.movePlus1Button = wx.Button(self, wx.ID_ANY, "+", (fac_1*dis+80,disy),size=(40, -1))
+		self.moveMinus1Button = wx.Button(self, wx.ID_ANY, "-", (fac_1*dis,disy),size=(40, -1))
+		self.movePlus1Button.Bind(wx.EVT_BUTTON, self.movePlus1B)
+		self.moveMinus1Button.Bind(wx.EVT_BUTTON, self.moveMinus1B)
+
+		# axis 2 ARRAY
+		fac_2 = 1
+		self.TargetPos = wx.StaticText(self, -1, "(2):", (fac_2*dis,disy-50))
+		self.move2Insert = wx.TextCtrl(self, wx.ID_ANY, "", (fac_2*dis+40,disy),size=(55, -1))
+		self.movePlus2Button = wx.Button(self, wx.ID_ANY, "+", (fac_2*dis+80,disy),size=(40, -1))
+		self.moveMinus2Button = wx.Button(self, wx.ID_ANY, "-", (fac_2*dis,disy),size=(40, -1))
+		self.movePlus2Button.Bind(wx.EVT_BUTTON, self.movePlus2B)
+		self.moveMinus2Button.Bind(wx.EVT_BUTTON, self.moveMinus2B)
+
+		# axis 3 TARGET LADDER HORIZONTAL
+		fac_3 = 2 # positioning factor of axis 3
+		self.TargetPos = wx.StaticText(self, -1, "(3):", (fac_3*dis,disy-50))
+		self.move3Insert = wx.TextCtrl(self, wx.ID_ANY, "", (fac_3*dis+40,disy),size=(55, -1))
+		self.movePlus3Button = wx.Button(self, wx.ID_ANY, "+", (fac_3*dis+80,disy),size=(40, -1))
+		self.moveMinus3Button = wx.Button(self, wx.ID_ANY, "-", (fac_3*dis,disy),size=(40, -1))
 		self.movePlus3Button.Bind(wx.EVT_BUTTON, self.movePlus3B)
 		self.moveMinus3Button.Bind(wx.EVT_BUTTON, self.moveMinus3B)
 
-		#Detector Option
-		self.detectorList=["ZD","FC","Center"]
-		self.detectorChoice = wx.RadioBox(self, -1, "Detector Position:", (3*dis,disy-5-45), wx.DefaultSize,self.detectorList, 3, wx.RA_SPECIFY_COLS)
-		self.detectorChoice.SetSelection(2)
-		self.Bind(wx.EVT_RADIOBOX, self.setDetectorPosB, self.detectorChoice)
-		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (3*dis+45,disy),size=(55, -1))
-		self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (3*dis+105,disy),size=(40, -1))
-		self.UnitText4 = wx.StaticText(self, -1, "[mm]", pos=(3*dis+105+50,disy+10))
-		self.moveMinus4Button = wx.Button(self, wx.ID_ANY, "-", (3*dis,disy),size=(40, -1))
+		# axis 4 DETECTOR PLANE POSITION
+		fac_4 = 3 # positioning factor for axis 4
+		self.TargetPos = wx.StaticText(self, -1, "(4):", (fac_4*dis,disy-50))
+		self.move4Insert = wx.TextCtrl(self, wx.ID_ANY, "", (fac_4*dis+40,disy),size=(55, -1))
+		self.movePlus4Button = wx.Button(self, wx.ID_ANY, "+", (fac_4*dis+80,disy),size=(40, -1))
+		self.moveMinus4Button = wx.Button(self, wx.ID_ANY, "-", (fac_4*dis,disy),size=(40, -1))
 		self.movePlus4Button.Bind(wx.EVT_BUTTON, self.movePlus4B)
 		self.moveMinus4Button.Bind(wx.EVT_BUTTON, self.moveMinus4B)
 
+		# axis 5 
+		fac_5 = 4 # positioning factor for axis 4
+		self.TargetPos = wx.StaticText(self, -1, "(5):", (fac_5*dis,disy-50))
+		self.move5Insert = wx.TextCtrl(self, wx.ID_ANY, "", (fac_5*dis+40,disy),size=(55, -1))
+		self.movePlus5Button = wx.Button(self, wx.ID_ANY, "+", (fac_5*dis+80,disy),size=(40, -1))
+		self.moveMinus5Button = wx.Button(self, wx.ID_ANY, "-", (fac_5*dis,disy),size=(40, -1))
+		self.movePlus5Button.Bind(wx.EVT_BUTTON, self.movePlus5B)
+		self.moveMinus5Button.Bind(wx.EVT_BUTTON, self.moveMinus5B)
+
+		#axis 6
+		fac_6 = 5 # positioning factor for axis 4
+		self.TargetPos = wx.StaticText(self, -1, "(6):", (fac_6*dis,disy-50))
+		self.move6Insert = wx.TextCtrl(self, wx.ID_ANY, "", (fac_6*dis+40,disy),size=(55, -1))
+		self.movePlus6Button = wx.Button(self, wx.ID_ANY, "+", (fac_6*dis+80,disy),size=(40, -1))
+		self.moveMinus6Button = wx.Button(self, wx.ID_ANY, "-", (fac_6*dis,disy),size=(40, -1))
+		self.movePlus6Button.Bind(wx.EVT_BUTTON, self.movePlus6B)
+		self.moveMinus6Button.Bind(wx.EVT_BUTTON, self.moveMinus6B)
+
+		#axis 7
+		fac_7 = 6 # positioning factor for axis 4
+		self.TargetPos = wx.StaticText(self, -1, "(7):", (fac_7*dis,disy-50))
+		self.move7Insert = wx.TextCtrl(self, wx.ID_ANY, "", (fac_7*dis+40,disy),size=(55, -1))
+		self.movePlus7Button = wx.Button(self, wx.ID_ANY, "+", (fac_7*dis+80,disy),size=(40, -1))
+		self.moveMinus7Button = wx.Button(self, wx.ID_ANY, "-", (fac_7*dis,disy),size=(40, -1))
+		self.movePlus7Button.Bind(wx.EVT_BUTTON, self.movePlus7B)
+		self.moveMinus7Button.Bind(wx.EVT_BUTTON, self.moveMinus7B)
+
 		# Check that the positions file exists
 		try:
-			with open('/home/npglocal/DriveSystemGUI/Positions.txt') as f:
+			with open('/home/isslocal/DriveSystemGUI/Positions.txt') as f:
 				print('Positions file exists, values:')
 				print(f.read().splitlines())
 				f.close()
 		except FileNotFoundError:
 				print('Positions file does not exists, creating file.')
-				f=open("/home/npglocal/DriveSystemGUI/Positions.txt","w")
+				f=open("/home/isslocal/DriveSystemGUI/Positions.txt","w")
 				for i in range(10):
 					f.write('0 0\n')
 				f.close()
 
 
 		#Positions Constants
-		data=np.genfromtxt('/home/npglocal/DriveSystemGUI/Positions.txt')
+		data=np.genfromtxt('/home/isslocal/DriveSystemGUI/Positions.txt')
 		self.detectorPositions=data[:,1]
 		self.targetPositions=data[:,0]
 		self.checkPositionsOn34()
@@ -761,6 +812,28 @@ class ControlView(wx.Panel):
 		print("Datum 4")
 		self.driveSystem.datum_search(4)
 
+	def datum5B(self,event):
+		element=Element('H',5)
+		self.q.put(element)
+	def datum5(self):
+		print("Datum 5")
+		self.driveSystem.datum_search(5)
+
+	def datum6B(self,event):
+		element=Element('H',6)
+		self.q.put(element)
+	def datum6(self):
+		print("Datum 6")
+		self.driveSystem.datum_search(6)
+
+	def datum7B(self,event):
+		element=Element('H',7)
+		self.q.put(element)
+	def datum7(self):
+		print("Datum 7")
+		self.driveSystem.datum_search(7)
+
+
 	def move1B(self,event):
 		element=Element('M',1)
 		self.q.put(element)
@@ -778,6 +851,7 @@ class ControlView(wx.Panel):
 		print("Move 2")
 		#assume that moveDis is in mm
 		self.driveSystem.move_rel(2,int(moveDis*200))
+
 
 	def setTargetPosB(self,event):
 		element=Element('M',3)
@@ -800,26 +874,70 @@ class ControlView(wx.Panel):
 			print("ZD detector and FC moves out of the way")
 		self.driveSystem.select_pos(4,self.detectorPositions[newposition]*200)
 
+	def movePlus1B(self,event):
+		disMM = float(self.move1Insert.GetValue())
+		#Multiply distance in mm with 200 to obtain number of steps
+		element=Element('M+-',1,int(disMM*200))
+		self.q.put(element)
+	def moveMinus1B(self,event):
+		disMM = -1*float(self.move1Insert.GetValue())
+		element=Element('M+-',1,int(disMM*200))
+		self.q.put(element)
+
+	def movePlus2B(self,event):
+		disMM = float(self.move2Insert.GetValue())
+		#Multiply distance in mm with 200 to obtain number of steps
+		element=Element('M+-',2,int(disMM*200))
+		self.q.put(element)
+	def moveMinus2B(self,event):
+		disMM = -1*float(self.move2Insert.GetValue())
+		element=Element('M+-',2,int(disMM*200))
+		self.q.put(element)
+
 	def movePlus3B(self,event):
 		disMM = float(self.move3Insert.GetValue())
 		#Multiply distance in mm with 200 to obtain number of steps
 		element=Element('M+-',3,int(disMM*200))
 		self.q.put(element)
-
 	def moveMinus3B(self,event):
 		disMM = -1*float(self.move3Insert.GetValue())
 		element=Element('M+-',3,int(disMM*200))
 		self.q.put(element)
 
-
 	def movePlus4B(self,event):
 		disMM = float(self.move4Insert.GetValue())
 		element=Element('M+-',4,int(disMM*200))
 		self.q.put(element)
-
 	def moveMinus4B(self,event):
 		disMM = -1*float(self.move4Insert.GetValue())
 		element=Element('M+-',4,int(disMM*200))
+		self.q.put(element)
+
+	def movePlus5B(self,event):
+		disMM = float(self.move5Insert.GetValue())
+		element=Element('M+-',5,int(disMM*200))
+		self.q.put(element)
+	def moveMinus5B(self,event):
+		disMM = -1*float(self.move5Insert.GetValue())
+		element=Element('M+-',5,int(disMM*200))
+		self.q.put(element)
+
+	def movePlus6B(self,event):
+		disMM = float(self.move6Insert.GetValue())
+		element=Element('M+-',6,int(disMM*200))
+		self.q.put(element)
+	def moveMinus6B(self,event):
+		disMM = -1*float(self.move6Insert.GetValue())
+		element=Element('M+-',6,int(disMM*200))
+		self.q.put(element)
+
+	def movePlus7B(self,event):
+		disMM = float(self.move7Insert.GetValue())
+		element=Element('M+-',7,int(disMM*200))
+		self.q.put(element)
+	def moveMinus7B(self,event):
+		disMM = -1*float(self.move7Insert.GetValue())
+		element=Element('M+-',7,int(disMM*200))
 		self.q.put(element)
 
 
@@ -854,7 +972,6 @@ class ControlView(wx.Panel):
 				break
 
 
-
 class DriveSystemGUI(wx.Frame):
 	def __init__(self, parent, mytitle):
 		super(DriveSystemGUI, self).__init__(parent, title=mytitle,size=(frameWidth,frameHeight))
@@ -866,6 +983,11 @@ class DriveSystemGUI(wx.Frame):
 		self.bottom_split = MatplotPanel(self.split_win)
 		self.top_split = ControlView(self.split_win,self.bottom_split,self)
 		self.split_win.SplitHorizontally(self.top_split, self.bottom_split, controlViewSize)
+
+		self.split_right_win = wx.SplitterWindow(self)
+		self.right_split = BeamView(self.split_right_win)
+		self.split_win.SplitVertically(bottom_split,right_split)
+
 	def closeProgram(self):
 		self.Destroy()
 		self.Close()
@@ -886,26 +1008,24 @@ class SettingsWindow(wx.Frame):
 		for i in range(10):
 			pos+=[str(self.parent.targetPositions[i])]
 		targTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Target Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
-		targ0label = wx.StaticText(self.panel, wx.ID_ANY, 'Aperture')
+		targ0label = wx.StaticText(self.panel, wx.ID_ANY, 'alpha')
 		self.targ0input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[0])
-		targ1label = wx.StaticText(self.panel, wx.ID_ANY, '1')
+		targ1label = wx.StaticText(self.panel, wx.ID_ANY, '3mm aperture')
 		self.targ1input = wx.TextCtrl(self.panel, wx.ID_ANY, pos[1])
-		targ2label = wx.StaticText(self.panel, wx.ID_ANY, '2')
+		targ2label = wx.StaticText(self.panel, wx.ID_ANY, '5mm aperture')
 		self.targ2input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[2])
-		targ3label = wx.StaticText(self.panel, wx.ID_ANY, '3')
+		targ3label = wx.StaticText(self.panel, wx.ID_ANY, '1')
 		self.targ3input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[3])
-		targ4label = wx.StaticText(self.panel, wx.ID_ANY, '4')
+		targ4label = wx.StaticText(self.panel, wx.ID_ANY, '2')
 		self.targ4input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[4])
-		targ5label = wx.StaticText(self.panel, wx.ID_ANY, '5')
+		targ5label = wx.StaticText(self.panel, wx.ID_ANY, '3')
 		self.targ5input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[5])
-		targ6label = wx.StaticText(self.panel, wx.ID_ANY, '6')
+		targ6label = wx.StaticText(self.panel, wx.ID_ANY, '4')
 		self.targ6input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[6])
-		targ7label = wx.StaticText(self.panel, wx.ID_ANY, '7')
+		targ7label = wx.StaticText(self.panel, wx.ID_ANY, '5')
 		self.targ7input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[7])
-		targ8label = wx.StaticText(self.panel, wx.ID_ANY, '8')
+		targ8label = wx.StaticText(self.panel, wx.ID_ANY, '6')
 		self.targ8input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[8])
-		targ9label = wx.StaticText(self.panel, wx.ID_ANY, 'Alpha\nSource')
-		self.targ9input = wx.TextCtrl(self.panel, wx.ID_ANY,  pos[9])
 
 		#Detector Positions
 		detTitle = wx.StaticText(self.panel, wx.ID_ANY, 'Detector Positions\n[mm]',style=wx.ALIGN_CENTRE_HORIZONTAL)
@@ -937,7 +1057,6 @@ class SettingsWindow(wx.Frame):
 		targ6Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ7Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		targ8Sizer   = wx.BoxSizer(wx.HORIZONTAL)
-		targ9Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		detTitleSizer      = wx.BoxSizer(wx.HORIZONTAL)
 		det0Sizer   = wx.BoxSizer(wx.HORIZONTAL)
 		det1Sizer   = wx.BoxSizer(wx.HORIZONTAL)
@@ -965,8 +1084,6 @@ class SettingsWindow(wx.Frame):
 		targ7Sizer.Add(self.targ7input, 1, wx.ALL|wx.EXPAND, 5)
 		targ8Sizer.Add(targ8label, 0, wx.ALL, 5)
 		targ8Sizer.Add(self.targ8input, 1, wx.ALL|wx.EXPAND, 5)
-		targ9Sizer.Add(targ9label, 0, wx.ALL, 5)
-		targ9Sizer.Add(self.targ9input, 1, wx.ALL|wx.EXPAND, 5)
 		detTitleSizer.Add(detTitle, 0, wx.ALL, 5)
 		det0Sizer.Add(det0label, 0, wx.ALL, 5)
 		det0Sizer.Add(self.det0input, 1, wx.ALL|wx.EXPAND, 5)
@@ -989,7 +1106,6 @@ class SettingsWindow(wx.Frame):
 		topSizer.Add(targ6Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ7Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(targ8Sizer, 0, wx.ALL|wx.EXPAND, 5)
-		topSizer.Add(targ9Sizer, 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 5)
 		topSizer.Add(detTitleSizer, 0, wx.CENTER)
 		topSizer.Add(wx.StaticLine(self.panel,), 0, wx.ALL|wx.EXPAND, 5)
@@ -1017,7 +1133,6 @@ class SettingsWindow(wx.Frame):
 		self.parent.targetPositions[6]=float(self.targ6input.GetValue())
 		self.parent.targetPositions[7]=float(self.targ7input.GetValue())
 		self.parent.targetPositions[8]=float(self.targ8input.GetValue())
-		self.parent.targetPositions[9]=float(self.targ9input.GetValue())
 
 		'''
 		#Write values to a hidden file
@@ -1027,7 +1142,7 @@ class SettingsWindow(wx.Frame):
 		f.close()
 		'''
 		#Write values to a file
-		f=open("/home/npglocal/DriveSystemGUI/Positions.txt","w")
+		f=open("/home/isslocal/DriveSystemGUI/Positions.txt","w")
 		for i in range(10):
 			f.write(str(self.parent.targetPositions[i])+' '+str(self.parent.detectorPositions[i])+'\n')
 		f.close()
@@ -1101,6 +1216,8 @@ def main():
 	app = wx.App()
 	gui = DriveSystemGUI(None, "Drive System")
 	gui.Show()
+#	beamview = BeamView(None,"Beam View")
+#	beamview.Show()
 	app.MainLoop()
 
 
