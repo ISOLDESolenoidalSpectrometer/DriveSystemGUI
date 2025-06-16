@@ -1,0 +1,46 @@
+# Use this file to put the options into the DriveSystem setup
+# The commented lines show the default values - please change them for your needs!!
+# In case of problems, please contact patrick.macgregor@cern.ch
+
+# FILE PATHS
+BeamBlockerImagePath: beam_blocker_trans50_small.png
+TargetLadderImagePath: target_ladder_is739_small.png
+2DLadderLabelMapPath: id_label_map.txt
+2DLadderEncoderPositionMapPath: id_dist_map.txt
+
+# ELEMENTS IN USE
+TargetLadderDimension: 2
+BeamBlockerEnabled : False
+DisabledAxes: 1,6,7
+ExperimentalMode: True
+
+# CONSTANTS
+# Note that this is the PHYSICAL length of the silencer. It is assumed that the distance to silicon from the array tip is 18.5 mm, and the distance the silencer sticks in the magnet is 32.6 mm. Therefore, the blocking distance is SilencerLength + 18.5 mm - 32.6 mm [see elog:1441]
+SilencerLength: 0.0
+
+# This file contains information about how to push things to Grafana, so that the details aren't accidentally leaked to the wider world!
+GrafanaAuthentication: .grafana_authority.txt
+
+
+# ALIGNMENT
+# Please give all distances in mm relative to the target *at the given encoder positions*, and please make them all positive, or you'll mess things up!
+EncoderAxis1: -11 # Encoder position where z distance to target measured
+EncoderAxis2: -40121 # Encoder position where z distance to array measured
+ArrayTipToTargetLadderDistanceAtSpecifiedEncoderPositions: 191.8 # Distance between array tip and target ladder as measured at specified encoder positions
+
+# These probably shouldn't be touched, but give the reference point for the target-ladder and beam-blocker setups based on their drawings. Units are in mm. Essentially, give the reference point relative to the left and bottom edges of the images used in the BeamView objects.
+TargetLadderAxis3ReferencePoint: 140
+TargetLadderAxis5ReferencePoint: 183.599
+TargetLadderReferencePointID: alpha
+BeamBlockerAxis6ReferencePoint: 156.5
+BeamBlockerAxis7ReferencePoint: 63
+BeamBlockerReferencePointID: bb.medium
+
+
+################################################################################
+# THESE NEED TO BE IMPLEMENTED
+#FCToBeamBlocker:
+#TargetToSiRecoilDE:
+#Atmosphere: Vacuum
+#ArrayIsUpstream: True
+#RecoilMode: silicon # Silcon, Gas, None # TODO THIS DOES NOTHING

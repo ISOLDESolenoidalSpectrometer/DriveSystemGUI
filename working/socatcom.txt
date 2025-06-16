@@ -1,2 +1,0 @@
-socat -d -d pty,raw,echo=0,b9600,ignoreeof pty,raw,echo=0,b9600,ignoreeof
-socat -d -d pty,raw,echo=0,ignoreeof pty,raw,echo=0,ignoreeof

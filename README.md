@@ -1,11 +1,8 @@
 # DriveSystemGUI
 A GUI to control the motor drive system inside the ISOLDE Solenoidal Spectrometer (ISS) at CERN.
 
-## Prerequisites
+## Usage
+More information about the use of this can be found at https://twiki.cern.ch/ISS/DriveSystem.
 
-Required libraries etc.
-* Python 3.x
-* pyserial  (Only pyserial should be installed on the system! Check with 'pip3 list'. To uninstall other serial libraries such as 'serial', use 'sudo pip3 uninstall serial')
-* wxPython 4.x
-* numpy
-* matplotlib
+## Images
+The svg files for the target ladder and the beam blocker are in this repo. Edit as needed using your favourite vector-graphics software!
