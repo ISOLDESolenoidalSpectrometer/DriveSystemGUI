@@ -7,6 +7,7 @@ device that needs to connect over a serial port. This is the foundation for
 both the DriveSystem class and the MotorBoxSim class.
 """
 import abc
+from prompt_toolkit import print_formatted_text
 import serial
 import threading
 import time
@@ -119,9 +120,9 @@ class SerialInterface:
             self.lock.release()  
         
         if self.serial_port.is_open == True:
-            print( f"Connected to {self.portalias}" )
+            print_formatted_text( f"Connected to {self.portalias}" )
         else:
-            print( f"Failed to connenct to {self.portalias}" )
+            print_formatted_text( f"Failed to connenct to {self.portalias}" )
     
 
     ################################################################################
@@ -155,7 +156,7 @@ class SerialInterface:
             if outputline != endline:
                 x = outputline.decode('utf8')
                 if print_each_line:
-                    print(x.rstrip('\n'))
+                    print_formatted_text(x.rstrip('\n'))
                 return_value.append(x)
             else:
                 break
@@ -223,7 +224,7 @@ class SerialInterface:
         """
         if self.serial_port.is_open:
             if print_in_cmd:
-                print( 'WRITE: ', repr(in_cmd) )
+                print_formatted_text( 'WRITE: ', repr(in_cmd) )
             self.write(in_cmd)
             time.sleep(self.sleep_time)
             return self.read()
@@ -325,7 +326,7 @@ class SerialInterface:
         for i in range(0,len(in_cmd_list)):
             output_list.append( self.serial_port_write_read_no_lock( in_cmd_list[i], print_in_cmd ) )
             if print_out_cmd == True:
-                print(output_list[i])
+                print_formatted_text(output_list[i])
 
         self.lock.release()
         return output_list
@@ -346,12 +347,12 @@ class SerialInterface:
         if type(output) == list:
             for i in range(0,len(output)):
                 if print_output and output[i] != "" and output[i] != None:
-                    print('WRITE: ', repr(output[i]))
+                    print_formatted_text('WRITE: ', repr(output[i]))
                 self.write(output[i])
                 time.sleep(self.sleep_time)
         else:
             if print_output and output != "" and output != None:
-                print( 'WRITE: ', repr(output) )
+                print_formatted_text( 'WRITE: ', repr(output) )
             self.write(output)
         return
         
@@ -406,9 +407,9 @@ class SerialInterface:
         self.lock.release()
 
         if self.serial_port.is_open == False:
-            print( f"Disconnected from {self.portalias}" )
+            print_formatted_text( f"Disconnected from {self.portalias}" )
         else:
-            print(f"Failed to close {self.portalias}")
+            print_formatted_text(f"Failed to close {self.portalias}")
     
 
     

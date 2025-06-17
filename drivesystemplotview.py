@@ -6,10 +6,10 @@ This is the base class for the side view and head-on view used to visualise what
 happening inside the ISS magnet when the motors move
 """
 
+from abc import ABC, abstractmethod
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 import wx
-from abc import ABC, abstractmethod
 
 import drivesystemoptions as dsopts
 from drivesystemlib import *

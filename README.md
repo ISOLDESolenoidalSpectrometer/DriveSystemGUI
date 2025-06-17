@@ -13,6 +13,7 @@ You will need to install:
   * matplotlib
   * wxPython
   * psutil (if using resource monitoring)
+  * prompt_toolkit (for CLI interface)
 
 
 ## Usage
@@ -32,7 +33,7 @@ optional arguments:
   -p port, --port port  choose the serial port through which to connect. This is useful if you have replaced the motor box with a simulation
   -m, --monitor         this will print CPU, memory, and thread information periodically to the console to help diagnose memory leaks
   -d, --dark-mode       puts GUI in dark mode
-  --no-gui              will just push the encoder positions to Grafana
+  --no-gui              will just push the encoder positions to Grafana, and provide a command prompt for interaction
   --options-file file   specify the options file used to control the script
 
 Options file arguments + defaults:

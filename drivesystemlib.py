@@ -11,7 +11,9 @@ module are two classes:
       motor box to keep everything else updated.
 """
 
+import datetime as dt
 import numpy as np
+from prompt_toolkit import print_formatted_text
 import time 
 import re
 import requests
@@ -95,14 +97,14 @@ def read_encoder_positions_of_elements( filename : str ) -> bool:
                 try:
                     val1 = int(split[1])
                 except ValueError:
-                    print(f"Could not convert first value to integer in line \"{x}\". Skipping line in mapping file \"{filename}\"...")
+                    print_formatted_text(f"Could not convert first value to integer in line \"{x}\". Skipping line in mapping file \"{filename}\"...")
                     continue
 
                 # Sanitise second value
                 try:
                     val2 = int(split[2])
                 except ValueError:
-                    print(f"Could not convert second value to integer in line \"{x}\". Skipping line in mapping file \"{filename}\"...")
+                    print_formatted_text(f"Could not convert second value to integer in line \"{x}\". Skipping line in mapping file \"{filename}\"...")
                     continue
 
                 # Add to dictionary
@@ -111,7 +113,7 @@ def read_encoder_positions_of_elements( filename : str ) -> bool:
             f.close()
 
     except FileNotFoundError:
-        print(f"Couldn't open mapping file between in-beam elements and encoder position. This should be defined with the \"{dsopts.OPTION_2D_LADDER_ENCODER_POSITION_MAP_PATH.get_keyword()}\" in the options file.")
+        print_formatted_text(f"Couldn't open mapping file between in-beam elements and encoder position. This should be defined with the \"{dsopts.OPTION_2D_LADDER_ENCODER_POSITION_MAP_PATH.get_keyword()}\" in the options file.")
         return False
     
     return True
@@ -237,21 +239,21 @@ class DriveSystem(serialinterface.SerialInterface):
             try:
                 axis = int(pattern.group(1))
             except:
-                print(f'Could not parse axis from command {command}')
+                print_formatted_text(f'Could not parse axis from command {command}')
         
         # Group 2
         if pattern.group(2) != '':
             try:
                 cmd = pattern.group(2)
             except:
-                print(f'Could not parse command from command {command}')
+                print_formatted_text(f'Could not parse command from command {command}')
 
         # Group 3
         if pattern.group(3) != '':
             try:
                 num = int(pattern.group(3))
             except:
-                print(f'Could not parse final number from command {command}')
+                print_formatted_text(f'Could not parse final number from command {command}')
 
         return axis, cmd, num
 
@@ -277,15 +279,15 @@ class DriveSystem(serialinterface.SerialInterface):
 
         # Reject command if it's invalid
         if cmd_axis == None:
-            print(f"The command {repr(command)} is not valid. Ignoring...")
+            print_formatted_text(f"The command {repr(command)} is not valid. Ignoring...")
             return False
 
         if cmd_axis < 0 or cmd_axis > NUMBER_OF_MOTOR_AXES:
-            print(f"The command {repr(command)} does not have a well-defined axis. Ignoring...")
+            print_formatted_text(f"The command {repr(command)} does not have a well-defined axis. Ignoring...")
             return False
 
         if cmd_axis in self.disabled_axes and cmd not in DriveSystem.COMMANDS_ALWAYS_PERMITTED:
-            print(f"The command {repr(command)} cannot be used as axis {cmd_axis} is disabled. Ignoring...")
+            print_formatted_text(f"The command {repr(command)} cannot be used as axis {cmd_axis} is disabled. Ignoring...")
             return False
         
         return True
@@ -295,7 +297,7 @@ class DriveSystem(serialinterface.SerialInterface):
         """
         DriveSystem: Sends a command to abort all the motors
         """
-        print( "Abort command on all axes")
+        print_formatted_text( "Abort command on all axes")
         in_cmd_list = []
         for i in range(1,NUMBER_OF_MOTOR_AXES+1):
             in_cmd_list.append( self.construct_command( i, 'ab' ) )
@@ -307,7 +309,7 @@ class DriveSystem(serialinterface.SerialInterface):
         """
         DriveSystem: Sends a reset command to all axes
         """
-        print( "Reset commmand on all axes")
+        print_formatted_text( "Reset commmand on all axes")
         in_cmd_list = []
         for i in range(1,NUMBER_OF_MOTOR_AXES+1):
             in_cmd_list.append( self.construct_command( i, 'rs' ) )
@@ -372,7 +374,7 @@ class DriveSystem(serialinterface.SerialInterface):
         steps : int
             The number of encoder steps to move
         """
-        print( "Moving ", steps," on axis ",str(axis) )
+        print_formatted_text( "Moving ", steps," on axis ",str(axis) )
         in_cmd = self.construct_command( axis, 'mr', steps )
         self.execute_command( in_cmd, False, True )
         return
@@ -393,11 +395,11 @@ class DriveSystem(serialinterface.SerialInterface):
         disable = dsopts.OPTION_IS_DURING_EXPERIMENT.get_value()
         
         if disable == True:
-            print(f"DATUM DISABLED. The function datum_search() is disabled. You can change this in the options file with the key \"{dsopts.OPTION_IS_DURING_EXPERIMENT.get_keyword()}\"")
+            print_formatted_text(f"DATUM DISABLED. The function datum_search() is disabled. You can change this in the options file with the key \"{dsopts.OPTION_IS_DURING_EXPERIMENT.get_keyword()}\"")
             return
         
         # Start searching for the datum
-        print( "Datum search on axis", axis )
+        print_formatted_text( "Datum search on axis", axis )
     
         # Set datum mode
         # See page 7-15 of Mclennan manual
@@ -412,17 +414,17 @@ class DriveSystem(serialinterface.SerialInterface):
         #  h: 0 = reserved for future use
         in_cmd = self.construct_command( axis, 'dm', '00101000' )
         axis, answer = self.execute_command( in_cmd )
-        print( axis, ':', answer )
+        print_formatted_text( axis, ':', answer )
     
         # Go home to datum
         in_cmd = self.construct_command( axis, 'hd' )
         axis, answer = self.execute_command( in_cmd )
-        print( axis, ':', answer )
+        print_formatted_text( axis, ':', answer )
 
         # Display current operation
         in_cmd = self.construct_command( axis, 'co' )
         axis, answer = self.execute_command( in_cmd )
-        print( axis, ':', answer )
+        print_formatted_text( axis, ':', answer )
     
         return
 
@@ -454,13 +456,13 @@ class DriveSystem(serialinterface.SerialInterface):
 
         # Check if axis is disabled for non-special commands
         if axis in self.disabled_axes and cmd not in DriveSystem.COMMANDS_ALWAYS_PERMITTED:
-            print(f"Movement on axis {axis} disabled. Ignoring command {repr(in_cmd)}")
+            print_formatted_text(f"Movement on axis {axis} disabled. Ignoring command {repr(in_cmd)}")
             return None, None
         
         # Check if axis has been paused by duty cycle
         elif axis in self.paused_axes and cmd in self.movement_commands:
             if print_output:
-                print(f"Movement commands on axis {axis} are paused. Ignoring command {repr(in_cmd)}")
+                print_formatted_text(f"Movement commands on axis {axis} are paused. Ignoring command {repr(in_cmd)}")
             return None, None
 
         # Send the command to the motor box
@@ -473,7 +475,7 @@ class DriveSystem(serialinterface.SerialInterface):
             # Normal command pattern
             if pattern is not None:
                 if print_output:
-                    print( f"{pattern.group(1)} -> {pattern.group(2)}" )
+                    print_formatted_text( f"{pattern.group(1)} -> {pattern.group(2)}" )
                 return pattern.group(1),pattern.group(2)
 
             else:
@@ -484,16 +486,16 @@ class DriveSystem(serialinterface.SerialInterface):
                     # outputline = self.serial_port.readline()
                     # endline = ('').encode()
                     # while outputline != endline:
-                    #     print( outputline )
+                    #     print_formatted_text( outputline )
                     #     outputline = self.serial_port.readline()
                     return pattern.group(1),'See terminal'
                 else:
-                    print("No response was sent")
+                    print_formatted_text("No response was sent")
                     return None, None
                 
         # Print to console if desired
         if print_output:
-            print(outputline.strip('\n'))
+            print_formatted_text(outputline.strip('\n'))
         
         # Return command output if not formattted
         return None, outputline
@@ -530,11 +532,11 @@ class DriveSystem(serialinterface.SerialInterface):
             # Check if axis is disabled
             if in_cmd_decon_list[i][0] in self.disabled_axes and in_cmd_decon_list[i][1] not in DriveSystem.COMMANDS_ALWAYS_PERMITTED:
                 if print_output:
-                    print(f"Commands on axis {in_cmd_decon_list[i][0]} disabled. Ignoring command {repr(in_cmd_list[i])}")
+                    print_formatted_text(f"Commands on axis {in_cmd_decon_list[i][0]} disabled. Ignoring command {repr(in_cmd_list[i])}")
             # Check if axis has been paused by duty cycle
             elif in_cmd_decon_list[i][0] in self.paused_axes and in_cmd_decon_list[i][1] in self.movement_commands:
                 if print_output:
-                    print(f"Movement commands on axis {in_cmd_decon_list[i][0]} are paused. Ignoring command {repr(in_cmd_list[i])}")
+                    print_formatted_text(f"Movement commands on axis {in_cmd_decon_list[i][0]} are paused. Ignoring command {repr(in_cmd_list[i])}")
         
         # Filter the command list
         in_cmd_list = [cmd for cmd, axis in zip(in_cmd_list, [ x[0] for x in in_cmd_decon_list ]) if axis not in self.disabled_axes ]
@@ -557,20 +559,20 @@ class DriveSystem(serialinterface.SerialInterface):
                         # outputline = self.serial_port.readline()
                         # endline = ('').encode()
                         # while outputline != endline:
-                        #     print( outputline )
+                        #     print_formatted_text( outputline )
                         #     outputline = self.serial_port.readline()
                         axis_list.append(pattern.group(1))
                         answer_list.append('See terminal')
                     else:
-                        print("No response was sent!!!")
+                        print_formatted_text("No response was sent!!!")
                         axis_list.append(None)
                         answer_list.append(None)
             if print_output:
-                print("\n".join([ f"{x} -> {y}" for x,y in zip(axis_list,answer_list) ]))
+                print_formatted_text("\n".join([ f"{x} -> {y}" for x,y in zip(axis_list,answer_list) ]))
             return axis_list, answer_list
         
         if print_output:
-            print("".join(output_list))
+            print_formatted_text("".join(output_list))
         return None, output_list
     
     ################################################################################
@@ -592,11 +594,11 @@ class DriveSystem(serialinterface.SerialInterface):
             return
         
         if len(axis_list) == 1:
-            print(f"Could not read position of axis {axis_list[0]}")
+            print_formatted_text(f"Could not read position of axis {axis_list[0]}")
             return
         
         comma_list_text = ", ".join( list( axis_list[0:-1] ) )
-        print(f"Could not read positions of axes {comma_list_text}, and {axis_list[-1]}")
+        print_formatted_text(f"Could not read positions of axes {comma_list_text}, and {axis_list[-1]}")
         return
 
     ################################################################################
@@ -706,12 +708,12 @@ class DriveSystem(serialinterface.SerialInterface):
         """
         # Check if we're using a simulated motor box
         if self.portalias != DEFAULT_SERIAL_PORT:
-            print("Grafana disabled because this is a simulation?")
+            print_formatted_text("Grafana disabled because this is a simulation?")
             return
 
         # Check we have credentials for Grafana
         if dsopts.OPTION_GRAFANA_AUTHENTICATION.get_value() == None:
-            print("Could not authenticate Grafana. Will not push to Grafana.")
+            print_formatted_text("Could not authenticate Grafana. Will not push to Grafana.")
             return
         
         # Open the file and read each line
@@ -736,26 +738,26 @@ class DriveSystem(serialinterface.SerialInterface):
                     # Store authentication details
                     if key == 'username':
                         if have_username == True:
-                            print('Ignoring duplicate username...')
+                            print_formatted_text('Ignoring duplicate username...')
                             continue
                         self.grafana_username = value
                         have_username = True
 
                     elif key == 'password':
                         if have_password == True:
-                            print('Ignoring duplicate password...')
+                            print_formatted_text('Ignoring duplicate password...')
                             continue
                         self.grafana_password = value
                         have_password = True
 
                     elif key == 'url':
                         if have_url == True:
-                            print('Ignoring duplicate url...')
+                            print_formatted_text('Ignoring duplicate url...')
                             continue
                         self.grafana_url = value
                         have_url = True
                     else:
-                        print(f'Could not parse line \"{line}\"')
+                        print_formatted_text(f'Could not parse line \"{line}\"')
 
                 # Check we have all 3 options after the end of the file
                 if have_username and have_password and have_url:
@@ -765,7 +767,7 @@ class DriveSystem(serialinterface.SerialInterface):
         
         except FileNotFoundError:
             # Print error message if file not found
-            print("Could not open Grafana authentication file. Will not push to Grafana.")
+            print_formatted_text("Could not open Grafana authentication file. Will not push to Grafana.")
         
         return
 
@@ -773,7 +775,7 @@ class DriveSystem(serialinterface.SerialInterface):
     def slit_scan_launch_threads(self, is_horz_scan = True):
         # Check if we can do it if axes are disabled
         if 3 in self.disabled_axes or 5 in self.disabled_axes:
-            print("Cannot slit scan when one or both axes are disabled!")
+            print_formatted_text("Cannot slit scan when one or both axes are disabled!")
             return
         
         # First pause the DriveSystemThread, which reads ALL encoder positions every second - want some better precision on target ladder encoders
@@ -781,7 +783,7 @@ class DriveSystem(serialinterface.SerialInterface):
 
         # Abort everything else and only enable target ladder axes
         self.abort_all()
-        print("Reset target-ladder axes")
+        print_formatted_text("Reset target-ladder axes")
         self.reset_axis(3)
         self.reset_axis(5)
 
@@ -855,13 +857,13 @@ class DriveSystem(serialinterface.SerialInterface):
         move_axis_running = True
         no_move_axis_running = True
 
-        print('===== PREPARING TO SCAN SLITS... ====')
+        print_formatted_text('===== PREPARING TO SCAN SLITS... ====')
         while move_axis_running or no_move_axis_running:
             # Axis that will move during slit scan - get to the right position
             if self.positions[axis_to_move-1] != encoder_positions[0] and move_axis_running:
                 ctr_will_move += 1
                 if ctr_will_move % 10 == 0:
-                    print(f'Still moving to get to correct {"horizontal" if is_horz_scan else "vertical" } position to begin slit scanning...')
+                    print_formatted_text(f'Still moving to get to correct {"horizontal" if is_horz_scan else "vertical" } position to begin slit scanning...')
             else:
                 move_axis_running = False
             
@@ -869,7 +871,7 @@ class DriveSystem(serialinterface.SerialInterface):
             if self.positions[other_axis-1] != middle[(axis_index + 1) % 2] and no_move_axis_running:
                 ctr_wont_move += 1
                 if ctr_wont_move % 10 == 0:
-                    print(f'Still moving to get to correct {"horizontal" if not is_horz_scan else "vertical" } position to begin slit scanning...')
+                    print_formatted_text(f'Still moving to get to correct {"horizontal" if not is_horz_scan else "vertical" } position to begin slit scanning...')
             else:
                 no_move_axis_running = False
 
@@ -879,8 +881,8 @@ class DriveSystem(serialinterface.SerialInterface):
 
             # Kill if we cannot move
             if ctr_wont_move >= 50 or ctr_will_move >= 50:
-                print("Timeout: cannot complete slit scan as the target ladder will not move to the starting position (did you abort a motor?)")
-                print('======= SLIT SCANNING FAILED ========')
+                print_formatted_text("Timeout: cannot complete slit scan as the target ladder will not move to the starting position (did you abort a motor?)")
+                print_formatted_text('======= SLIT SCANNING FAILED ========')
                 self.kill_slit_scan()
                 return
 
@@ -888,7 +890,7 @@ class DriveSystem(serialinterface.SerialInterface):
             time.sleep(0.2)
 
         # Now start visiting all the places
-        print('===== SLIT SCANNING IN PROGRESS =====')
+        print_formatted_text('===== SLIT SCANNING IN PROGRESS =====')
         for i in range(0,len(encoder_positions)):
             if self.is_slit_scanning:
                 cmd = self.construct_command(axis_to_move, 'ma', encoder_positions[i] )
@@ -899,22 +901,22 @@ class DriveSystem(serialinterface.SerialInterface):
                         time.sleep(0.1)
                         ctr += 1
                         if ctr % 5 == 0:
-                            print(f'Trying to move to {slit_name} {self.slit_scan_offset_string(encoder_positions[i], middle[axis_index])}')
+                            print_formatted_text(f'Trying to move to {slit_name} {self.slit_scan_offset_string(encoder_positions[i], middle[axis_index])}')
                             self.execute_command(cmd)
                         if ctr > 50:
-                            print("Cannot complete slit scan as nothing is moving (did you abort a motor?). Stopping...")
-                            print('======= SLIT SCANNING FAILED ========')
+                            print_formatted_text("Cannot complete slit scan as nothing is moving (did you abort a motor?). Stopping...")
+                            print_formatted_text('======= SLIT SCANNING FAILED ========')
                             self.kill_slit_scan()
                             return
                     else:
                         break
-                print(f'Moved to {slit_name} {self.slit_scan_offset_string(encoder_positions[i], middle[axis_index])}')
+                print_formatted_text(f'Moved to {slit_name} {self.slit_scan_offset_string(encoder_positions[i], middle[axis_index])}')
                 self.slit_scanning_wait_at_position_timer.wait(2)
             else:
                 # Essentially exit this function if someone kills the slit scan
                 return
         
-        print('====== SLIT SCANNING COMPLETE =======')
+        print_formatted_text('====== SLIT SCANNING COMPLETE =======')
 
         return
     
@@ -1020,8 +1022,8 @@ class DriveSystemThread(threading.Thread):
                 pos = self._driveSystem.get_positions() # Position in steps
 
                 # Print positions to console
-                # print( "[", ",".join( [ f'{pos[i]:>6}' if i+1 not in self._driveSystem.disabled_axes else f'{"None":>6}' for i in range(0,len(pos)) ] ), "]" )
-                print( "[", ",".join( [ f'{pos[i]:>7}' if i+1 not in self._driveSystem.disabled_axes else f'{pos[i]:>6}*' for i in range(0,len(pos)) ] ), "]" )
+                timestamp = dt.datetime.now().strftime( '%Y.%m.%d %H:%M:%S' )
+                print_formatted_text( f"[{timestamp}][{','.join( [ f'{pos[i]:>7}' if i+1 not in self._driveSystem.disabled_axes else f'{pos[i]:>6}*' for i in range(0,len(pos)) ] )}]" )
 
                 # Check how much time is left in which to sleep before we repeat again.
                 time_elapsed = time.time() - t

@@ -7,6 +7,7 @@ This module is a simple resource monitoring thread for a process.
 
 import datetime
 import os
+from prompt_toolkit import print_formatted_text
 import psutil
 import threading
 
@@ -38,10 +39,10 @@ class ResourceMonitorThread(threading.Thread):
             cpu = self.process.cpu_percent(interval=None)  # % CPU usage
             num_threads = self.process.num_threads()
             now = datetime.datetime.now().isoformat('-','seconds')
-            print(f"[Resource Monitor {self.pid}] {now} | Memory: {mem:.2f} MB | CPU: {cpu:.1f}% | Threads: {num_threads}")
+            print_formatted_text(f"[Resource Monitor {self.pid}] {now} | Memory: {mem:.2f} MB | CPU: {cpu:.1f}% | Threads: {num_threads}")
 
             # for t in threading.enumerate():
-            #     print(f"    Thread name: {t.name}, ID: {t.ident}, Alive: {t.is_alive()}")
+            #     print_formatted_text(f"    Thread name: {t.name}, ID: {t.ident}, Alive: {t.is_alive()}")
 
             # Wait before running next iteration, but have option to cancel it prematurely through setting event
             self.event.wait( timeout=self.interval )

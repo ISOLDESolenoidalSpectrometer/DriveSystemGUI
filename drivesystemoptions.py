@@ -11,6 +11,7 @@ __version__ = '2.0'
 
 import argparse as ap
 from enum import Enum
+from prompt_toolkit import print_formatted_text
 from typing import Callable, TypeVar, Generic, Optional, List, Union
 
 import drivesystemlib as dslib
@@ -484,7 +485,7 @@ def read_options_from_file() -> None:
             
             # Now check to see if line contains 0 or > 2 colon - this indicates it is an option. Print an error if not
             if line.count(':') != 1:
-                print(f'OPTION ERROR: line {line_ctr} does not contain a valid option -> [{line}]')
+                print_formatted_text(f'OPTION ERROR: line {line_ctr} does not contain a valid option -> [{line}]')
                 continue
 
             # Split line at colon
@@ -494,11 +495,11 @@ def read_options_from_file() -> None:
 
             # Check key and value are not empty
             if len(key) == 0:
-                print(f'OPTION ERROR: line {line_ctr} does not contain a valid key -> [{line}]')
+                print_formatted_text(f'OPTION ERROR: line {line_ctr} does not contain a valid key -> [{line}]')
                 continue
 
             if len(value) == 0:
-                print(f'OPTION ERROR: line {line_ctr} does not contain a valid value -> [{line}]')
+                print_formatted_text(f'OPTION ERROR: line {line_ctr} does not contain a valid value -> [{line}]')
                 continue
 
             # Strip any comments
@@ -507,7 +508,7 @@ def read_options_from_file() -> None:
             
             # Check key exists already = known option
             if DICT_OF_OPTIONS.get(key, 'NOKEY') == 'NOKEY':
-                print(f'ERROR: key {key} is unknown. Ignoring...')
+                print_formatted_text(f'ERROR: key {key} is unknown. Ignoring...')
                 continue
 
             # Key exists. Process and store
@@ -548,7 +549,7 @@ def print_options() -> None:
     A diagnostic that prints all options
     """
     for key in DICT_OF_OPTIONS.keys():
-        print( str(DICT_OF_OPTIONS[key] ))
+        print_formatted_text( str(DICT_OF_OPTIONS[key] ))
     return
 
 ################################################################################

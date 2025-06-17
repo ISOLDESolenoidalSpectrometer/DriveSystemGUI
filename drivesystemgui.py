@@ -15,6 +15,7 @@ matplotlib.use('WXAgg')
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
+from prompt_toolkit import print_formatted_text
 import wx
 import wx.lib.scrolledpanel
 
@@ -83,7 +84,7 @@ class BeamView(dspv.PlotView):
             dsopts.AXIS_POSITION_DICT[dsopts.OPTION_TARGET_LADDER_REFERENCE_POINT_ID.get_value()]
             target_ladder_reference_point_id = dsopts.OPTION_TARGET_LADDER_REFERENCE_POINT_ID.get_value()
         except KeyError:
-            print("WARNING: couldn't find a reference point on the target ladder. The GUI will assume that the chosen reference point is the alpha source. THIS MAY LEAD TO UNINTENDED CONSEQUENCES. CONSIDER YOURSELF WARNED!!!")
+            print_formatted_text("WARNING: couldn't find a reference point on the target ladder. The GUI will assume that the chosen reference point is the alpha source. THIS MAY LEAD TO UNINTENDED CONSEQUENCES. CONSIDER YOURSELF WARNED!!!")
             target_ladder_reference_point_id = 'alpha'
 
         [self.encoder_target_ladder_reference_X, self.encoder_target_ladder_reference_Y] = dsopts.AXIS_POSITION_DICT[target_ladder_reference_point_id]
@@ -142,7 +143,7 @@ class BeamView(dspv.PlotView):
                 dsopts.AXIS_POSITION_DICT[dsopts.OPTION_BEAM_BLOCKER_REFERENCE_POINT_ID.get_value()]
                 beam_blocker_reference_point_id = dsopts.OPTION_BEAM_BLOCKER_REFERENCE_POINT_ID.get_value()
             except KeyError:
-                print("WARNING: couldn't find a reference point on the beam blocker. The GUI will assume that the chosen reference point is the middle head. THIS MAY LEAD TO UNINTENDED CONSEQUENCES. CONSIDER YOURSELF WARNED!!!")
+                print_formatted_text("WARNING: couldn't find a reference point on the beam blocker. The GUI will assume that the chosen reference point is the middle head. THIS MAY LEAD TO UNINTENDED CONSEQUENCES. CONSIDER YOURSELF WARNED!!!")
                 beam_blocker_reference_point_id = 'bb.medium'
             
             [self.encoder_beam_blocker_middle_head_X, self.encoder_beam_blocker_middle_head_Y] = dsopts.AXIS_POSITION_DICT[beam_blocker_reference_point_id]
@@ -746,7 +747,7 @@ class ControlViewAxisPanel(wx.Panel):
         distance_in_mm = float(self.textctrl_move_relative_input.GetValue())
         distance_in_steps = int(distance_in_mm*MM_TO_STEP)
         self.drive_system.move_relative(axis,distance_in_steps)
-        print('MOVING '+str(axis)+' '+str(distance_in_steps)+' steps')
+        print_formatted_text('MOVING '+str(axis)+' '+str(distance_in_steps)+' steps')
 
     ################################################################################
     def button_func_move_minus(self,event,axis : int) -> None:
@@ -757,7 +758,7 @@ class ControlViewAxisPanel(wx.Panel):
         distance_in_mm = -1.0*float(self.textctrl_move_relative_input.GetValue())
         distance_in_steps = int(distance_in_mm*MM_TO_STEP)
         self.drive_system.move_relative(axis,distance_in_steps)
-        print('MOVING '+str(axis)+' '+str(distance_in_steps)+' steps')
+        print_formatted_text('MOVING '+str(axis)+' '+str(distance_in_steps)+' steps')
     
     ################################################################################
     def button_func_abort(self,event, axis : int) -> None:
@@ -1023,7 +1024,7 @@ class ControlView(wx.Panel):
         """
         pos = self.drive_system.get_positions()
         for i in range(0,NUMBER_OF_MOTOR_AXES):
-            print( f"Axis {i+1}: {pos[i]}" )
+            print_formatted_text( f"Axis {i+1}: {pos[i]}" )
 
     ################################################################################
     def button_func_send_command(self,event):
@@ -1037,7 +1038,7 @@ class ControlView(wx.Panel):
         if self.drive_system.check_if_valid_command(command) == False:
             return
         
-        print("SENDING COMMAND: " + repr(command))
+        print_formatted_text("SENDING COMMAND: " + repr(command))
 
         # Send command and get axis + answer from response
         axis,answer=self.drive_system.execute_command(command,True,True)
@@ -1219,7 +1220,7 @@ class DriveSystemGUI(wx.Frame):
         """
         DriveSystemGUI: This closes the GUI and kills the background thread
         """
-        print("Exiting GUI...")
+        print_formatted_text("Exiting GUI...")
 
         # Tell thread to stop doing things to the GUI
         self.is_gui_running = False

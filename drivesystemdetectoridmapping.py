@@ -5,6 +5,7 @@ Drive system detector ID mapping
 This module contains all necessary code for labelling all the different elements
 inside the motor system
 """
+from prompt_toolkit import print_formatted_text
 from typing import Union
 
 class TargetID:
@@ -298,7 +299,7 @@ class IDMap:
 
                     # Skip lines that don't have colon
                     if len(splitline) < 2:
-                        print(f"ID-label map WARNING: line {line_ctr} ignored as no key-value pair found: \"{mod_line}\"")
+                        print_formatted_text(f"ID-label map WARNING: line {line_ctr} ignored as no key-value pair found: \"{mod_line}\"")
                         continue
 
                     # Strip whitespace at beginning and end of strings (if space around colon)
@@ -311,10 +312,10 @@ class IDMap:
                     # Process if target ID or in ID list
                     if TargetID.is_valid(key) or key in self.ID_LIST:
                         if key in self.dict and key not in self.ID_LIST:
-                            print(f"Warning: overwriting previous definition of target ID \"{key}\" from {self.dict[key]} to {value}")
+                            print_formatted_text(f"Warning: overwriting previous definition of target ID \"{key}\" from {self.dict[key]} to {value}")
                         self.dict[key] = value
                     else:
-                        print(f"Unrecognised key in line{line_ctr}: \"{key}\"")
+                        print_formatted_text(f"Unrecognised key in line{line_ctr}: \"{key}\"")
 
                     # Define remaining bits
                     for i in range(0,len(self.ID_LIST)):
@@ -322,7 +323,7 @@ class IDMap:
                             self.dict[self.ID_LIST[i]] = self.LABEL_LIST[i]
         # Couldn't open file
         except FileNotFoundError:
-            print(f"Couldn't open file {filename}. Using defaults")
+            print_formatted_text(f"Couldn't open file {filename}. Using defaults")
         
         return
 
