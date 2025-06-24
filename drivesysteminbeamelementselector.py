@@ -6,9 +6,9 @@ This module defines the window used to select in-beam elements and move to them.
 """
 
 import numpy as np
-from prompt_toolkit import print_formatted_text
 import wx
 
+import drivesystemprint as dsp
 from drivesystemdetectoridmapping import *
 from drivesystemlib import *
 from drivesystemguilib import *
@@ -486,7 +486,7 @@ class MoveMotorPanel( wx.Panel ):
         """
         # Do nothing if no selected item to move
         if self.in_beam_element_selection_panel.get_selected_object_id() == None:
-            print_formatted_text("Pressing this button will do nothing if nothing is selected.")
+            dsp.dsprint("Pressing this button will do nothing if nothing is selected.")
             return
     
         # Store the ID and deselect the button
@@ -499,21 +499,21 @@ class MoveMotorPanel( wx.Panel ):
         # Tell motors to move with move absolute commands
         # Move 2D targets
         if re.search('[0-9].[0-9].[0-9]', str(self.globalpos)):
-            print_formatted_text('TARGET: ' + str(self.globalpos))
+            dsp.dsprint('TARGET: ' + str(self.globalpos))
             self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
                 self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][1] )
 
         # Move alpha source
         elif re.search('alpha', str(self.globalpos)):
-            print_formatted_text('ALPHA SOURCE: ' + str(self.globalpos))
+            dsp.dsprint('ALPHA SOURCE: ' + str(self.globalpos))
             self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
                 self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][1] )
         
         # Move slits/apertures
         elif re.search('[a-zA-Z]_slit',str(self.globalpos)) or re.search('[a-zA-Z]_aperture',str(self.globalpos)):
-            print_formatted_text('SLIT/APERTURES: ' + str(self.globalpos))
+            dsp.dsprint('SLIT/APERTURES: ' + str(self.globalpos))
             self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
                 self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][1] )

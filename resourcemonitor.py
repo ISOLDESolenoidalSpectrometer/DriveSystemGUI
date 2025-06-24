@@ -7,9 +7,9 @@ This module is a simple resource monitoring thread for a process.
 
 import datetime
 import os
-from prompt_toolkit import print_formatted_text
 import psutil
 import threading
+import drivesystemprint as dsp
 
 class ResourceMonitorThread(threading.Thread):
     """
@@ -39,10 +39,10 @@ class ResourceMonitorThread(threading.Thread):
             cpu = self.process.cpu_percent(interval=None)  # % CPU usage
             num_threads = self.process.num_threads()
             now = datetime.datetime.now().isoformat('-','seconds')
-            print_formatted_text(f"[Resource Monitor {self.pid}] {now} | Memory: {mem:.2f} MB | CPU: {cpu:.1f}% | Threads: {num_threads}")
+            dsp.dsprint(f"[Resource Monitor {self.pid}] {now} | Memory: {mem:.2f} MB | CPU: {cpu:.1f}% | Threads: {num_threads}")
 
             # for t in threading.enumerate():
-            #     print_formatted_text(f"    Thread name: {t.name}, ID: {t.ident}, Alive: {t.is_alive()}")
+            #     print(f"    Thread name: {t.name}, ID: {t.ident}, Alive: {t.is_alive()}")
 
             # Wait before running next iteration, but have option to cancel it prematurely through setting event
             self.event.wait( timeout=self.interval )
@@ -54,3 +54,9 @@ class ResourceMonitorThread(threading.Thread):
         """
         self.running = False
         self.event.set()
+
+
+def GET_RESOURCE_MONITOR_THREAD() -> ResourceMonitorThread:
+    if not hasattr(GET_RESOURCE_MONITOR_THREAD, "_instance"):
+        GET_RESOURCE_MONITOR_THREAD._instance = ResourceMonitorThread()
+    return GET_RESOURCE_MONITOR_THREAD._instance
