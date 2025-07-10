@@ -17,11 +17,8 @@ import drivesystemcli as dscli
 import drivesystemgui as dsgui
 import drivesystemlock as dslock
 import drivesystemprint as dsp
-from prompt_toolkit import print_formatted_text
-import prompt_toolkit.patch_stdout as ptps
 import resourcemonitor
 import wx
-import sys
 
 ################################################################################
 ################################################################################

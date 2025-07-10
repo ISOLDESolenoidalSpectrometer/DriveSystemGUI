@@ -229,13 +229,13 @@ class MotorBoxSim(serialinterface.SerialInterface):
         self.timeout = 0.1
 
     ################################################################################
-    def process_command(self, input : str) -> str:
+    def process_command(self, inputcmd : str) -> str:
         """
-        MotorBoxSim: Processes an input and returns an output
+        MotorBoxSim: Processes an inputcmd and returns an output
 
         Parameters
         ----------
-        input : str
+        inputcmd : str
             The input received from the serial port
 
         Returns
@@ -243,15 +243,25 @@ class MotorBoxSim(serialinterface.SerialInterface):
         output : str
             The data to be sent over the serial port (this function does not send this!)
         """
-        if input == None or input == "":
+        if inputcmd == None or inputcmd == "":
             return None
         
         # PATTERN-MATCH COMMON COMMANDS
-        pattern = re.match('(\d*)(\D\D)(-?\d*)\\r', input, re.IGNORECASE)
+        pattern = re.match('(\d+)(\D\D)(-?\d*)\\r', inputcmd, re.IGNORECASE)
         cmd_ret = "00:! UNKNOWN COMMAND RECEIVED BY SIMULATION!"
         if pattern != None:
             if len(pattern.groups()) == 3:
-                axis = int(pattern.group(1))
+                try:
+                    axis = int(pattern.group(1))
+                except ValueError:
+                    print((f'invalid literal for int() with base 10. Input was: {inputcmd} -> {pattern.groups()}'))
+                    return "ERROR"
+                
+                # CHECK AXIS IS VALID
+                if axis < 1 or axis > 7:
+                    cmd_ret = f'00:ERROR: axis {axis} out of range'
+                    return inputcmd + cmd_ret + "\r\n"
+
                 cmd = pattern.group(2)
                 arg = pattern.group(3)
                 motor = self.get_motor(axis)
@@ -261,7 +271,7 @@ class MotorBoxSim(serialinterface.SerialInterface):
                     cmd_ret = f'{axis:02d}:{int(motor.encoder)}' + ' '*( 12 - len(str(motor.encoder)))
                 
                 # MOVE ABSOLUTE (MA)
-                if cmd == 'ma':
+                elif cmd == 'ma':
                     if motor.is_motor_aborted():
                         cmd_ret = motor.status
                     else:
@@ -269,7 +279,7 @@ class MotorBoxSim(serialinterface.SerialInterface):
                         motor.move(int(arg))
                 
                 # MOVE RELATIVE (MR)
-                if cmd == 'mr':
+                elif cmd == 'mr':
                     if motor.is_motor_aborted():
                         cmd_ret = motor.status
                     else:
@@ -277,23 +287,23 @@ class MotorBoxSim(serialinterface.SerialInterface):
                         motor.move( int(arg) + motor.encoder)
                 
                 # ABSOLUTE POSITION (AP)
-                if cmd == 'ap':
+                elif cmd == 'ap':
                     motor.set_position(int(arg))
                     cmd_ret = f'{axis:02d}:! OK'
                 
                 # ABORT (AB)
-                if cmd == 'ab':
+                elif cmd == 'ab':
                     motor.abort()
                     cmd_ret = motor.status
 
                 # RESET (RS)
-                if cmd == 'rs':
+                elif cmd == 'rs':
                     if motor.is_motor_aborted():
                         motor.reset()
                     cmd_ret = motor.status
                 
                 # QUERY ALL (QA)
-                if cmd == 'qa':
+                elif cmd == 'qa':
                     query_all_list = [
                         f"{axis:02d}qa\rMclennan Digiloop Motor Controller V1.04   Servo mode\r\n",
                         f"Input command: {axis}qa\r\n",
@@ -324,12 +334,8 @@ class MotorBoxSim(serialinterface.SerialInterface):
                     ]
                     return query_all_list
 
-
-
-
-
         # TODO - more patterns to match based on motor box commands...
-        return input + cmd_ret + "\r\n"
+        return inputcmd + cmd_ret + "\r\n"
     
     ################################################################################
     def kill(self) -> None:

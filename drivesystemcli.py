@@ -6,7 +6,6 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import SearchToolbar, TextArea
 import drivesystemlib as dslib
 import datetime as dt
-import sys
 import threading
 import time
 
@@ -106,7 +105,7 @@ class DriveSystemCLI():
             axis,response = self.drivesystem.execute_command( self.drivesystem.construct_command_from_str(cmd) )
             if response == None:
                 response = 'None'
-            self.print_to_terminal(cmd_time + ' ' + cmd + " -> " + response.replace('\r',' ') + '\n')
+            self.print_to_terminal(cmd_time + ' ' + cmd + " -> " + response.replace('\r',' '))
             return
 
         # Add command processor to the input field
@@ -128,10 +127,8 @@ class DriveSystemCLI():
     ################################################################################
     def print_to_terminal(self, text : str, end='\n' ):
         with self.lock:
-            mytext = self.output_text_area.text + text + end
-            self.output_text_area.buffer.document = Document(
-                text = mytext, cursor_position = len(mytext)
-            )
+            self.output_text_area.buffer.insert_text(text + end)
+            self.app.invalidate() # Calls refresh
 
     
     ################################################################################

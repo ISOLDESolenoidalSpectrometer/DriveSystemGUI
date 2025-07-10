@@ -686,10 +686,20 @@ class DriveSystem(serialinterface.SerialInterface):
         """
         if self.push_to_grafana:
             payload = 'encoder,axis=' + str(axis) + ',name=' + str(self.grafana_axis_name[axis-1].replace(" ", "_")) + ' value=' + str(encoder)
-            r = requests.post( self.grafana_url, data=payload, auth=(self.grafana_username,self.grafana_password), verify=False )
-        else:
-            pass
+            try:
+                self._deliver_payload(payload)
+            except:
+                dsp.dsprint("Couldn't push values to Grafana")
 
+        return
+    
+    ################################################################################
+    def _deliver_payload( self, payload : str ):
+        """
+        DriveSystem: Tries to send data to Grafana in a separate thread, but with
+        built-in timeout
+        """
+        threading.Thread( target=requests.post, args=(self.grafana_url), kwargs={'data' : payload, 'auth' : (self.grafana_username,self.grafana_password), 'verify' : False, 'timeout': 5}, daemon=True ).start()
         return
     
     ################################################################################
@@ -1074,7 +1084,6 @@ class DriveSystemThread(threading.Thread):
 def shutdown():
     drive_system = DriveSystem.get_instance()
     drive_system_thread = DriveSystemThread()
-    monitor = resourcemonitor.GET_RESOURCE_MONITOR_THREAD()
 
     # CLOSING DOWN PROCEDURE
     # Abort all motors
@@ -1088,6 +1097,7 @@ def shutdown():
 
     # Kill resource monitor
     if dsopts.CMD_LINE_ARG_MONITOR_RESOURCES.get_value():
+        monitor = resourcemonitor.GET_RESOURCE_MONITOR_THREAD()
         monitor.kill()
         monitor.join()
 
