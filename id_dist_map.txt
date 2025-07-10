@@ -1,4 +1,4 @@
-alpha 14535 15460
+alpha 14535 11300
 horz_slit 2194 3267
 vert_slit 5399 3280
 small_aperture -1118 5056
