@@ -30,7 +30,7 @@ ArrayTipToTargetLadderDistanceAtSpecifiedEncoderPositions: 191.8 # Distance betw
 
 # These probably shouldn't be touched, but give the reference point for the target-ladder and beam-blocker setups based on their drawings. Units are in mm. Essentially, give the reference point relative to the left and bottom edges of the images used in the BeamView objects.
 TargetLadderAxis3ReferencePoint: 219.249
-TargetLadderAxis5ReferencePoint: 131
+TargetLadderAxis5ReferencePoint: 128.993
 TargetLadderReferencePointID: small_aperture
 BeamBlockerAxis6ReferencePoint: 156.5
 BeamBlockerAxis7ReferencePoint: 63

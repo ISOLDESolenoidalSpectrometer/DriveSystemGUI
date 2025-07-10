@@ -56,13 +56,13 @@ AXIS_LABELS = ['Target carriage',
 #   'key':               'descript.',                                Width  Height Colour     axis
 MOTOR_AXIS_DICT = {
     'SiA': MotorAxisInfo( 'Si array', ARRAY_SUPPORT_TO_END_OF_SILICON,  35.0, '#FD3F0D', 0 ), # The width was changed from 610.0 after elog:6071
-    'TaC': MotorAxisInfo( 'Target carriage',                           450.0, 270.0, '#0DE30B', 1 ),
-    'ArC': MotorAxisInfo( 'Array bed',                                 350.0, 195.0, '#FDD11F', 2 ),
-    'TLH': MotorAxisInfo( 'Targ ladder H',                              80.0, 130.0, '#00A7FA', 3 ),
-    'Det': MotorAxisInfo( 'Diagnostic Detectors',                       80.0, 130.0, '#910BE3', 4 ),
-    'TLV': MotorAxisInfo( 'Target ladder V',                           309.4, 217.0, '#00A7FA', 5 ),
-    'BBH': MotorAxisInfo( 'Beam blocker H',                             80.0, 130.0, '#910BE3', 6 ),
-    'BBV': MotorAxisInfo( 'Beam blocker V',                            169.5, 123.0, '#910BE3', 7 )
+    'TaC': MotorAxisInfo( 'Target carriage',                           450.0, 270.0, '#0DE30B', 1 ), # PlotView
+    'ArC': MotorAxisInfo( 'Array bed',                                 350.0, 195.0, '#FDD11F', 2 ), # PlotView
+    'TLH': MotorAxisInfo( 'Targ ladder H',                              80.0, 130.0, '#00A7FA', 3 ), # PlotView
+    'Det': MotorAxisInfo( 'Diagnostic Detectors',                       80.0, 130.0, '#910BE3', 4 ), # PlotView
+    'TLV': MotorAxisInfo( 'Target ladder V',                           309.4, 194.0, '#00A7FA', 5 ), # BeamView
+    'BBH': MotorAxisInfo( 'Beam blocker H',                             80.0, 130.0, '#910BE3', 6 ), # PlotView
+    'BBV': MotorAxisInfo( 'Beam blocker V',                            169.5, 123.0, '#910BE3', 7 )  # BeamView
 }
 
 # Wrapped in a function to make dark mode work!
