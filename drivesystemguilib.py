@@ -60,7 +60,7 @@ MOTOR_AXIS_DICT = {
     'ArC': MotorAxisInfo( 'Array bed',                                 350.0, 195.0, '#FDD11F', 2 ), # PlotView
     'TLH': MotorAxisInfo( 'Targ ladder H',                              80.0, 130.0, '#00A7FA', 3 ), # PlotView
     'Det': MotorAxisInfo( 'Diagnostic Detectors',                       80.0, 130.0, '#910BE3', 4 ), # PlotView
-    'TLV': MotorAxisInfo( 'Target ladder V',                           309.4, 194.0, '#00A7FA', 5 ), # BeamView
+    'TLV': MotorAxisInfo( 'Target ladder V',                           308.5, 194.0, '#00A7FA', 5 ), # BeamView
     'BBH': MotorAxisInfo( 'Beam blocker H',                             80.0, 130.0, '#910BE3', 6 ), # PlotView
     'BBV': MotorAxisInfo( 'Beam blocker V',                            169.5, 123.0, '#910BE3', 7 )  # BeamView
 }
@@ -171,6 +171,29 @@ controlview_axispanel_height = controlview_datum_and_move_relative_panel_height
 # Turn on/off certain elements
 pvp_draw_si_recoil_dets = False
 pvp_draw_beam_blocker = True
+
+# INBEAMELEMENT PANEL
+inbeamelement_target_radius = 4 # mm
+inbeamelement_slit_width = 1 # mm
+inbeamelement_slit_height = 12 # mm
+inbeamelement_smallaperture_radius = 1.5 # mm
+inbeamelement_largeaperture_radius = 1.5 # mm
+inbeamelement_alpha_radius = 11.5
+
+inbeamelement_target_colour = '#CCCCCC'
+inbeamelement_horzslit_colour = '#CCCCCC'
+inbeamelement_vertslit_colour = '#CCCCCC'
+inbeamelement_smallaperture_colour = '#CCCCCC'
+inbeamelement_largeaperture_colour = '#CCCCCC'
+inbeamelement_alpha_colour = '#FFFFFF'
+
+inbeamelement_axislimit = 6.5
+inbeamelement_beamspot_colour = '#FF0000'
+# inbeamelement_
+# inbeamelement_
+# inbeamelement_
+
+
 
 
 ################################################################################

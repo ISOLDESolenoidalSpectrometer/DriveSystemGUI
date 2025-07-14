@@ -476,7 +476,8 @@ class MoveMotorPanel( wx.Panel ):
     def move_motors(self, e : wx.CommandEvent):
         """
         MoveMotorPanel: This function tells the DriveSystem object to move the
-        motors after pressing the move button
+        motors after pressing the move button. We also need to update the selected
+        in-beam element.
 
         Parameters
         ----------
@@ -489,7 +490,7 @@ class MoveMotorPanel( wx.Panel ):
             return
     
         # Store the ID and deselect the button
-        self.globalpos = self.in_beam_element_selection_panel.get_selected_object_id()
+        globalpos = self.in_beam_element_selection_panel.get_selected_object_id()
         format_button_deselected( self.button_move )
         self.in_beam_element_selection_panel.change_selected_item(None, None)
 
@@ -497,34 +498,37 @@ class MoveMotorPanel( wx.Panel ):
 
         # Tell motors to move with move absolute commands
         # Move 2D targets
-        if re.search('[0-9].[0-9].[0-9]', str(self.globalpos)):
-            print('TARGET: ' + str(self.globalpos))
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
+        if re.search('[0-9].[0-9].[0-9]', str(globalpos)):
+            print('TARGET: ' + str(globalpos))
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
-                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][1] )
+                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
 
         # Move alpha source
-        elif re.search('alpha', str(self.globalpos)):
-            print('ALPHA SOURCE: ' + str(self.globalpos))
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
+        elif re.search('alpha', str(globalpos)):
+            print('ALPHA SOURCE: ' + str(globalpos))
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
-                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][1] )
+                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
         
         # Move slits/apertures
-        elif re.search('[a-zA-Z]_slit',str(self.globalpos)) or re.search('[a-zA-Z]_aperture',str(self.globalpos)):
-            print('SLIT/APERTURES: ' + str(self.globalpos))
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
+        elif re.search('[a-zA-Z]_slit',str(globalpos)) or re.search('[a-zA-Z]_aperture',str(globalpos)):
+            print('SLIT/APERTURES: ' + str(globalpos))
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
-                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][1] )
+                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
         
         # Move beam blocker
-        elif re.search('bb.*',str(self.globalpos)): # beam blocker
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][1] )
+        elif re.search('bb.*',str(globalpos)): # beam blocker
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
 
         # Move beam monitoring detectors
-        elif re.search('bm.*',str(self.globalpos)): # beam monitor
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['Det'].axis_number, dsopts.AXIS_POSITION_DICT[ str( self.globalpos ) ][0] )
+        elif re.search('bm.*',str(globalpos)): # beam monitor
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['Det'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+
+        # Regardless, store the element
+        self.drive_system.set_in_beam_element( str(globalpos) )
         
         return
 

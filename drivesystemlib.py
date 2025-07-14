@@ -142,11 +142,12 @@ class DriveSystem(serialinterface.SerialInterface):
         self.grafana_password = None
         self.grafana_url = None
         self.disabled_axes = dsopts.OPTION_DISABLED_AXES.get_value()
-        self.paused_axes = [4] # Stores any axes that need to be paused because of their duty cycle
+        self.paused_axes = [] # Stores any axes that need to be paused because of their duty cycle
         self.movement_commands = ['ma', 'mr', 'cv', 'hd', 'md'] # List of commands causing movement on a motor axis
         self.duty_cycles = [
             # dutycycle.DutyCycle( , )
         ]
+        self.selected_in_beam_element = None # Use this to store ID of in beam element selected
 
         # Try and get authentication details for Grafana
         self.get_grafana_authentication()
@@ -909,7 +910,7 @@ class DriveSystem(serialinterface.SerialInterface):
                     else:
                         break
                 print(f'Moved to {slit_name} {self.slit_scan_offset_string(encoder_positions[i], middle[axis_index])}')
-                self.slit_scanning_wait_at_position_timer.wait(2)
+                self.slit_scanning_wait_at_position_timer.wait(0.5)
             else:
                 # Essentially exit this function if someone kills the slit scan
                 return
@@ -925,10 +926,20 @@ class DriveSystem(serialinterface.SerialInterface):
         return f'{"+" if current_pos > slit_pos else "-"} {np.round( np.abs( current_pos - slit_pos )*STEP_TO_MM, 2)} mm'
 
     ################################################################################
-    def kill_slit_scan(self):
+    def kill_slit_scan(self) -> None:
         self.is_slit_scanning = False
         self.slit_scanning_check_encoder_position_timer.set()
         self.slit_scanning_wait_at_position_timer.set()
+        return
+    
+    ################################################################################
+    def set_in_beam_element( self, id : str ) -> None:
+        self.selected_in_beam_element = id
+        return
+    ################################################################################
+    def get_in_beam_element( self ) -> str:
+        return self.selected_in_beam_element
+        
 
 
 ################################################################################

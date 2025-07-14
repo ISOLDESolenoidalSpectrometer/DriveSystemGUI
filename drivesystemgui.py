@@ -11,6 +11,8 @@ This module contains all the information required to run the GUI
 
 import imageio.v3 as iio
 import matplotlib
+import matplotlib.lines
+import matplotlib.patches
 matplotlib.use('WXAgg')
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
@@ -22,6 +24,7 @@ import drivesystemoptions as dsopts
 from drivesystemlib import *
 from drivesystemguilib import *
 import drivesysteminbeamelementselector
+import drivesystemdetectoridmapping
 import drivesystemplotview as dspv
 
 ARRAY_IS_UPSTREAM = True
@@ -44,6 +47,7 @@ class BeamView(dspv.PlotView):
             The parent window that owns the BeamView object
         """
         # Initialise using parent init (which calls this class's methods!)
+        self.id_map = drivesystemdetectoridmapping.IDMap.get_instance()
         dspv.PlotView.__init__(self,panel,(beamview_width_inches,beamview_height_inches))
 
     ################################################################################
@@ -129,12 +133,96 @@ class BeamView(dspv.PlotView):
         self.inset_axes_target_ladder.set_ylim(0, MOTOR_AXIS_DICT['TLV'].height)
         self.inset_axes_target_ladder.set_aspect('equal')
         self.inset_axes_target_ladder.axis('off')
+        self.inset_axes_target_ladder.set_zorder(4)
 
         # Write target ladder and beam blocker position
         position_text_y_offset = -0.03
         trans = self.ax.transAxes + self.ax.transData.inverted()
         self.text_target_ladder_position = self.ax.text( *trans.transform( ( 0.0, 1 - position_text_y_offset ) ), "", color=MOTOR_AXIS_DICT['TLH'].colour, ha='left', va='top' )
 
+        # Inset axis for beam spot on target position view = inbeamelement view
+        self.ax_inset_inbeamelement_size = self.tl_width_fig*0.2
+        self.ax_inset_inbeamelement = self.ax.inset_axes([
+                0.02, # X
+                0.02, # Y
+                self.ax_inset_inbeamelement_size,   # width
+                self.ax_inset_inbeamelement_size   # height
+            ], transform=self.fig.transFigure,
+            zorder=5
+        )
+        self.ax_inset_inbeamelement.set_xlim(-inbeamelement_axislimit,inbeamelement_axislimit)
+        self.ax_inset_inbeamelement.set_ylim(-inbeamelement_axislimit,inbeamelement_axislimit)
+        self.ax_inset_inbeamelement.set_aspect('equal')
+        self.ax_inset_inbeamelement.axis('on')
+        self.ax_inset_inbeamelement.set_xticks( list( range( int(-inbeamelement_axislimit), int( inbeamelement_axislimit + 1 ), 1 ) ) ) 
+        self.ax_inset_inbeamelement.set_yticks( list( range( int(-inbeamelement_axislimit), int( inbeamelement_axislimit + 1 ), 1 ) ) )
+        self.ax_inset_inbeamelement.set_xticklabels([])
+        self.ax_inset_inbeamelement.set_yticklabels([])
+        self.ax_inset_inbeamelement.tick_params( axis='both', which='both', length=0)
+        self.ax_inset_inbeamelement.set_visible(True)
+        self.ax_inset_inbeamelement.grid(True,linewidth=0.2, color='#0000FF')
+        self.ax_inset_inbeamelement.axhline(0, color='#FF0000', linewidth=0.5)
+        self.ax_inset_inbeamelement.axvline(0, color='#FF0000', linewidth=0.5)
+
+        # inbeamelement view: add target, slits, apertures TODO check if these are variables elsewhere!
+        self.inbeamelement_target = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_target_radius, facecolor=inbeamelement_target_colour)
+        self.inbeamelement_horzslit = matplotlib.patches.Rectangle( (-0.5*inbeamelement_slit_height, -0.5*inbeamelement_slit_width), inbeamelement_slit_height, inbeamelement_slit_width, facecolor=inbeamelement_horzslit_colour)
+        self.inbeamelement_vertslit = matplotlib.patches.Rectangle( (-0.5*inbeamelement_slit_width, -0.5*inbeamelement_slit_height), inbeamelement_slit_width, inbeamelement_slit_height, facecolor=inbeamelement_vertslit_colour)
+        self.inbeamelement_smallaperture = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_smallaperture_radius, facecolor=inbeamelement_smallaperture_colour)
+        self.inbeamelement_largeaperture = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_largeaperture_radius, facecolor=inbeamelement_largeaperture_colour)
+        self.inbeamelement_alpha = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_alpha_radius, facecolor=inbeamelement_alpha_colour)
+
+        self.inbeamelement_target.set_visible(False)
+        self.inbeamelement_horzslit.set_visible(False)
+        self.inbeamelement_vertslit.set_visible(False)
+        self.inbeamelement_smallaperture.set_visible(False)
+        self.inbeamelement_largeaperture.set_visible(False)
+        self.inbeamelement_alpha.set_visible(False)
+        
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_target)
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_horzslit)
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_vertslit)
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_smallaperture)
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_largeaperture)
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_alpha)
+        
+        # Beam crosshairs
+        self.beam_spot_half_line_thickness = 0.1
+        self.beam_spot_X = 100 # Set these way out of the axis boundaries!
+        self.beam_spot_Y = 100 # Set these way out of the axis boundaries!
+        self.inbeamelement_horzline = matplotlib.lines.Line2D(
+            [self.beam_spot_X - 3*self.beam_spot_half_line_thickness, self.beam_spot_X + 3*self.beam_spot_half_line_thickness],
+            [self.beam_spot_Y, self.beam_spot_Y],
+            color='red', linewidth=2
+        )
+        self.inbeamelement_vertline = matplotlib.lines.Line2D(
+            [self.beam_spot_X, self.beam_spot_X],
+            [self.beam_spot_Y - 3*self.beam_spot_half_line_thickness, self.beam_spot_Y + 3*self.beam_spot_half_line_thickness],
+            color='red', linewidth=2
+        )
+        self.ax_inset_inbeamelement.add_line(self.inbeamelement_horzline)
+        self.ax_inset_inbeamelement.add_line(self.inbeamelement_vertline)
+
+        # inbeamelementview: add text - label + ID of element
+        trans_inbeamelement = self.ax_inset_inbeamelement.transAxes + self.ax_inset_inbeamelement.transData.inverted()
+        self.inbeamelement_text = self.ax_inset_inbeamelement.text( *trans_inbeamelement.transform( ( 0.5, 0.95 ) ), "", ha='center', va='top' )
+        # self.inbeamelement_text.set_backgroundcolor('#FFFFFF')
+
+        # Beam spot size
+        self.inbeamelement_circles = [
+            matplotlib.patches.Circle( (self.beam_spot_X, self.beam_spot_Y), r, linewidth=1, edgecolor=c,facecolor='none', linestyle='dotted')
+            for r, c in zip( [1,2,3],['red','green','blue'])
+        ]
+        for circle in self.inbeamelement_circles:
+            self.ax_inset_inbeamelement.add_patch(circle)
+
+        # Cone in case the element is out of the area
+        self.inbeamelement_radar = matplotlib.patches.Polygon([[0,0], [0.5,1], [1,0]], closed=True, color='orange', alpha=0.3)
+        self.inbeamelement_radar.set_visible(False)
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_radar)
+        
+        # Store current element in beam - initialise to None so that nothing is displayed
+        self.element_in_beam = None
 
         if dsopts.OPTION_IS_BEAM_BLOCKER_ENABLED.get_value():
             # Get position of axis 6 and 7 encoder positions
@@ -200,8 +288,8 @@ class BeamView(dspv.PlotView):
         if self.inset_axes_target_ladder.get_visible():
             # Update coordinates
             self.beamview_target_ladder_xy = [
-                ( pos[2] - self.encoder_target_ladder_reference_X)*STEP_TO_MM - self.target_ladder_offset_X,
-                (-pos[4] + self.encoder_target_ladder_reference_Y)*STEP_TO_MM - self.target_ladder_offset_Y
+                (  pos[2] - self.encoder_target_ladder_reference_X )*STEP_TO_MM - self.target_ladder_offset_X,
+                ( -pos[4] + self.encoder_target_ladder_reference_Y )*STEP_TO_MM - self.target_ladder_offset_Y
             ]
             new_tl_coords = self.trans_data_to_figure_coords.transform(self.beamview_target_ladder_xy)
 
@@ -211,6 +299,9 @@ class BeamView(dspv.PlotView):
 
         # Edit target ladder text
         self.text_target_ladder_position.set_text( f"TLH: {self.beamview_target_ladder_xy[0]:.3f} mm\nTLV: {self.beamview_target_ladder_xy[1]:.3f} mm" )
+
+        # Update inbeamelementview
+        self.update_inbeamelementview(pos)
 
         if dsopts.OPTION_IS_BEAM_BLOCKER_ENABLED.get_value():
             if self.inset_axes_beam_blocker.get_visible():
@@ -225,7 +316,7 @@ class BeamView(dspv.PlotView):
                 ip = InsetPosition(self.ax,[new_bb_coords[0], new_bb_coords[1], self.bb_width_fig, self.bb_height_fig])
                 self.inset_axes_beam_blocker.set_axes_locator(ip)
 
-            self.text_beam_blocker_position.set_text(  f"BBH: {self.beamview_beam_blocker_xy[0]:.3f} mm\nBBV: {self.beamview_beam_blocker_xy[1]:.3f} mm" )
+            self.text_beam_blocker_position.set_text(  f"BBH: {self.beamview_beam_blocker_xy[0]:.3f} mm\nBBV: {self.beamview_beam_blocker_xy[1]:.3f} mm" ) 
         
         
     ################################################################################
@@ -265,6 +356,135 @@ class BeamView(dspv.PlotView):
         BeamView: Disables the display of the beam blocker
         """
         self.inset_axes_beam_blocker.set_visible(False)
+
+    ################################################################################
+    def show_inbeamelementview(self):
+        """
+        TODO
+        """
+        self.ax_inset_inbeamelement.set_visible(True)
+        for circle in self.inbeamelement_circles:
+            circle.set_visible(True)
+        self.inbeamelement_horzline.set_visible(True)
+        self.inbeamelement_vertline.set_visible(True)
+        self.inbeamelement_text.set_visible(True)
+
+        # Work out what element to show
+        if self.element_in_beam == None:
+            return
+        if drivesystemdetectoridmapping.TargetID.is_valid(self.element_in_beam):
+            self.inbeamelement_target.set_visible(True)
+        elif self.element_in_beam == self.id_map.ALPHA_SOURCE_ID:
+            self.inbeamelement_alpha.set_visible(True)
+        elif self.element_in_beam == self.id_map.HORZ_SLIT_ID:
+            self.inbeamelement_horzslit.set_visible(True)
+        elif self.element_in_beam == self.id_map.VERT_SLIT_ID:
+            self.inbeamelement_vertslit.set_visible(True)
+        elif self.element_in_beam == self.id_map.SMALL_APERTURE_ID:
+            self.inbeamelement_smallaperture.set_visible(True)
+        elif self.element_in_beam == self.id_map.LARGE_APERTURE_ID:
+            self.inbeamelement_largeaperture.set_visible(True)
+
+        return
+    
+    ################################################################################
+    def hide_inbeamelementview(self):
+        """
+        TODO
+        """
+        self.ax_inset_inbeamelement.set_visible(False)
+        for circle in self.inbeamelement_circles:
+            circle.set_visible(False)
+        self.inbeamelement_horzline.set_visible(False)
+        self.inbeamelement_vertline.set_visible(False)
+        self.inbeamelement_text.set_visible(False)
+        self.inbeamelement_target.set_visible(False)
+        self.inbeamelement_alpha.set_visible(False)
+        self.inbeamelement_horzslit.set_visible(False)
+        self.inbeamelement_vertslit.set_visible(False)
+        self.inbeamelement_smallaperture.set_visible(False)
+        self.inbeamelement_largeaperture.set_visible(False)
+        return
+
+    ################################################################################
+    def update_inbeamelementview(self, pos : list):
+        """
+        TODO - assumes we're visible
+        """
+        # Check if element has changed - get current element
+        current_element = DriveSystem.get_instance().get_in_beam_element()
+
+        # Do NOTHING if we are changing to something not on the target ladder
+        if current_element not in self.id_map.ID_LIST_LADDER and not drivesystemdetectoridmapping.TargetID.is_valid(current_element):
+            return
+
+        # Now check if we need to change the background things:
+        if self.element_in_beam != current_element:
+            # First, hide element previously shown
+            print(self.element_in_beam, "->", current_element)
+            if drivesystemdetectoridmapping.TargetID.is_valid( self.element_in_beam ) and not drivesystemdetectoridmapping.TargetID.is_valid(current_element):
+                self.inbeamelement_target.set_visible(False)
+            elif self.element_in_beam == self.id_map.ALPHA_SOURCE_ID:
+                self.inbeamelement_alpha.set_visible(False)
+            elif self.element_in_beam == self.id_map.HORZ_SLIT_ID:
+                self.inbeamelement_horzslit.set_visible(False)
+            elif self.element_in_beam == self.id_map.VERT_SLIT_ID:
+                self.inbeamelement_vertslit.set_visible(False)
+            elif self.element_in_beam == self.id_map.SMALL_APERTURE_ID:
+                self.inbeamelement_smallaperture.set_visible(False)
+            elif self.element_in_beam == self.id_map.LARGE_APERTURE_ID:
+                self.inbeamelement_largeaperture.set_visible(False)
+
+            # Finally update the element in the beam
+            self.element_in_beam = current_element
+            
+            # Update text for item on ladder
+            self.inbeamelement_text.set_text(self.element_in_beam)
+
+            # Now choose element based on the value
+            if drivesystemdetectoridmapping.TargetID.is_valid(self.element_in_beam):
+                self.inbeamelement_target.set_visible(True)
+            elif self.element_in_beam == self.id_map.ALPHA_SOURCE_ID:
+                self.inbeamelement_alpha.set_visible(True)
+            elif self.element_in_beam == self.id_map.HORZ_SLIT_ID:
+                self.inbeamelement_horzslit.set_visible(True)
+            elif self.element_in_beam == self.id_map.VERT_SLIT_ID:
+                self.inbeamelement_vertslit.set_visible(True)
+            elif self.element_in_beam == self.id_map.SMALL_APERTURE_ID:
+                self.inbeamelement_smallaperture.set_visible(True)
+            elif self.element_in_beam == self.id_map.LARGE_APERTURE_ID:
+                self.inbeamelement_largeaperture.set_visible(True)
+
+            
+
+        # Regardless of item shown, update the beam spot position in the current view
+        self.beam_spot_X = ( dsopts.AXIS_POSITION_DICT[self.element_in_beam][0] - pos[2])*STEP_TO_MM
+        self.beam_spot_Y = -( dsopts.AXIS_POSITION_DICT[self.element_in_beam][1] - pos[4] )*STEP_TO_MM
+
+        # Update position of beam-related items: crosshairs + circles
+        for circle in self.inbeamelement_circles:
+            circle.set_center((self.beam_spot_X, self.beam_spot_Y))
+        self.inbeamelement_horzline.set_xdata( [ self.beam_spot_X - 3*self.beam_spot_half_line_thickness, self.beam_spot_X + 3*self.beam_spot_half_line_thickness ] )
+        self.inbeamelement_horzline.set_ydata( [ self.beam_spot_Y, self.beam_spot_Y ] )
+        self.inbeamelement_vertline.set_xdata( [ self.beam_spot_X, self.beam_spot_X ] )
+        self.inbeamelement_vertline.set_ydata( [ self.beam_spot_Y - 3*self.beam_spot_half_line_thickness, self.beam_spot_Y + 3*self.beam_spot_half_line_thickness ] )
+        
+        # Draw cone if the beam spot is out of range
+        # Calculate distance to cone
+        angle = np.arctan2( self.beam_spot_Y, self.beam_spot_X )
+        if np.abs( self.beam_spot_X ) > inbeamelement_axislimit or np.abs( self.beam_spot_Y ) > inbeamelement_axislimit:
+            # Beam spot not visible
+            self.inbeamelement_radar.set_visible(True)
+            angle_offset = np.pi/12
+            radius = 5
+            left_corner = ( radius*np.cos( angle + angle_offset ), radius*np.sin( angle + angle_offset )  )
+            right_corner = ( radius*np.cos( angle - angle_offset ), radius*np.sin( angle - angle_offset )  )
+            self.inbeamelement_radar.set_xy([ left_corner, right_corner, (0,0) ])
+        else:
+            self.inbeamelement_radar.set_visible(False)
+        return
+
+
    
 ################################################################################
 ################################################################################
@@ -296,6 +516,10 @@ class BeamViewButtons:
         self.checkbox_target_ladder = wx.CheckBox( parent, wx.ID_ANY, label="Target ladder" )
         self.sizer.Add( self.checkbox_target_ladder, 0, wx.ALL, 2 )
 
+        # In beam element view checkbox
+        self.checkbox_inbeamelement = wx.CheckBox( parent, wx.ID_ANY, label="In-beam element" )
+        self.sizer.Add( self.checkbox_inbeamelement, 0, wx.ALL, 2 )
+
         # Beam blocker checkbox
         self.is_beam_blocker_enabled = dsopts.OPTION_IS_BEAM_BLOCKER_ENABLED.get_value()
         if self.is_beam_blocker_enabled:
@@ -307,8 +531,11 @@ class BeamViewButtons:
         parent.SetSizer(self.sizer)
 
         # Set values to true and bind options
-        self.checkbox_target_ladder.SetValue( True)
+        self.checkbox_target_ladder.SetValue( True )
         self.checkbox_target_ladder.Bind( wx.EVT_CHECKBOX, self.target_ladder_box_ticked )
+
+        self.checkbox_inbeamelement.SetValue( True )
+        self.checkbox_inbeamelement.Bind( wx.EVT_CHECKBOX, self.inbeamelement_box_ticked )
         
         if self.is_beam_blocker_enabled:
             self.checkbox_beam_blocker.SetValue( True )
@@ -324,6 +551,17 @@ class BeamViewButtons:
             self.beamview.show_target_ladder()
         else:
             self.beamview.hide_target_ladder()
+
+    ################################################################################
+    def inbeamelement_box_ticked( self, event : wx._core.CommandEvent ):
+        """
+        BeamViewButtons: Function triggered by the checkbox_inbeamelement object for
+        showing/hiding the in-beam element view
+        """
+        if self.checkbox_inbeamelement.IsChecked():
+            self.beamview.show_inbeamelementview()
+        else:
+            self.beamview.hide_inbeamelementview()
 
     ################################################################################
     def beam_blocker_box_ticked(self, event):
@@ -644,8 +882,6 @@ class PosVisPanel(wx.Window):
         """
         PosVisPanel: Calls update positions on the separate elements and redraws
         """
-        # Get new positions
-
         # Update the positions for the two views
         self.driveview.update_positions(pos)
         self.beamview.update_positions(pos)
@@ -1119,7 +1355,8 @@ class ControlView(wx.Panel):
     ################################################################################
     def button_func_slit_scan(self,event):
         """
-        ControlView: Function triggered by button_scan_slit that...TODO
+        ControlView: Function triggered by button_scan_slit that pops open a menu to
+        allow the selection of a horizontal or vertical scan.
         """
         menu = wx.Menu()
         horz_scan = menu.Append(wx.ID_ANY, "Horizontal scan (using vertical slit)")
