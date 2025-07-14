@@ -366,6 +366,7 @@ SOURCE_DIRECTORY = "/home/isslocal/DriveSystemGUI"
 DEFAULT_OPTIONS_FILE =  SOURCE_DIRECTORY+ "/options.txt"
 
 OPTION_SILENCER_LENGTH                                           = Option( 'SilencerLength', None, validator=numeric_validator(float,min_val=0.0) )
+OPTION_SLIT_SCAN_PARAMETER_FILE                                  = Option('SlitScanOptionsFilePath', None, validator=str_validator() )
 OPTION_IS_DURING_EXPERIMENT                                      = Option( 'ExperimentalMode', True, validator=bool_validator() )
 OPTION_GRAFANA_AUTHENTICATION                                    = Option( 'GrafanaAuthentication', None, validator=str_validator() )
 OPTION_TARGET_LADDER_DIMENSION                                   = Option( 'TargetLadderDimension', 2, validator=numeric_validator(int, min_val=1, max_val=2 ) )

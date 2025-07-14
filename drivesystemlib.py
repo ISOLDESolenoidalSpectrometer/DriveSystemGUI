@@ -771,7 +771,10 @@ class DriveSystem(serialinterface.SerialInterface):
         return
 
     ################################################################################
-    def slit_scan_launch_threads(self, is_horz_scan = True):
+    def slit_scan_launch_threads(self, is_horz_scan = True) -> None:
+        """
+        TODO
+        """
         # Check if we can do it if axes are disabled
         if 3 in self.disabled_axes or 5 in self.disabled_axes:
             print("Cannot slit scan when one or both axes are disabled!")
@@ -807,17 +810,119 @@ class DriveSystem(serialinterface.SerialInterface):
         return
     
     ################################################################################
-    def slit_scan_check_encoder_pos_target_ladder_thread_func(self):
+    def slit_scan_check_encoder_pos_target_ladder_thread_func(self) -> None:
+        """
+        TODO
+        """
         update_time = 0.2
         while self.is_slit_scanning:
             t = time.time()
             self.check_encoder_pos_batch([3,5])
             elapsed_time = time.time() - t
             self.slit_scanning_check_encoder_position_timer.wait( np.max([ update_time - elapsed_time, 0.0 ]) )
+        return
 
 
     ################################################################################
-    def slit_scan_steps(self, is_horz_scan = True):
+    @staticmethod
+    def slit_scan_read_file() -> tuple:
+        """
+        TODO
+        """
+        # Check if file exists. Return defaults if it doesn't
+        filepath = dsopts.OPTION_SLIT_SCAN_PARAMETER_FILE.get_value()
+
+        # Defaults
+        mydict = {
+            'OFFSET_IN_MM' : [6, False],
+            'STEP_SIZE_IN_MM' : [0.1, False],
+            'WAIT_TIME_IN_SECONDS': [0.5,False]
+        }
+
+        try:
+            with open( filepath, 'r') as file:
+                line_ctr = 0
+                # Read each line in the file
+                for line in file:
+                    line_ctr += 1
+                    # Strip whitespace from left and right of line
+                    line = line.strip()
+
+                    # Ignore if line is empty
+                    if len(line) == 0:
+                        continue
+
+                    # Check to see if it begins with a comment, and ignore if it does
+                    if line[0] == '#':
+                        continue
+                    
+                    # Now check to see if line contains 0 or > 2 colon - this indicates it is an option. Print an error if not
+                    if line.count(':') != 1:
+                        print(f'SLIT SCAN OPTION ERROR: line {line_ctr} does not contain a valid option -> [{line}]')
+                        continue
+
+                    # Split line at colon
+                    splitline = line.split(':')
+                    key = splitline[0].strip()
+                    value = splitline[1].strip()
+
+                    # Check key and value are not empty
+                    if len(key) == 0:
+                        print(f'SLIT SCAN OPTION ERROR: line {line_ctr} does not contain a valid key -> [{line}]')
+                        continue
+
+                    if len(value) == 0:
+                        print(f'SLIT SCAN OPTION ERROR: line {line_ctr} does not contain a valid value -> [{line}]')
+                        continue
+
+                    # Strip any comments
+                    if '#' in value:
+                        value = value.split('#')[0].strip()
+                    
+                    # Check key exists already
+                    if key not in mydict:
+                        print(f'SLIT SCAN OPTION ERROR: key {key} unknown')
+                        continue
+
+                    # Warn if duplicate keys
+                    if mydict[key][1]:
+                        print(f'SLIT SCAN OPTION WARNING: option already set for {key}. Overwriting...')
+
+                    # Store all found keys
+                    try:
+                        mydict[key] = [ float(value), True ]
+                    except TypeError:
+                        print(f'SLIT SCAN OPTION: could not convert {value} to a float. Will use the defaul for item {key}...')
+
+                
+        except FileNotFoundError:
+            print(f"Cannot find slit scan parameters in file {repr(filepath)}. Using defaults...")
+
+        for k, v in mydict.items():
+            if v[1] == False:
+                print('SLIT SCAN OPTION WARNING: option not set for {k}. Using default...')
+
+        offset_in_mm = mydict['OFFSET_IN_MM'][0]
+        step_size_in_mm = mydict['STEP_SIZE_IN_MM'][0]
+        wait_time_in_seconds = mydict['WAIT_TIME_IN_SECONDS'][0]
+        
+        return (offset_in_mm, step_size_in_mm, wait_time_in_seconds)
+
+
+    ################################################################################
+    def slit_scan_steps(self, is_horz_scan = True) -> None:
+        """
+        TODO
+        """
+        # Get information from file
+        offset_in_mm, step_size_in_mm, wait_time_in_seconds = self.slit_scan_read_file()
+
+        # Set the slit as the focused element
+        if is_horz_scan:
+            self.selected_in_beam_element = dsdidmap.IDMap.VERT_SLIT_ID
+        else:
+            self.selected_in_beam_element = dsdidmap.IDMap.HORZ_SLIT_ID
+
         # I.E. scanning horizontally (on vertical slit)
         if is_horz_scan:
             axis_to_move = 3
@@ -836,9 +941,9 @@ class DriveSystem(serialinterface.SerialInterface):
         middle = dsopts.AXIS_POSITION_DICT[slit_name]
 
         # Calculate encoder positions to visit while scanning across the slit
-        start_position = middle[axis_index] - 6*MM_TO_STEP
-        end_position = middle[axis_index] + 6*MM_TO_STEP
-        step_size = 0.1*MM_TO_STEP
+        start_position = middle[axis_index] - offset_in_mm*MM_TO_STEP
+        end_position = middle[axis_index] + offset_in_mm*MM_TO_STEP
+        step_size = step_size_in_mm*MM_TO_STEP
         number_of_values = int( np.abs( (start_position - end_position)/step_size ) + 1 )
         encoder_positions = np.linspace( start_position, end_position, number_of_values, dtype=int )
 
@@ -895,11 +1000,14 @@ class DriveSystem(serialinterface.SerialInterface):
                 cmd = self.construct_command(axis_to_move, 'ma', encoder_positions[i] )
                 self.execute_command(cmd)
                 ctr = 0
+
+                # While loop to try and move to the position for the next scan
                 while True:
                     if self.positions[axis_to_move-1] != encoder_positions[i] or self.positions[other_axis-1] != middle[(axis_index + 1) % 2]:
                         time.sleep(0.1)
                         ctr += 1
                         if ctr % 5 == 0:
+                            # Tell the user we're trying to move and re-issue the command
                             print(f'Trying to move to {slit_name} {self.slit_scan_offset_string(encoder_positions[i], middle[axis_index])}')
                             self.execute_command(cmd)
                         if ctr > 50:
@@ -909,8 +1017,10 @@ class DriveSystem(serialinterface.SerialInterface):
                             return
                     else:
                         break
+                
+                # Now do the scan = sitting and doing nothing
                 print(f'Moved to {slit_name} {self.slit_scan_offset_string(encoder_positions[i], middle[axis_index])}')
-                self.slit_scanning_wait_at_position_timer.wait(0.5)
+                self.slit_scanning_wait_at_position_timer.wait(wait_time_in_seconds)
             else:
                 # Essentially exit this function if someone kills the slit scan
                 return
@@ -919,14 +1029,21 @@ class DriveSystem(serialinterface.SerialInterface):
 
         return
     
+    ################################################################################
     @staticmethod
     def slit_scan_offset_string( current_pos : int, slit_pos : int ):
+        """
+        TODO
+        """
         if current_pos == slit_pos:
             return ""
         return f'{"+" if current_pos > slit_pos else "-"} {np.round( np.abs( current_pos - slit_pos )*STEP_TO_MM, 2)} mm'
 
     ################################################################################
     def kill_slit_scan(self) -> None:
+        """
+        TODO
+        """
         self.is_slit_scanning = False
         self.slit_scanning_check_encoder_position_timer.set()
         self.slit_scanning_wait_at_position_timer.set()
@@ -934,10 +1051,16 @@ class DriveSystem(serialinterface.SerialInterface):
     
     ################################################################################
     def set_in_beam_element( self, id : str ) -> None:
+        """
+        TODO
+        """
         self.selected_in_beam_element = id
         return
     ################################################################################
     def get_in_beam_element( self ) -> str:
+        """
+        TODO
+        """
         return self.selected_in_beam_element
         
 

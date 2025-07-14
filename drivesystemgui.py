@@ -1374,6 +1374,12 @@ class ControlView(wx.Panel):
         t = threading.Thread( target=self.drive_system.slit_scan_launch_threads, args=(is_horz_scan,) )
         t.start()
         return
+    
+    ################################################################################
+    def kill_slit_scan(self,event):
+        print('======= SLIT SCANNING KILLED ========')
+        self.drive_system.kill_slit_scan()
+        return
 
     ################################################################################
     def refresh(self):
@@ -1384,7 +1390,6 @@ class ControlView(wx.Panel):
         wx.CallAfter( self.textctrl_command_response.Refresh )
         wx.CallAfter( self.textctrl_current_axis.Refresh )
     
-    ################################################################################
     ################################################################################
     def show_or_hide_pause_panel(self, value):
         # value = event.GetValue()
@@ -1480,11 +1485,33 @@ class DriveSystemGUI(wx.Frame):
 
     ################################################################################
     def refresh_gui_thread(self):
+        slit_scan_button_change_to_stop = False
         while self.is_gui_running:
+            # Get current time
             t = time.time()
+
+            # Get positions
             pos = self._drivesystem.get_positions()
+
+            # Ask to update the positions on the GUI
             wx.CallAfter( self.update_positions, pos )
+
+            # Check if slit scan is happening and change button
+            if self._drivesystem.is_slit_scanning and slit_scan_button_change_to_stop == False:
+                slit_scan_button_change_to_stop = True
+                self.controlview.button_slit_scan.SetBackgroundColour('#FF0000')
+                self.controlview.button_slit_scan.SetLabelText('STOP SCAN')
+                self.controlview.button_slit_scan.Bind( wx.EVT_BUTTON, self.controlview.kill_slit_scan )
+            
+            if self._drivesystem.is_slit_scanning == False and slit_scan_button_change_to_stop:
+                self.controlview.button_slit_scan.SetBackgroundColour(controlview_slit_scan_button_colour)
+                self.controlview.button_slit_scan.SetLabelText('SLIT SCAN')
+                self.controlview.button_slit_scan.Bind( wx.EVT_BUTTON, self.controlview.button_func_slit_scan )
+
+            # Calculate elapsed time
             time_elapsed = time.time() - t
+
+            # Sleep for remaining time
             self.gui_refresh_timer.wait( np.max([self.UPDATE_TIME - time_elapsed, 0 ]) )
 
 
@@ -1607,4 +1634,3 @@ class HelpWindow(wx.Frame):
         HelpWindow: determine if the HelpWindow has been drawn or not
         """
         return cls.init
-

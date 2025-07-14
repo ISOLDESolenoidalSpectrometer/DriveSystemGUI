@@ -1,0 +1,4 @@
+# DEFINE SLIT SCAN PARAMETERS HERE!
+WAIT_TIME_IN_SECONDS : 5      # This is the time that you spend waiting at each point
+OFFSET_IN_MM         : 2        # This is the offset in mm that will be traversed either side of the slit
+STEP_SIZE_IN_MM      : 0.1      # This is the distance moved per step of the slit scan

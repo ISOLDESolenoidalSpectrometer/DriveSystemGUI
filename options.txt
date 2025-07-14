@@ -36,6 +36,9 @@ BeamBlockerAxis6ReferencePoint: 156.5
 BeamBlockerAxis7ReferencePoint: 63
 BeamBlockerReferencePointID: bb.medium
 
+# SLIT SCAN PARAMETER FILE
+SlitScanOptionsFilePath: slit_scan_options.txt
+
 
 ################################################################################
 # THESE NEED TO BE IMPLEMENTED
