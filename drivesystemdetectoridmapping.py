@@ -192,6 +192,10 @@ class IDMap:
     SMALL_APERTURE_LABEL = "3 mm aperture"
     LARGE_APERTURE_ID = "large_aperture"
     LARGE_APERTURE_LABEL = "10 mm aperture"
+    TI_TARGET_1_ID = "ti_target1"
+    TI_TARGET_1_LABEL = "Ti Target 1"
+    TI_TARGET_2_ID = "ti_target2"
+    TI_TARGET_2_LABEL = "Ti Target 2"
 
     BEAM_BLOCKER_SMALL_ID = "bb.small"
     BEAM_BLOCKER_SMALL_LABEL = "BB: 6 mm"
@@ -214,7 +218,7 @@ class IDMap:
 
     # Store a list of IDs
     ID_LIST_LADDER = [
-        SMALL_APERTURE_ID, LARGE_APERTURE_ID, HORZ_SLIT_ID, VERT_SLIT_ID, ALPHA_SOURCE_ID
+        SMALL_APERTURE_ID, LARGE_APERTURE_ID, HORZ_SLIT_ID, VERT_SLIT_ID, ALPHA_SOURCE_ID, TI_TARGET_1_ID, TI_TARGET_2_ID
     ]
     ID_LIST = ID_LIST_LADDER + [ 
         BEAM_BLOCKER_SMALL_ID, BEAM_BLOCKER_MEDIUM_ID, BEAM_BLOCKER_LARGE_ID, BEAM_BLOCKER_CLEAR_ID,
@@ -223,7 +227,7 @@ class IDMap:
 
     # Store a list of labels
     LABEL_LIST = [
-        SMALL_APERTURE_LABEL, LARGE_APERTURE_LABEL, HORZ_SLIT_LABEL, VERT_SLIT_LABEL, ALPHA_SOURCE_LABEL,
+        SMALL_APERTURE_LABEL, LARGE_APERTURE_LABEL, HORZ_SLIT_LABEL, VERT_SLIT_LABEL, ALPHA_SOURCE_LABEL, TI_TARGET_1_LABEL, TI_TARGET_2_LABEL,
         BEAM_BLOCKER_SMALL_LABEL, BEAM_BLOCKER_MEDIUM_LABEL, BEAM_BLOCKER_LARGE_LABEL, BEAM_BLOCKER_CLEAR_LABEL,
         BEAM_MONITORING_FC_LABEL, BEAM_MONITORING_MIDDLE_LABEL, BEAM_MONITORING_ZD_LABEL
     ]
@@ -304,7 +308,7 @@ class IDMap:
 
                     # Skip lines that don't have colon
                     if len(splitline) < 2:
-                        print(f"ID-label map WARNING: line {line_ctr} ignored as no key-value pair found: \"{mod_line}\"")
+                        print(f"ID-label map WARNING: line {line_ctr} ignored as no key-value pair found: \"{mod_line}\". Did you forget a colon?")
                         continue
 
                     # Strip whitespace at beginning and end of strings (if space around colon)

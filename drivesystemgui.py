@@ -133,7 +133,7 @@ class BeamView(dspv.PlotView):
         self.inset_axes_target_ladder.set_ylim(0, MOTOR_AXIS_DICT['TLV'].height)
         self.inset_axes_target_ladder.set_aspect('equal')
         self.inset_axes_target_ladder.axis('off')
-        self.inset_axes_target_ladder.set_zorder(4)
+        self.inset_axes_target_ladder.set_zorder(5)
 
         # Write target ladder and beam blocker position
         position_text_y_offset = -0.03
@@ -148,7 +148,7 @@ class BeamView(dspv.PlotView):
                 self.ax_inset_inbeamelement_size,   # width
                 self.ax_inset_inbeamelement_size   # height
             ], transform=self.fig.transFigure,
-            zorder=5
+            zorder=6
         )
         self.ax_inset_inbeamelement.set_xlim(-inbeamelement_axislimit,inbeamelement_axislimit)
         self.ax_inset_inbeamelement.set_ylim(-inbeamelement_axislimit,inbeamelement_axislimit)
@@ -168,6 +168,7 @@ class BeamView(dspv.PlotView):
         self.inbeamelement_target = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_target_radius, facecolor=inbeamelement_target_colour)
         self.inbeamelement_horzslit = matplotlib.patches.Rectangle( (-0.5*inbeamelement_slit_height, -0.5*inbeamelement_slit_width), inbeamelement_slit_height, inbeamelement_slit_width, facecolor=inbeamelement_horzslit_colour)
         self.inbeamelement_vertslit = matplotlib.patches.Rectangle( (-0.5*inbeamelement_slit_width, -0.5*inbeamelement_slit_height), inbeamelement_slit_width, inbeamelement_slit_height, facecolor=inbeamelement_vertslit_colour)
+        self.inbeamelement_ti_target = matplotlib.patches.Rectangle( (-0.5*inbeamelement_tritiumtarget_width, -0.5*inbeamelement_tritiumtarget_height), inbeamelement_tritiumtarget_width, inbeamelement_tritiumtarget_height, facecolor=inbeamelement_tritiumtarget_colour)
         self.inbeamelement_smallaperture = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_smallaperture_radius, facecolor=inbeamelement_smallaperture_colour)
         self.inbeamelement_largeaperture = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_largeaperture_radius, facecolor=inbeamelement_largeaperture_colour)
         self.inbeamelement_alpha = matplotlib.patches.Circle( xy=(0,0), radius=inbeamelement_alpha_radius, facecolor=inbeamelement_alpha_colour)
@@ -175,6 +176,7 @@ class BeamView(dspv.PlotView):
         self.inbeamelement_target.set_visible(False)
         self.inbeamelement_horzslit.set_visible(False)
         self.inbeamelement_vertslit.set_visible(False)
+        self.inbeamelement_ti_target.set_visible(False)
         self.inbeamelement_smallaperture.set_visible(False)
         self.inbeamelement_largeaperture.set_visible(False)
         self.inbeamelement_alpha.set_visible(False)
@@ -182,6 +184,7 @@ class BeamView(dspv.PlotView):
         self.ax_inset_inbeamelement.add_patch(self.inbeamelement_target)
         self.ax_inset_inbeamelement.add_patch(self.inbeamelement_horzslit)
         self.ax_inset_inbeamelement.add_patch(self.inbeamelement_vertslit)
+        self.ax_inset_inbeamelement.add_patch(self.inbeamelement_ti_target)
         self.ax_inset_inbeamelement.add_patch(self.inbeamelement_smallaperture)
         self.ax_inset_inbeamelement.add_patch(self.inbeamelement_largeaperture)
         self.ax_inset_inbeamelement.add_patch(self.inbeamelement_alpha)
@@ -270,6 +273,7 @@ class BeamView(dspv.PlotView):
             self.inset_axes_beam_blocker.set_ylim(0, MOTOR_AXIS_DICT['BBV'].height)
             self.inset_axes_beam_blocker.set_aspect('equal')
             self.inset_axes_beam_blocker.axis('off')
+            self.inset_axes_beam_blocker.set_zorder(4)
 
             # Write target ladder and beam blocker position
             self.text_beam_blocker_position = self.ax.text( *trans.transform( ( 0.6, 1 - position_text_y_offset ) ), "", color=MOTOR_AXIS_DICT['BBH'].colour, ha='left', va='top' )
@@ -384,6 +388,8 @@ class BeamView(dspv.PlotView):
             self.inbeamelement_smallaperture.set_visible(True)
         elif self.element_in_beam == self.id_map.LARGE_APERTURE_ID:
             self.inbeamelement_largeaperture.set_visible(True)
+        elif self.element_in_beam == self.id_map.TI_TARGET_1_ID or self.element_in_beam == self.id_map.TI_TARGET_2_ID:
+            self.inbeamelement_ti_target.set_visible(True)
 
         return
     
@@ -404,6 +410,7 @@ class BeamView(dspv.PlotView):
         self.inbeamelement_vertslit.set_visible(False)
         self.inbeamelement_smallaperture.set_visible(False)
         self.inbeamelement_largeaperture.set_visible(False)
+        self.inbeamelement_ti_target.set_visible(False)
         return
 
     ################################################################################
@@ -434,6 +441,8 @@ class BeamView(dspv.PlotView):
                 self.inbeamelement_smallaperture.set_visible(False)
             elif self.element_in_beam == self.id_map.LARGE_APERTURE_ID:
                 self.inbeamelement_largeaperture.set_visible(False)
+            elif self.element_in_beam == self.id_map.TI_TARGET_1_ID or self.element_in_beam == self.id_map.TI_TARGET_2_ID:
+                self.inbeamelement_ti_target.set_visible(False)
 
             # Finally update the element in the beam
             self.element_in_beam = current_element
@@ -454,6 +463,8 @@ class BeamView(dspv.PlotView):
                 self.inbeamelement_smallaperture.set_visible(True)
             elif self.element_in_beam == self.id_map.LARGE_APERTURE_ID:
                 self.inbeamelement_largeaperture.set_visible(True)
+            elif self.element_in_beam == self.id_map.TI_TARGET_1_ID or self.element_in_beam == self.id_map.TI_TARGET_2_ID:
+                self.inbeamelement_ti_target.set_visible(True)
 
             
 
@@ -510,7 +521,7 @@ class BeamViewButtons:
         self.beamview = beamview
 
         # Define checkboxes
-        self.sizer = wx.BoxSizer( wx.VERTICAL )
+        self.sizer = wx.GridSizer( 2, 2, 0, 0 )
         
         # Target ladder checkbox
         self.checkbox_target_ladder = wx.CheckBox( parent, wx.ID_ANY, label="Target ladder" )
@@ -640,8 +651,6 @@ class DriveView(dspv.PlotView):
 
         # Get physical lengths from options and define some new ones here
         self.silencer_length_from_tip = dsopts.get_silencer_length_from_tip()
-        self.array_carriage_to_target_length = 20
-        self.array_carriage_to_ancillary_length = 20
         self.faraday_cup_encoder_position = dsopts.AXIS_POSITION_DICT.get("bm.fc",[None])[0]
         self.zd_encoder_position = dsopts.AXIS_POSITION_DICT.get("bm.zd",[None])[0]
 
@@ -656,7 +665,7 @@ class DriveView(dspv.PlotView):
         self.circle_faraday_cup = plt.Circle(xy=(0,0), radius=21, fc=MOTOR_AXIS_DICT['ArC'].colour)                                                        # FC circle
         self.circle_zd = plt.Circle(xy=(0,0), radius=20, fc=MOTOR_AXIS_DICT['ArC'].colour)            # ZD circle
         self.circle_si_recoil = plt.Circle(xy=(self.rectangle_TLH.get_x()+recoil_target_dist,0),radius=50, fc=recoilFCCol, ec=recoilECol,lw=2.5,hatch='X') # Si recoil circle
-        self.rectangle_BBH = plt.Rectangle( (blockerpos,-MOTOR_AXIS_DICT['BBH'].height/2), MOTOR_AXIS_DICT['BBH'].width, MOTOR_AXIS_DICT['BBH'].height, fc=MOTOR_AXIS_DICT['BBH'].colour ) # Beam blocker
+        self.rectangle_BBH = plt.Rectangle( (beam_blocker_soft_limit,-MOTOR_AXIS_DICT['BBH'].height/2), MOTOR_AXIS_DICT['BBH'].width, MOTOR_AXIS_DICT['BBH'].height, fc=MOTOR_AXIS_DICT['BBH'].colour ) # Beam blocker
 
         # Add shapes to drawing (in correct order!)
         self.ax.add_patch(self.rectangle_TaC)  # Target carriage
@@ -672,19 +681,22 @@ class DriveView(dspv.PlotView):
             self.ax.add_patch(self.circle_si_recoil) # Si recoil circle
         if pvp_draw_beam_blocker:
             self.ax.add_patch( self.rectangle_BBH ) # Beam blocker
-            self.line_BBH_soft_limit = plt.plot([ blockerSoftLimit, blockerSoftLimit ], [0.5*self.ymin,0.5*self.ymax])
-            self.text_BBH = self.ax.text( blockerSoftLimit, 0.5*self.ymax + 20, "BBSL", color='#000000', ha='center' )
+            self.line_BBH_soft_limit = plt.plot([ beam_blocker_soft_limit, beam_blocker_soft_limit ], [-1.1*(MOTOR_AXIS_DICT['TaC'].height/2), 1.1*(MOTOR_AXIS_DICT['TaC'].height/2)], linestyle='dashed', color='black', linewidth=1)
+            self.text_BBH = self.ax.text( beam_blocker_soft_limit, 1.1*(MOTOR_AXIS_DICT['TaC'].height/2) + 20, "BBSL", color='#000000', ha='center' )
 
         # Define list of arrows
-        # ArrowAnnotation(x1, x2, height, label, label_offset)
+        # ArrowAnnotation(x1, x2, y, label, label_offset)
         self.arrowdict : dict[str,ArrowAnnotation] = {
-            'd_tip' :    ArrowAnnotation(0, 0, 0, 'd_tip',    30),
-            'd_recoil' : ArrowAnnotation(0, 0, 0, 'd_recoil', 80),
-            'd_si' :     ArrowAnnotation(0, 0, 0, 'd_si',    -30)
+            'd_tip' :    ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 10, 'd_tip',    30),
+            'd_recoil' : ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 10, 'd_recoil', 80),
+            'd_si' :     ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10),  'd_si',    -30),
+            'd_blocker': ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10), 'd_blocker', -30 )
         }
 
         # Enable/disable arrows
         self.arrowdict['d_recoil'].disable()
+        if not pvp_draw_beam_blocker:
+            self.arrowdict['d_blocker'].disable()
 
         # Text objects that show positions - transform from "axes" coordinates to "data" coordinates with trans
         # https://matplotlib.org/stable/users/explain/artists/transforms_tutorial.html
@@ -760,8 +772,8 @@ class DriveView(dspv.PlotView):
         # Assuming that target at encoder position 0 is 1234.0 mm from back of magnet (elog:2891)
         coord3  = MAGNET_LENGTH/2 - 1234.0 - pos[0]*STEP_TO_MM # This is top-left corner of target ladder rectangle
         coord2 = coord3 - silencer_target_distance - MOTOR_AXIS_DICT['SiA'].width - ARRAY_SILICON_TO_TIP_DISTANCE - self.silencer_length_from_tip # This is top left corner of silicon array
-        coord1 = coord3 - self.array_carriage_to_target_length # This is top left corner of trolley axis
-        coord4 = coord1 + MOTOR_AXIS_DICT['TaC'].width - self.array_carriage_to_ancillary_length # This is top right corner of FC/ZD rectangle
+        coord1 = coord3 - driveview_distance_from_trolley_axis_to_target_ladder # This is top left corner of trolley axis
+        coord4 = coord1 + MOTOR_AXIS_DICT['TaC'].width - driveview_distance_from_trolley_axis_to_beam_monitoring_axis # This is top right corner of FC/ZD rectangle
 
         # Update position text
         i = 0
@@ -796,17 +808,17 @@ class DriveView(dspv.PlotView):
         # >>>> SILICON RECOIL
         # self.circle_si_recoil.center = self.rectangle_TLH.get_x() + ( recoil_target_dist, 0 )
 
-        # >>>> BEAM BLOCKER
+        # >>>> BEAM BLOCKER - doesn't move so no need to do anything!
         
 
-        # ARROWS
-        self.arrowdict['d_tip'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width + ARRAY_SILICON_TO_TIP_DISTANCE + self.silencer_length_from_tip, self.rectangle_TLH.get_x(), MOTOR_AXIS_DICT['TaC'].height/2 + 10 )
-        self.arrowdict['d_recoil'].update( self.rectangle_TLH.get_x(), self.rectangle_TLH.get_x() + recoil_target_dist, MOTOR_AXIS_DICT['TaC'].height/2 + 10 )
-        self.arrowdict['d_si'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width, self.rectangle_TLH.get_x(), -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10 ) )
+        # >>>> ARROWS
+        self.arrowdict['d_tip'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width + ARRAY_SILICON_TO_TIP_DISTANCE + self.silencer_length_from_tip, self.rectangle_TLH.get_x() )
+        self.arrowdict['d_recoil'].update( self.rectangle_TLH.get_x(), self.rectangle_TLH.get_x() + recoil_target_dist)
+        self.arrowdict['d_si'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width, self.rectangle_TLH.get_x() )
+        self.arrowdict['d_blocker'].update( self.rectangle_TaC.get_x() + self.rectangle_TaC.get_width(), beam_blocker_soft_limit )
 
         for key in self.arrowdict.keys():
             self.arrowdict[key].draw(self.ax)
-
 
         # Axis labels - update X and Y
         self.text_axis_1_label.set_x( self.rectangle_TaC.get_x() + MOTOR_AXIS_DICT['TaC'].width/2 )
@@ -818,7 +830,6 @@ class DriveView(dspv.PlotView):
         self.text_axis_2_label.set_y( self.rectangle_ArC.get_y() + 0.75*MOTOR_AXIS_DICT['ArC'].height )
         self.text_axis_3_label.set_y( self.rectangle_TLH.get_y() + 0.5*MOTOR_AXIS_DICT['TLH'].height )
         self.text_axis_4_label.set_y( self.rectangle_Det.get_y() + 0.5*MOTOR_AXIS_DICT['Det'].height )
-
 
         # Add FC and ZD labels
         self.text_fc_label.set_x( self.rectangle_Det.get_x() + MOTOR_AXIS_DICT['Det'].width/2 )
@@ -1142,10 +1153,11 @@ class ControlView(wx.Panel):
         self.button_in_beam_element_change.SetToolTip("Access the in-beam elements menu to move these into position!")
 
         # ... Slit scan
-        self.button_slit_scan = wx.Button( self.send_command_panel, wx.ID_ANY, "SLIT SCAN", (controlview_slit_scan_button_offset_X, controlview_button_offset_Y), size=(controlview_button_width, controlview_null_height))
-        self.button_slit_scan.SetBackgroundColour(controlview_slit_scan_button_colour)
-        self.button_slit_scan.Bind(wx.EVT_BUTTON, self.button_func_slit_scan )
-        self.button_slit_scan.SetToolTip("Scan the slits horizontally or vertically. Please don't try to do anything else while this is going on...")
+        if dsopts.OPTION_TUNING_FRAME_IS_TRITIUM_TUNING_FRAME == False:
+            self.button_slit_scan = wx.Button( self.send_command_panel, wx.ID_ANY, "SLIT SCAN", (controlview_slit_scan_button_offset_X, controlview_button_offset_Y), size=(controlview_button_width, controlview_null_height))
+            self.button_slit_scan.SetBackgroundColour(controlview_slit_scan_button_colour)
+            self.button_slit_scan.Bind(wx.EVT_BUTTON, self.button_func_slit_scan )
+            self.button_slit_scan.SetToolTip("Scan the slits horizontally or vertically. Please don't try to do anything else while this is going on...")
 
     ################################################################################
     def InitDatumAndMoveRelativeUI(self):

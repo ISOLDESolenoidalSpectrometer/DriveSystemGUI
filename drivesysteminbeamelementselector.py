@@ -520,12 +520,23 @@ class MoveMotorPanel( wx.Panel ):
         
         # Move beam blocker
         elif re.search('bb.*',str(globalpos)): # beam blocker
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
 
         # Move beam monitoring detectors
         elif re.search('bm.*',str(globalpos)): # beam monitor
             self.drive_system.move_absolute( MOTOR_AXIS_DICT['Det'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+
+        # Move tritium targets
+        elif re.search('ti_target[0-9]', str(globalpos)):
+            print('Ti TARGET: ' + str(globalpos))
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
+                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+        
+        # Tell user their selected action didn't work
+        else:
+            print("Wasn't able to move - I don't recognise the element...")
 
         # Regardless, store the element
         self.drive_system.set_in_beam_element( str(globalpos) )
@@ -694,10 +705,16 @@ class TargetLadderPanel( wx.Panel ):
                 # Make tuning frame
                 else:
                     if index == 1:
-                        self.target_frames[i][j] = TuningFrame( self,
-                                                            id = wx.ID_ANY,
-                                                            pos = ( get_position( i, outer_spacing, TARGET_FRAME_H_SIZE_ARRAY[index] ), get_position( j, OUTER_SPACING, TARGET_FRAME_V_SIZE_ARRAY[index] ) )
-                                                            )
+                        if dsopts.OPTION_TUNING_FRAME_IS_TRITIUM_TUNING_FRAME.get_value():
+                            self.target_frames[i][j] = TuningFrameTritium( self,
+                                                                id = wx.ID_ANY,
+                                                                pos = ( get_position( i, outer_spacing, TARGET_FRAME_H_SIZE_ARRAY[index] ), get_position( j, OUTER_SPACING, TARGET_FRAME_V_SIZE_ARRAY[index] ) )
+                                                                )
+                        else:
+                            self.target_frames[i][j] = TuningFrame( self,
+                                                                id = wx.ID_ANY,
+                                                                pos = ( get_position( i, outer_spacing, TARGET_FRAME_H_SIZE_ARRAY[index] ), get_position( j, OUTER_SPACING, TARGET_FRAME_V_SIZE_ARRAY[index] ) )
+                                                                )
                         self.target_frames[i][j].SetBackgroundColour( COLOUR_TUNING_FRAME )
         return
 
@@ -715,7 +732,7 @@ class TargetLadderPanel( wx.Panel ):
 # Define a general frame
 class TargetLadderPanelFrame( wx.Panel ):
     """
-    General class for a target ladder frame, forming the bass for the
+    General class for a target ladder frame, forming the base for the
     TargetLadderFrame and TuningFrame classes
     """
     ################################################################################
@@ -854,6 +871,57 @@ class TuningFrame( TargetLadderPanelFrame ):
                                        pos = (get_position(0, INNER_SPACING, TUNING_ELEMENT_H_SIZE),get_position(0, INNER_SPACING, TUNING_ELEMENT_V_SIZE) ),
                                        size = (TUNING_ELEMENT_H_SIZE,2*TUNING_ELEMENT_V_SIZE + INNER_SPACING),
                                        toggle_button_id = ID_MAP.VERT_SLIT_ID )
+        
+        return
+    
+################################################################################
+################################################################################
+################################################################################
+class TuningFrameTritium( TargetLadderPanelFrame ):
+    """
+    A small panel that holds elements for tuning on the 2D ladder, with space
+    for tritium targets.
+    """
+    ################################################################################
+    def __init__(self, parent : TargetLadderPanel, **kwargs):
+        """
+        TuningFrameTritium: Initialise the four tuning elements in the panel
+
+        Parameters
+        ----------
+        parent : TargetLadderPanel
+            The TargetLadderPanel object that holds the target frame.
+        kwargs : various
+            Keyword arguments for the parent TargetLadderPanelFrame (wx.Panel)
+            constructor.
+        """
+        # Initialise
+        super().__init__( parent = parent, **kwargs )
+
+        # Draw 4 buttons: 2 apertures, 2 slits
+        self.small_aperture = TuningButton( parent = self,
+                                            id = wx.ID_ANY,
+                                            pos = (get_position(0, INNER_SPACING, TUNING_ELEMENT_H_SIZE),get_position(0, INNER_SPACING, TUNING_ELEMENT_V_SIZE) ),
+                                            size = (TUNING_ELEMENT_H_SIZE,TUNING_ELEMENT_V_SIZE),
+                                            toggle_button_id = ID_MAP.SMALL_APERTURE_ID )
+
+        self.large_aperture = TuningButton( parent = self,
+                                            id = wx.ID_ANY,
+                                            pos = (get_position(0, INNER_SPACING, TUNING_ELEMENT_H_SIZE),get_position(1, INNER_SPACING, TUNING_ELEMENT_V_SIZE) ),
+                                            size = (TUNING_ELEMENT_H_SIZE,TUNING_ELEMENT_V_SIZE),
+                                            toggle_button_id = ID_MAP.LARGE_APERTURE_ID )
+
+        self.ti_target_frame1 = TuningButton( parent = self,
+                                       id = wx.ID_ANY,
+                                       pos = (get_position(1, INNER_SPACING, TUNING_ELEMENT_H_SIZE),get_position(0, INNER_SPACING, TUNING_ELEMENT_V_SIZE) ),
+                                       size = (TUNING_ELEMENT_H_SIZE,2*TUNING_ELEMENT_V_SIZE + INNER_SPACING),
+                                       toggle_button_id = ID_MAP.TI_TARGET_1_ID )
+
+        self.ti_target_frame2 = TuningButton( parent = self,
+                                       id = wx.ID_ANY,
+                                       pos = (get_position(2, INNER_SPACING, TUNING_ELEMENT_H_SIZE),get_position(0, INNER_SPACING, TUNING_ELEMENT_V_SIZE) ),
+                                       size = (TUNING_ELEMENT_H_SIZE,2*TUNING_ELEMENT_V_SIZE + INNER_SPACING),
+                                       toggle_button_id = ID_MAP.TI_TARGET_2_ID )
         
         return
 

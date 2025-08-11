@@ -8,6 +8,7 @@ This contains all the constants and useful functions for defining the GUI
 from drivesystemlib import *
 import drivesystemoptions as dsopts
 import matplotlib.pyplot as plt
+import matplotlib.patches
 
 # CONSTANTS
 # Physical distances that will not change
@@ -49,8 +50,9 @@ AXIS_LABELS = ['Target carriage',
                'Target ladder (H)', 
                'FC/ZD',
                'Target ladder (V)',
-               'Beam blocker (H)',
-               'Beam blocker (V)']
+               'Beam blocker (V)',
+               'Beam blocker (H)'
+               ]
 
 # DICTIONARY/GUI DEFINITIONS
 #   'key':               'descript.',                                Width  Height Colour     axis
@@ -61,8 +63,8 @@ MOTOR_AXIS_DICT = {
     'TLH': MotorAxisInfo( 'Targ ladder H',                              80.0, 130.0, '#00A7FA', 3 ), # PlotView
     'Det': MotorAxisInfo( 'Diagnostic Detectors',                       80.0, 130.0, '#910BE3', 4 ), # PlotView
     'TLV': MotorAxisInfo( 'Target ladder V',                           308.5, 194.0, '#00A7FA', 5 ), # BeamView
-    'BBH': MotorAxisInfo( 'Beam blocker H',                             80.0, 130.0, '#910BE3', 6 ), # PlotView
-    'BBV': MotorAxisInfo( 'Beam blocker V',                            169.5, 123.0, '#910BE3', 7 )  # BeamView
+    'BBV': MotorAxisInfo( 'Beam blocker V',                            173.0, 118.0, '#910BE3', 6 ),  # BeamView
+    'BBH': MotorAxisInfo( 'Beam blocker H',                             80.0, 130.0, '#910BE3', 7 ) # PlotView
 }
 
 # Wrapped in a function to make dark mode work!
@@ -93,11 +95,12 @@ driveview_height_inches = beamview_height_inches
 plot_view_position_label_offset = 20
 
 # EDGES/SPACINGS/MISC
-recoil_target_dist = 246.2
-blockerpos         = (MAGNET_LENGTH/2)-47.0 - 6*60    # Distance of blocker from back of the magnet (From Mike Cordwell)
+recoil_target_dist = 246.2 # This should be fixed...
 
  # Assuming that target at encoder position 0 is 1234.0 mm from back of magnet (elog:2891)
-blockerSoftLimit = (MAGNET_LENGTH/2) - 1234.0 + 72493.0/200.0 + MOTOR_AXIS_DICT['TaC'].width
+driveview_distance_from_trolley_axis_to_target_ladder = 20
+driveview_distance_from_trolley_axis_to_beam_monitoring_axis = 20
+beam_blocker_soft_limit = (MAGNET_LENGTH/2) - 1234.0 - dsopts.OPTION_BEAM_BLOCKER_TO_TROLLEY_AXIS_SOFT_LIMIT.get_value()/MM_TO_STEP + MOTOR_AXIS_DICT['TaC'].width - driveview_distance_from_trolley_axis_to_target_ladder
 
 # Colours
 arrayEdgeCol  = MOTOR_AXIS_DICT['Det'].colour
@@ -179,6 +182,8 @@ inbeamelement_slit_height = 12 # mm
 inbeamelement_smallaperture_radius = 1.5 # mm
 inbeamelement_largeaperture_radius = 1.5 # mm
 inbeamelement_alpha_radius = 11.5
+inbeamelement_tritiumtarget_width = 10.5 # mm
+inbeamelement_tritiumtarget_height = 15 # mm
 
 inbeamelement_target_colour = '#CCCCCC'
 inbeamelement_horzslit_colour = '#CCCCCC'
@@ -186,6 +191,7 @@ inbeamelement_vertslit_colour = '#CCCCCC'
 inbeamelement_smallaperture_colour = '#CCCCCC'
 inbeamelement_largeaperture_colour = '#CCCCCC'
 inbeamelement_alpha_colour = '#FFFFFF'
+inbeamelement_tritiumtarget_colour = '#CCCCCC'
 
 inbeamelement_axislimit = 6.5
 inbeamelement_beamspot_colour = '#FF0000'
@@ -205,28 +211,33 @@ class ArrowAnnotation():
     indicate distances between two elements
     """
     ################################################################################
-    def __init__( self, x1 : int, x2 : int, height : int, label : str, label_offset : int ) -> None:
+    MIN_DISTANCE = 65
+    ARROWHEADLENGTH = 4 # pt
+    ARROWHEADWIDTH = 2 # pt
+    def __init__( self, x1 : int, x2 : int, y : int, label : str, label_offset : int ) -> None:
         """
         ArrowAnnotation: initialise the class
         """
         self.x1 = x1
         self.x2 = x2
-        self.height = height
+        self.y = y
         self.label = label
         self.label_offset = label_offset
         self.enabled = True
-        self.mpl_annotation = None
-        self.mpl_text = None
+        self.left_arrow = None
+        self.right_arrow = None
+        self.double_arrow = None
+        self.text = None
+        self.arrow_head_offset = None
         return
 
     ################################################################################
-    def update( self, x1 : int, x2 : int, height : int ) -> None:
+    def update( self, x1 : int, x2 : int ) -> None:
         """
         ArrowAnnotation: update the internal numbers
         """
         self.x1 = x1
         self.x2 = x2
-        self.height = height
         return
 
     ################################################################################
@@ -251,28 +262,67 @@ class ArrowAnnotation():
         ArrowAnnotation: generic draw function
         """
         if self.enabled:
-            # Draw if not initialised
-            if self.mpl_annotation == None:
-                self.mpl_annotation = ax.annotate( '', (self.x1, self.height ), ( self.x2, self.height ), arrowprops={'arrowstyle':'<->'} )
-            
-            # Update if initialised
-            else:
-                self.mpl_annotation.xy = (self.x1, self.height)
+            if self.arrow_head_offset == None:
+                self.arrow_head_offset = self.points_to_data(ax,self.ARROWHEADLENGTH - 1) # THIS HAS BEEN FUDGED
 
+            # Initialise if not created
+            if self.left_arrow == None:
+                self.left_arrow = matplotlib.patches.FancyArrowPatch( (self.x1, self.y), ( (self.x2 - self.x1)/2.0, self.y), arrowstyle=f'<|-, head_length={self.ARROWHEADLENGTH}, head_width={self.ARROWHEADWIDTH}', facecolor='black')
+                self.left_arrow.set_visible(False)
+                ax.add_patch(self.left_arrow)
+            if self.right_arrow == None:
+                self.right_arrow = matplotlib.patches.FancyArrowPatch( (self.x1, self.y), ( (self.x2 - self.x1)/2.0, self.y), arrowstyle=f'-|>, head_length={self.ARROWHEADLENGTH}, head_width={self.ARROWHEADWIDTH}', facecolor='black')
+                self.right_arrow.set_visible(False)
+                ax.add_patch(self.right_arrow)
+            if self.double_arrow == None:
+                self.double_arrow = matplotlib.patches.FancyArrowPatch( (self.x1 - self.arrow_head_offset, self.y), ( self.x2 + self.arrow_head_offset, self.y), arrowstyle='<|-|>, head_length=4, head_width=2', facecolor='black')
+                self.double_arrow.set_visible(False)
+                ax.add_patch(self.double_arrow)
+            
+            # Now work out which ones to draw
+            if (self.x2 - self.x1) < self.MIN_DISTANCE:
+                # Draw left and right arrows
+                self.left_arrow.set_visible(True)
+                self.right_arrow.set_visible(True)
+                self.double_arrow.set_visible(False)
+                self.left_arrow.set_positions( (self.x2 - self.arrow_head_offset, self.y), (self.x2 + 50, self.y))
+                self.right_arrow.set_positions( (self.x1 - 50, self.y), (self.x1 + self.arrow_head_offset, self.y))
+            else:
+                self.left_arrow.set_visible(False)
+                self.right_arrow.set_visible(False)
+                self.double_arrow.set_visible(True)
+                self.double_arrow.set_positions( (self.x1 - self.arrow_head_offset, self.y), (self.x2 + self.arrow_head_offset, self.y))
+                
             # Update text
             text = f"{self.label}: {self.x2 - self.x1:.3f} mm"
             
             # Draw if not initialised
-            if self.mpl_text == None:
-                self.mpl_text = ax.text( self.x1 + (self.x2 - self.x1)*0.5 - 200, self.label_offset + self.height, text )
+            if self.text == None:
+                self.text = ax.text( self.x1 + (self.x2 - self.x1)*0.5 - MM_TO_STEP, self.label_offset + self.y, text )
             
             # Update if initialised
             else:
-                self.mpl_text.set_text(text)
-                self.mpl_text.set_x(self.x1 + (self.x2 - self.x1)*0.5 - 200)
-                self.mpl_text.set_y( self.label_offset + self.height)
+                self.text.set_text(text)
+                self.text.set_x(self.x1 + (self.x2 - self.x1)*0.5 - MM_TO_STEP)
+                self.text.set_y( self.label_offset + self.y)
 
         return
+    
+    @staticmethod
+    def points_to_data( ax : plt.Axes, length_pts : float ):
+        POINTS_PER_INCH = 72 # pt/in
+
+        # Convert distance to inches
+        length_in = length_pts/POINTS_PER_INCH
+
+        # Get width of figure in data points
+        width_in_data_points = ( ax.get_xlim()[1] - ax.get_xlim()[0] )/ax.get_position().width
+
+        # Get figure size in inches
+        fig_width_inches = ax.get_figure().get_size_inches()[0]
+
+        # Now convert length to data points
+        return width_in_data_points*( length_in/fig_width_inches )
 
 
 ################################################################################

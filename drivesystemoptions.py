@@ -385,6 +385,8 @@ OPTION_TARGET_LADDER_REFERENCE_POINT_ID                          = Option( 'Targ
 OPTION_BEAM_BLOCKER_AXIS_6_REFERENCE_POINT                       = Option( 'BeamBlockerAxis6ReferencePoint', None, validator=numeric_validator(float) )
 OPTION_BEAM_BLOCKER_AXIS_7_REFERENCE_POINT                       = Option( 'BeamBlockerAxis7ReferencePoint', None, validator=numeric_validator(float) )
 OPTION_BEAM_BLOCKER_REFERENCE_POINT_ID                           = Option( 'BeamBlockerReferencePointID', None, validator=str_validator() )
+OPTION_TUNING_FRAME_IS_TRITIUM_TUNING_FRAME                      = Option( 'TuningFrameIsTritiumFrame', False, validator=bool_validator() )
+OPTION_BEAM_BLOCKER_TO_TROLLEY_AXIS_SOFT_LIMIT                   = Option( 'BeamBlockerTrolleyAxisSoftLimit', None, validator=numeric_validator(int) )
 
 # Ideas for the future...
 # OPTION_IS_ARRAY_UPSTREAM                                         = Option( 'ArrayIsUpstream', True, validator=bool_validator() )

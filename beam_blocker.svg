@@ -2,14 +2,14 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="169.49991mm"
-   height="123mm"
-   viewBox="0 0 169.49991 123"
+   width="172.99995mm"
+   height="118.00001mm"
+   viewBox="0 0 172.99996 118.00001"
    version="1.1"
    id="svg1"
    inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
    sodipodi:docname="beam_blocker.svg"
-   inkscape:export-filename="beam_blocker_trans50_small.png"
+   inkscape:export-filename="beam_blocker_is711_trans50_small.png"
    inkscape:export-xdpi="50.799999"
    inkscape:export-ydpi="50.799999"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -26,15 +26,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="0.88529654"
-     inkscape:cx="264.31821"
-     inkscape:cy="277.87299"
-     inkscape:window-width="1920"
-     inkscape:window-height="1027"
-     inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:zoom="1.4275422"
+     inkscape:cx="296.31348"
+     inkscape:cy="135.1974"
+     inkscape:window-width="2008"
+     inkscape:window-height="1257"
+     inkscape:window-x="55"
+     inkscape:window-y="44"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer3" />
+     inkscape:current-layer="layer1" />
   <defs
      id="defs1" />
   <g
@@ -42,7 +42,8 @@
      id="layer3"
      inkscape:label="holder"
      sodipodi:insensitive="true"
-     style="opacity:0.5">
+     style="opacity:0.5"
+     transform="translate(2e-6,-4.9999895)">
     <rect
        style="fill:#800000;stroke-width:0.0999998;stroke-miterlimit:0;paint-order:stroke fill markers"
        id="rect2"
@@ -81,7 +82,8 @@
      id="layer2"
      inkscape:label="lollipop-sticks"
      sodipodi:insensitive="true"
-     style="display:inline;opacity:0.5">
+     style="display:inline;opacity:0.5"
+     transform="translate(2e-6,-4.9999895)">
     <path
        id="path5"
        style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:0.1;stroke-miterlimit:0;paint-order:stroke fill markers"
@@ -174,26 +176,25 @@
      inkscape:label="lollipop-heads"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-24.49982,-49.54229)"
-     sodipodi:insensitive="true"
+     transform="translate(-24.499818,-54.54228)"
      style="display:inline;opacity:0.5">
     <circle
-       style="display:inline;fill:#333333;fill-opacity:1;stroke-width:0.1;stroke-miterlimit:0;paint-order:stroke fill markers"
+       style="display:inline;fill:#333333;fill-opacity:1;stroke-width:0.15;stroke-miterlimit:0;paint-order:stroke fill markers"
        id="path1"
-       cx="190.99973"
+       cx="192.99977"
        cy="159.54211"
-       r="3.0000002" />
+       r="4.5" />
     <circle
-       style="display:inline;fill:#333333;fill-opacity:1;stroke-width:0.1;stroke-miterlimit:0;paint-order:stroke fill markers"
+       style="display:inline;fill:#333333;fill-opacity:1;stroke-width:0.07;stroke-miterlimit:0;paint-order:stroke fill markers"
        id="circle1"
-       cx="181.00018"
-       cy="109.54212"
-       r="5" />
+       cx="182.00017"
+       cy="109.54211"
+       r="3.5" />
     <circle
-       style="display:inline;fill:#333333;fill-opacity:1;stroke-width:0.1;stroke-miterlimit:0;paint-order:stroke fill markers"
+       style="display:inline;fill:#333333;fill-opacity:1;stroke-width:0.025;stroke-miterlimit:0;paint-order:stroke fill markers"
        id="circle2"
-       cx="170.99991"
-       cy="59.54229"
-       r="10" />
+       cx="177.99989"
+       cy="59.542114"
+       r="2.5" />
   </g>
 </svg>

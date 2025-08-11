@@ -30,7 +30,7 @@ urllib3.disable_warnings()
 
 ################################################################################
 # CONSTANTS RELEVANT TO THIS MOTOR BOX
-MM_TO_STEP = 200
+MM_TO_STEP = 200.0
 STEP_TO_MM = 1./MM_TO_STEP
 NUMBER_OF_MOTOR_AXES = 7
 DEFAULT_SERIAL_PORT='/dev/ttyS0'
