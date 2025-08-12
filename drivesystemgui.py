@@ -759,7 +759,7 @@ class DriveView(dspv.PlotView):
             The positions of all of the motor axes
         """
         # Calculate the distance between the end of the silencer and the target ladder
-        silencer_target_distance = dsopts.OPTION_ARRAY_TIP_TO_TARGET_LADDER_AT_SPECIFIED_ENCODER_POSITIONS.get_value()  # this is initial distance between tip of the array (no silencer) to the target ladder
+        silencer_target_distance = dsopts.OPTION_ARRAY_TIP_TO_TARGET_LADDER_AT_SPECIFIED_ENCODER_POSITIONS.get_value()  # this is initial distance between tip of the array (no silencer) to the target ladder d
         silencer_target_distance -= dsopts.OPTION_ENCODER_AXIS_TWO.get_value()*STEP_TO_MM # this is measurement encoder position of axis 2
         silencer_target_distance += dsopts.OPTION_ENCODER_AXIS_ONE.get_value()*STEP_TO_MM # this is measurement encoder position of axis 1
         silencer_target_distance += pos[MOTOR_AXIS_DICT['ArC'].axis_number - 1]*STEP_TO_MM # add on distance of array from encoder axis 2

@@ -323,6 +323,17 @@ class MotorBoxSim(serialinterface.SerialInterface):
                         f"Read port: 00000000                  Last write: 00000000\r\n",
                     ]
                     return query_all_list
+                
+                # LIST SEQUENCE
+                if cmd == 'ls':
+                    list_sequence_list = [
+                        f"{axis:02d}ls\r{axis:02d}:Sequence {arg}:\r\n",
+                        f"X1\t####\r\n",
+                        f"X2\t####\r\n",
+                        f"X3\t####\r\n",
+                        f"X4\t####\r\n"
+                    ]
+                    return list_sequence_list
 
 
 

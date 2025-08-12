@@ -469,28 +469,31 @@ class DriveSystem(serialinterface.SerialInterface):
 
         # Format the command if desired
         if format_response:
+            # Standard command output
             pattern = re.match('.*\\r(\d*):(.*)\\r\\n', outputline, re.IGNORECASE)
 
             # Normal command pattern
             if pattern is not None:
+                # Check if sequence
+                if "Sequence" in pattern.group(2):
+                    self.serial_port_read_multiple_lines(True)
+                    return pattern.group(1), 'See terminal'
+                
+                # Normal command
                 if print_output:
                     print( f"{pattern.group(1)} -> {pattern.group(2)}" )
                 return pattern.group(1),pattern.group(2)
 
-            else:
-                # Query all command pattern
-                pattern = re.match('.*\\r(\d*)Mclennan(.*)', outputline, re.IGNORECASE)
-                if pattern is not None:
-                    self.serial_port_read_multiple_lines(True)
-                    # outputline = self.serial_port.readline()
-                    # endline = ('').encode()
-                    # while outputline != endline:
-                    #     print( outputline )
-                    #     outputline = self.serial_port.readline()
-                    return pattern.group(1),'See terminal'
-                else:
-                    print("No response was sent")
-                    return None, None
+            
+            # Query all command pattern
+            pattern = re.match('.*\\r(\d*)Mclennan(.*)', outputline, re.IGNORECASE)
+            if pattern is not None:
+                self.serial_port_read_multiple_lines(True)
+                return pattern.group(1),'See terminal'
+            
+            # No response sent
+            print("No response was sent")
+            return None, None
                 
         # Print to console if desired
         if print_output:
