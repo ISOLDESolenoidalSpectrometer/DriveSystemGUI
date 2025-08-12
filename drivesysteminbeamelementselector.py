@@ -520,8 +520,8 @@ class MoveMotorPanel( wx.Panel ):
         
         # Move beam blocker
         elif re.search('bb.*',str(globalpos)): # beam blocker
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
 
         # Move beam monitoring detectors
         elif re.search('bm.*',str(globalpos)): # beam monitor

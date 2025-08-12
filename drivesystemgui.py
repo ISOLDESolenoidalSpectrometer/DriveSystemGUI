@@ -292,8 +292,8 @@ class BeamView(dspv.PlotView):
         if self.inset_axes_target_ladder.get_visible():
             # Update coordinates
             self.beamview_target_ladder_xy = [
-                (  pos[2] - self.encoder_target_ladder_reference_X )*STEP_TO_MM - self.target_ladder_offset_X,
-                ( -pos[4] + self.encoder_target_ladder_reference_Y )*STEP_TO_MM - self.target_ladder_offset_Y
+                (  pos[MOTOR_AXIS_DICT['TLH'].axis_number - 1] - self.encoder_target_ladder_reference_X )*STEP_TO_MM - self.target_ladder_offset_X,
+                ( -pos[MOTOR_AXIS_DICT['TLV'].axis_number - 1] + self.encoder_target_ladder_reference_Y )*STEP_TO_MM - self.target_ladder_offset_Y
             ]
             new_tl_coords = self.trans_data_to_figure_coords.transform(self.beamview_target_ladder_xy)
 
@@ -311,8 +311,8 @@ class BeamView(dspv.PlotView):
             if self.inset_axes_beam_blocker.get_visible():
                 # Update coordinates
                 self.beamview_beam_blocker_xy = [
-                    ( pos[5] - self.encoder_beam_blocker_middle_head_X)*STEP_TO_MM - self.beam_blocker_offset_X,
-                    (-pos[6] + self.encoder_beam_blocker_middle_head_Y)*STEP_TO_MM - self.beam_blocker_offset_Y
+                    ( pos[MOTOR_AXIS_DICT['BBH'].axis_number - 1] - self.encoder_beam_blocker_middle_head_X)*STEP_TO_MM - self.beam_blocker_offset_X,
+                    (-pos[MOTOR_AXIS_DICT['BBV'].axis_number - 1] + self.encoder_beam_blocker_middle_head_Y)*STEP_TO_MM - self.beam_blocker_offset_Y
                 ]
                 new_bb_coords = self.trans_data_to_figure_coords.transform(self.beamview_beam_blocker_xy)
 
@@ -469,8 +469,8 @@ class BeamView(dspv.PlotView):
             
 
         # Regardless of item shown, update the beam spot position in the current view
-        self.beam_spot_X = ( dsopts.AXIS_POSITION_DICT[self.element_in_beam][0] - pos[2])*STEP_TO_MM
-        self.beam_spot_Y = -( dsopts.AXIS_POSITION_DICT[self.element_in_beam][1] - pos[4] )*STEP_TO_MM
+        self.beam_spot_X = ( dsopts.AXIS_POSITION_DICT[self.element_in_beam][0] - pos[MOTOR_AXIS_DICT['TLH'].axis_number - 1])*STEP_TO_MM
+        self.beam_spot_Y = -( dsopts.AXIS_POSITION_DICT[self.element_in_beam][1] - pos[MOTOR_AXIS_DICT['TLV'].axis_number - 1] )*STEP_TO_MM
 
         # Update position of beam-related items: crosshairs + circles
         for circle in self.inbeamelement_circles:
@@ -762,15 +762,15 @@ class DriveView(dspv.PlotView):
         silencer_target_distance = dsopts.OPTION_ARRAY_TIP_TO_TARGET_LADDER_AT_SPECIFIED_ENCODER_POSITIONS.get_value()  # this is initial distance between tip of the array (no silencer) to the target ladder
         silencer_target_distance -= dsopts.OPTION_ENCODER_AXIS_TWO.get_value()*STEP_TO_MM # this is measurement encoder position of axis 2
         silencer_target_distance += dsopts.OPTION_ENCODER_AXIS_ONE.get_value()*STEP_TO_MM # this is measurement encoder position of axis 1
-        silencer_target_distance += pos[1]*STEP_TO_MM # add on distance of array from encoder axis 2
-        silencer_target_distance -= pos[0]*STEP_TO_MM # add on distance of target from encoder axis 1
+        silencer_target_distance += pos[MOTOR_AXIS_DICT['ArC'].axis_number - 1]*STEP_TO_MM # add on distance of array from encoder axis 2
+        silencer_target_distance -= pos[MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM # add on distance of target from encoder axis 1
         silencer_target_distance -= self.silencer_length_from_tip # length of the silencer
 
         # TODO this is 2023 value from Survey on 25th October 2023 (elog:3752)
-        recoil_pos = pos[0]*STEP_TO_MM + recoil_target_dist # now on the axis 1 carriage
+        recoil_pos = pos[MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM + recoil_target_dist # now on the axis 1 carriage
 
         # Assuming that target at encoder position 0 is 1234.0 mm from back of magnet (elog:2891)
-        coord3  = MAGNET_LENGTH/2 - 1234.0 - pos[0]*STEP_TO_MM # This is top-left corner of target ladder rectangle
+        coord3  = MAGNET_LENGTH/2 - 1234.0 - pos[MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM # This is top-left corner of target ladder rectangle
         coord2 = coord3 - silencer_target_distance - MOTOR_AXIS_DICT['SiA'].width - ARRAY_SILICON_TO_TIP_DISTANCE - self.silencer_length_from_tip # This is top left corner of silicon array
         coord1 = coord3 - driveview_distance_from_trolley_axis_to_target_ladder # This is top left corner of trolley axis
         coord4 = coord1 + MOTOR_AXIS_DICT['TaC'].width - driveview_distance_from_trolley_axis_to_beam_monitoring_axis # This is top right corner of FC/ZD rectangle
@@ -796,11 +796,11 @@ class DriveView(dspv.PlotView):
         self.silencer_rect.set_x( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width + ARRAY_SILICON_TO_TIP_DISTANCE )
 
         # >>>> AXIS 3 - target ladder
-        self.rectangle_TLH.set_y( pos[2]*STEP_TO_MM - MOTOR_AXIS_DICT['TLH'].height/2 )
+        self.rectangle_TLH.set_y( pos[MOTOR_AXIS_DICT['TLH'].axis_number - 1]*STEP_TO_MM - MOTOR_AXIS_DICT['TLH'].height/2 )
         self.rectangle_TLH.set_x(coord3)
 
         # >>>> AXIS 4 - FC/ZD
-        self.rectangle_Det.set_y( pos[3]*STEP_TO_MM - MOTOR_AXIS_DICT['Det'].height/2 )
+        self.rectangle_Det.set_y( pos[MOTOR_AXIS_DICT['Det'].axis_number - 1]*STEP_TO_MM - MOTOR_AXIS_DICT['Det'].height/2 )
         self.rectangle_Det.set_x( coord4 - MOTOR_AXIS_DICT['Det'].width )
         self.circle_faraday_cup.center = (self.rectangle_Det.get_x() + 0.5*MOTOR_AXIS_DICT['Det'].width, self.rectangle_Det.get_y() + MOTOR_AXIS_DICT['Det'].height/2 - self.faraday_cup_encoder_position*STEP_TO_MM )
         self.circle_zd.center = (self.rectangle_Det.get_x() + 0.5*MOTOR_AXIS_DICT['Det'].width, self.rectangle_Det.get_y() + MOTOR_AXIS_DICT['Det'].height/2 - self.zd_encoder_position*STEP_TO_MM )

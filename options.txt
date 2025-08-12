@@ -21,7 +21,6 @@ SilencerLength: 71.48
 # This file contains information about how to push things to Grafana, so that the details aren't accidentally leaked to the wider world!
 GrafanaAuthentication: .grafana_authority.txt
 
-
 # ALIGNMENT
 # Please give all distances in mm relative to the target *at the given encoder positions*, and please make them all positive, or you'll mess things up!
 EncoderAxis1: -62242 # Encoder position where z distance to target measured
