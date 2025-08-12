@@ -136,7 +136,7 @@ class DriveSystem(serialinterface.SerialInterface):
 
         # Store positions and axis names for Grafana
         self.positions = np.zeros( NUMBER_OF_MOTOR_AXES, dtype=int )
-        self.grafana_axis_name = ['Trolley', 'Array', 'TargetH', 'FC', 'TargetV', 'BlockerH', 'BlockerV']
+        self.grafana_axis_name = ['Trolley', 'Array', 'TargetH', 'FC', 'TargetV', 'BlockerV', 'BlockerH']
         self.push_to_grafana = False
         self.grafana_username = None
         self.grafana_password = None
@@ -476,6 +476,7 @@ class DriveSystem(serialinterface.SerialInterface):
             if pattern is not None:
                 # Check if sequence
                 if "Sequence" in pattern.group(2):
+                    print( f"{pattern.group(1)} -> {pattern.group(2)}" )
                     self.serial_port_read_multiple_lines(True)
                     return pattern.group(1), 'See terminal'
                 
