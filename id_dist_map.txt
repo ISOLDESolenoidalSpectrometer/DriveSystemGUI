@@ -64,9 +64,9 @@ ti_target2 -1361 3206
 5.1.2 -9069 -13253
 5.2.2 -11266 -13252
 5.3.2 -13463 -13251
-bb.small 1642 14715 
-bb.medium 1242 4665 
-bb.large -808 -5335
+bb.small 1811 15098
+bb.medium 1411 5048 
+bb.large -639 -4952
 bb.clear 0 0
 bm.fc -12315 0
 bm.mid -289 0
