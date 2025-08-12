@@ -656,8 +656,11 @@ class DriveSystem(serialinterface.SerialInterface):
             # Check connection in case someone disconnects partway through...
             if self.check_connection():
                 axis, answer = self.execute_command( in_cmd_list[i] )
-                axis_list[int(axis)-1] = axis
-                answer_list[int(axis)-1]= answer
+                if axis != None:
+                    axis_list[int(axis)-1] = axis
+                    answer_list[int(axis)-1]= answer
+                else:
+                    print(f"Checking encoder positions returned axis {axis} and answer {None}")
 
         for i in range(0,len(axis_list)):
             if axis_list[i] != None and answer_list[i] != None:
