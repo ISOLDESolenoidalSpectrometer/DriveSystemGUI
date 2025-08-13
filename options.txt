@@ -25,7 +25,8 @@ GrafanaAuthentication: .grafana_authority.txt
 # Please give all distances in mm relative to the target *at the given encoder positions*, and please make them all positive, or you'll mess things up!
 EncoderAxis1: -62242 # Encoder position where z distance to target measured
 EncoderAxis2: -40122 # Encoder position where z distance to array measured
-ArrayTipToTargetLadderDistanceAtSpecifiedEncoderPositions: 502.06 # Distance between array tip and target ladder as measured at specified encoder positions
+ArrayTipToTargetLadderDistanceAtSpecifiedEncoderPositions: 502.9 # Distance between array tip and targets on the target ladder as measured at specified encoder positions
+TargetLadderThickness: 5 # Distance from the targets (in mm) to the furthest point upstream on the target ladder. Positive is upstream. Can also be to impose a safety limit if unsure
 
 # These probably shouldn't be touched, but give the reference point for the target-ladder and beam-blocker setups based on their drawings. Units are in mm. Essentially, give the reference point relative to the left and bottom edges of the images used in the BeamView objects.
 TargetLadderAxis3ReferencePoint: 185.35

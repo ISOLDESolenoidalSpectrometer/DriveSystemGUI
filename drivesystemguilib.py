@@ -229,7 +229,12 @@ class ArrowAnnotation():
         self.double_arrow = None
         self.text = None
         self.arrow_head_offset = None
+        self.is_only_text = False
         return
+    
+    ################################################################################
+    def set_text_only(self):
+        self.is_only_text = True
 
     ################################################################################
     def update( self, x1 : int, x2 : int ) -> None:
@@ -265,33 +270,34 @@ class ArrowAnnotation():
             if self.arrow_head_offset == None:
                 self.arrow_head_offset = self.points_to_data(ax,self.ARROWHEADLENGTH - 1) # THIS HAS BEEN FUDGED
 
-            # Initialise if not created
-            if self.left_arrow == None:
-                self.left_arrow = matplotlib.patches.FancyArrowPatch( (self.x1, self.y), ( (self.x2 - self.x1)/2.0, self.y), arrowstyle=f'<|-, head_length={self.ARROWHEADLENGTH}, head_width={self.ARROWHEADWIDTH}', facecolor='black')
-                self.left_arrow.set_visible(False)
-                ax.add_patch(self.left_arrow)
-            if self.right_arrow == None:
-                self.right_arrow = matplotlib.patches.FancyArrowPatch( (self.x1, self.y), ( (self.x2 - self.x1)/2.0, self.y), arrowstyle=f'-|>, head_length={self.ARROWHEADLENGTH}, head_width={self.ARROWHEADWIDTH}', facecolor='black')
-                self.right_arrow.set_visible(False)
-                ax.add_patch(self.right_arrow)
-            if self.double_arrow == None:
-                self.double_arrow = matplotlib.patches.FancyArrowPatch( (self.x1 - self.arrow_head_offset, self.y), ( self.x2 + self.arrow_head_offset, self.y), arrowstyle='<|-|>, head_length=4, head_width=2', facecolor='black')
-                self.double_arrow.set_visible(False)
-                ax.add_patch(self.double_arrow)
-            
-            # Now work out which ones to draw
-            if (self.x2 - self.x1) < self.MIN_DISTANCE:
-                # Draw left and right arrows
-                self.left_arrow.set_visible(True)
-                self.right_arrow.set_visible(True)
-                self.double_arrow.set_visible(False)
-                self.left_arrow.set_positions( (self.x2 - self.arrow_head_offset, self.y), (self.x2 + 50, self.y))
-                self.right_arrow.set_positions( (self.x1 - 50, self.y), (self.x1 + self.arrow_head_offset, self.y))
-            else:
-                self.left_arrow.set_visible(False)
-                self.right_arrow.set_visible(False)
-                self.double_arrow.set_visible(True)
-                self.double_arrow.set_positions( (self.x1 - self.arrow_head_offset, self.y), (self.x2 + self.arrow_head_offset, self.y))
+            if self.is_only_text == False:
+                # Initialise if not created
+                if self.left_arrow == None:
+                    self.left_arrow = matplotlib.patches.FancyArrowPatch( (self.x1, self.y), ( (self.x2 - self.x1)/2.0, self.y), arrowstyle=f'<|-, head_length={self.ARROWHEADLENGTH}, head_width={self.ARROWHEADWIDTH}', facecolor='black')
+                    self.left_arrow.set_visible(False)
+                    ax.add_patch(self.left_arrow)
+                if self.right_arrow == None:
+                    self.right_arrow = matplotlib.patches.FancyArrowPatch( (self.x1, self.y), ( (self.x2 - self.x1)/2.0, self.y), arrowstyle=f'-|>, head_length={self.ARROWHEADLENGTH}, head_width={self.ARROWHEADWIDTH}', facecolor='black')
+                    self.right_arrow.set_visible(False)
+                    ax.add_patch(self.right_arrow)
+                if self.double_arrow == None:
+                    self.double_arrow = matplotlib.patches.FancyArrowPatch( (self.x1 - self.arrow_head_offset, self.y), ( self.x2 + self.arrow_head_offset, self.y), arrowstyle='<|-|>, head_length=4, head_width=2', facecolor='black')
+                    self.double_arrow.set_visible(False)
+                    ax.add_patch(self.double_arrow)
+                
+                # Now work out which ones to draw
+                if (self.x2 - self.x1) < self.MIN_DISTANCE:
+                    # Draw left and right arrows
+                    self.left_arrow.set_visible(True)
+                    self.right_arrow.set_visible(True)
+                    self.double_arrow.set_visible(False)
+                    self.left_arrow.set_positions( (self.x2 - self.arrow_head_offset, self.y), (self.x2 + 50, self.y))
+                    self.right_arrow.set_positions( (self.x1 - 50, self.y), (self.x1 + self.arrow_head_offset, self.y))
+                else:
+                    self.left_arrow.set_visible(False)
+                    self.right_arrow.set_visible(False)
+                    self.double_arrow.set_visible(True)
+                    self.double_arrow.set_positions( (self.x1 - self.arrow_head_offset, self.y), (self.x2 + self.arrow_head_offset, self.y))
                 
             # Update text
             text = f"{self.label}: {self.x2 - self.x1:.3f} mm"

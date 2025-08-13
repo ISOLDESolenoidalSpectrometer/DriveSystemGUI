@@ -687,13 +687,19 @@ class DriveView(dspv.PlotView):
         # Define list of arrows
         # ArrowAnnotation(x1, x2, y, label, label_offset)
         self.arrowdict : dict[str,ArrowAnnotation] = {
-            'd_tip' :    ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 10, 'd_tip',    30),
-            'd_recoil' : ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 10, 'd_recoil', 80),
-            'd_si' :     ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10),  'd_si',    -30),
-            'd_blocker': ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10), 'd_blocker', -30 )
+            'd_tip' :       ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 20, 'd_tip',    10),
+            'd_collision' : ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 70, 'd_collision', 0),
+            'd_recoil' :    ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 10, 'd_recoil', 80),
+            'd_si' :        ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10),  'd_si',    -30),
+            'd_blocker':    ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10), 'd_blocker', -30 )
         }
 
         # Enable/disable arrows
+        if dsopts.OPTION_TARGET_LADDER_THICKNESS.get_value() == 0.0:
+            self.arrowdict['d_collision'].disable()
+        else:
+            self.arrowdict['d_collision'].set_text_only()
+        
         self.arrowdict['d_recoil'].disable()
         if not pvp_draw_beam_blocker:
             self.arrowdict['d_blocker'].disable()
@@ -816,6 +822,7 @@ class DriveView(dspv.PlotView):
         self.arrowdict['d_recoil'].update( self.rectangle_TLH.get_x(), self.rectangle_TLH.get_x() + recoil_target_dist)
         self.arrowdict['d_si'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width, self.rectangle_TLH.get_x() )
         self.arrowdict['d_blocker'].update( self.rectangle_TaC.get_x() + self.rectangle_TaC.get_width(), beam_blocker_soft_limit )
+        self.arrowdict['d_collision'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width + ARRAY_SILICON_TO_TIP_DISTANCE + self.silencer_length_from_tip, self.rectangle_TLH.get_x() - dsopts.OPTION_TARGET_LADDER_THICKNESS.get_value() )
 
         for key in self.arrowdict.keys():
             self.arrowdict[key].draw(self.ax)
