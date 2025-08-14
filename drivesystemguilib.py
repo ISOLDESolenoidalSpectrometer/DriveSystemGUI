@@ -5,68 +5,14 @@ Drive System GUI Library
 This contains all the constants and useful functions for defining the GUI
 
 """
+import drivesystemmotorinfo as dsmi
 from drivesystemlib import *
 import drivesystemoptions as dsopts
+import drivesystemmotorinfo as dsmi
 import matplotlib.pyplot as plt
 import matplotlib.patches
 
-# CONSTANTS
-# Physical distances that will not change
-ARRAY_SILICON_TO_TIP_DISTANCE = 18.5 # [mm]
-ARRAY_SUPPORT_TO_END_OF_SILICON = 626.1 - ARRAY_SILICON_TO_TIP_DISTANCE # See elog:6071 for length of array
-MAGNET_LENGTH = 2732 # Magnet length [mm]
-
 ################################################################################
-################################################################################
-################################################################################
-class MotorAxisInfo:
-    """
-    Class to hold information about a motor axis. POD class
-    """
-    ################################################################################
-    def __init__(self, description : str, width : float, height : float, colour : str, axis_number : int):
-        """
-        MotorAxisInfo: contains information about the motor axes for the GUI
-        """
-        self.description = description
-        self.width = width
-        self.height = height
-        self.colour = colour
-        self.axis_number = axis_number
-        return
-
-################################################################################
-# AXIS DEFINITIONS
-# () = abbreviation used throughout, [] = Patrick's tape colour
-# axis 1: Target carriage                   (TC)   [red]
-# axis 2: Array                             (Arr)  [green]
-# axis 3: Target ladder, horizontal         (TLH)  [yellow]
-# axis 4: Faraday cup/Zero degree detectors (Det)  [black]
-# axis 5: Target ladder, vertical           (TLV)  [brown]
-# axis 6: Beam blocker, horizontal          (BBH)  [grey]
-# axis 7: Beam blocker, vertical            (BBV)  [white]
-AXIS_LABELS = ['Target carriage', 
-               'Array', 
-               'Target ladder (H)', 
-               'FC/ZD',
-               'Target ladder (V)',
-               'Beam blocker (V)',
-               'Beam blocker (H)'
-               ]
-
-# DICTIONARY/GUI DEFINITIONS
-#   'key':               'descript.',                                Width  Height Colour     axis
-MOTOR_AXIS_DICT = {
-    'SiA': MotorAxisInfo( 'Si array', ARRAY_SUPPORT_TO_END_OF_SILICON,  35.0, '#FD3F0D', 0 ), # The width was changed from 610.0 after elog:6071
-    'TaC': MotorAxisInfo( 'Target carriage',                           450.0, 270.0, '#0DE30B', 1 ), # PlotView
-    'ArC': MotorAxisInfo( 'Array bed',                                 350.0, 195.0, '#FDD11F', 2 ), # PlotView
-    'TLH': MotorAxisInfo( 'Targ ladder H',                              80.0, 130.0, '#00A7FA', 3 ), # PlotView
-    'Det': MotorAxisInfo( 'Diagnostic Detectors',                       80.0, 130.0, '#910BE3', 4 ), # PlotView
-    'TLV': MotorAxisInfo( 'Target ladder V',                           308.5, 194.0, '#00A7FA', 5 ), # BeamView
-    'BBV': MotorAxisInfo( 'Beam blocker V',                            173.0, 118.0, '#910BE3', 6 ),  # BeamView
-    'BBH': MotorAxisInfo( 'Beam blocker H',                             80.0, 130.0, '#910BE3', 7 ) # PlotView
-}
-
 # Wrapped in a function to make dark mode work!
 def drivesystem_window_background_colour():
     if dsopts.CMD_LINE_ARG_DARK_MODE.get_value():
@@ -100,11 +46,8 @@ recoil_target_dist = 246.2 # This should be fixed...
  # Assuming that target at encoder position 0 is 1234.0 mm from back of magnet (elog:2891)
 driveview_distance_from_trolley_axis_to_target_ladder = 20
 driveview_distance_from_trolley_axis_to_beam_monitoring_axis = 20
-beam_blocker_soft_limit = (MAGNET_LENGTH/2) - 1234.0 - dsopts.OPTION_BEAM_BLOCKER_TO_TROLLEY_AXIS_SOFT_LIMIT.get_value()/MM_TO_STEP + MOTOR_AXIS_DICT['TaC'].width - driveview_distance_from_trolley_axis_to_target_ladder
 
 # Colours
-arrayEdgeCol  = MOTOR_AXIS_DICT['Det'].colour
-silencerC     = arrayEdgeCol
 recoilFCCol   = '#B2B1BA'
 recoilECol    = '#15B01A'
 blockerFCol   = '#B2B1BA'

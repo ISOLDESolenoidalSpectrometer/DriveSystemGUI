@@ -41,6 +41,15 @@ BeamBlockerTrolleyAxisSoftLimit: -62243
 SlitScanOptionsFilePath: slit_scan_options.txt
 TuningFrameIsTritiumFrame: 1
 
+# AXIS MAPPING - change these from the defaults (below) if you change 
+#TrolleyAxisNumber: 1
+#ArrayAxisNumber: 2
+#TargetHAxisNumber: 3
+#FCAxisNumber: 4
+#TargetVAxisNumber: 5
+#BlockerHAxisNumber: 6
+#BlockerVAxisNumber: 7
+
 
 ################################################################################
 # THESE NEED TO BE IMPLEMENTED

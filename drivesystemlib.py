@@ -23,6 +23,7 @@ import drivesystemdutycycle
 import drivesystemoptions as dsopts
 import serialinterface
 import drivesystemdetectoridmapping as dsdidmap
+import drivesystemmotorinfo as dsmi
 
 ################################################################################
 # Kill warnings about pushing to Grafana
@@ -36,6 +37,11 @@ NUMBER_OF_MOTOR_AXES = 7
 DEFAULT_SERIAL_PORT='/dev/ttyS0'
 
 ################################################################################
+################################################################################
+################################################################################
+
+
+################################################################################
 # FUNCTIONS
 ################################################################################
 def populate_dictionary_with_default_elements() -> None:
@@ -47,6 +53,8 @@ def populate_dictionary_with_default_elements() -> None:
         if dsopts.AXIS_POSITION_DICT.get(key, None) == None:
             dsopts.AXIS_POSITION_DICT[key] = [0, 0]
     return
+
+
 
 ################################################################################
 def read_encoder_positions_of_elements( filename : str ) -> bool:
@@ -136,7 +144,8 @@ class DriveSystem(serialinterface.SerialInterface):
 
         # Store positions and axis names for Grafana
         self.positions = np.zeros( NUMBER_OF_MOTOR_AXES, dtype=int )
-        self.grafana_axis_name = ['Trolley', 'Array', 'TargetH', 'FC', 'TargetV', 'BlockerV', 'BlockerH']
+        self.grafana_axis_name = dsmi.get_motor_axis_dict_property_as_array('grafana_name')
+
         self.push_to_grafana = False
         self.grafana_username = None
         self.grafana_password = None

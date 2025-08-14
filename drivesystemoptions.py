@@ -7,13 +7,14 @@ through either a command-line argument or through the options file that is used
 for input
 """
 
-__version__ = '2.0'
+__version__ = '2.1'
 
 import argparse as ap
 from enum import Enum
 from typing import Callable, TypeVar, Generic, Optional, List, Union
 
 import drivesystemlib as dslib
+import drivesystemmotorinfo as dsmi
 ################################################################################
 # This file contains all the information required to run the DriveSystem.py    #
 # script. Ideally, this should be independent of running a GUI.                #
@@ -283,6 +284,7 @@ def bool_validator() -> Callable[[str], bool]:
         else:
             raise ValueError(f'Cannot parse the string {repr(mystr)} as a bool')
     return validate
+
 ################################################################################
 def numeric_csv_list_validator( cast_type : Callable[[str],T] ) -> Callable[[str], List]:
     """
@@ -316,6 +318,7 @@ def numeric_csv_list_validator( cast_type : Callable[[str],T] ) -> Callable[[str
             return []
         return [ cast_type(x.strip()) for x in mystr.split(',') ]
     return validate
+
 ################################################################################
 def str_validator() -> Callable[[str],str]:
     """
@@ -366,7 +369,7 @@ SOURCE_DIRECTORY = "/home/isslocal/DriveSystemGUI"
 DEFAULT_OPTIONS_FILE =  SOURCE_DIRECTORY+ "/options.txt"
 
 OPTION_SILENCER_LENGTH                                           = Option( 'SilencerLength', None, validator=numeric_validator(float,min_val=0.0) )
-OPTION_SLIT_SCAN_PARAMETER_FILE                                  = Option('SlitScanOptionsFilePath', None, validator=str_validator() )
+OPTION_SLIT_SCAN_PARAMETER_FILE                                  = Option( 'SlitScanOptionsFilePath', None, validator=str_validator() )
 OPTION_IS_DURING_EXPERIMENT                                      = Option( 'ExperimentalMode', True, validator=bool_validator() )
 OPTION_GRAFANA_AUTHENTICATION                                    = Option( 'GrafanaAuthentication', None, validator=str_validator() )
 OPTION_TARGET_LADDER_DIMENSION                                   = Option( 'TargetLadderDimension', 2, validator=numeric_validator(int, min_val=1, max_val=2 ) )
@@ -388,6 +391,14 @@ OPTION_BEAM_BLOCKER_REFERENCE_POINT_ID                           = Option( 'Beam
 OPTION_TUNING_FRAME_IS_TRITIUM_TUNING_FRAME                      = Option( 'TuningFrameIsTritiumFrame', False, validator=bool_validator() )
 OPTION_BEAM_BLOCKER_TO_TROLLEY_AXIS_SOFT_LIMIT                   = Option( 'BeamBlockerTrolleyAxisSoftLimit', None, validator=numeric_validator(int) )
 OPTION_TARGET_LADDER_THICKNESS                                   = Option( 'TargetLadderThickness', 10.0, validator=numeric_validator(float) )
+
+OPTION_TROLLEY_AXIS_NUMBER                                       = Option( 'TrolleyAxisNumber', 1, validator=numeric_validator(int, min_val=1, max_val=7) )
+OPTION_ARRAY_AXIS_NUMBER                                         = Option( 'ArrayAxisNumber', 2, validator=numeric_validator(int, min_val=1, max_val=7) )
+OPTION_TARGET_HORIZONTAL_AXIS_NUMBER                             = Option( 'TargetHAxisNumber', 3, validator=numeric_validator(int, min_val=1, max_val=7) )
+OPTION_FC_AXIS_NUMBER                                            = Option( 'FCAxisNumber', 4, validator=numeric_validator(int, min_val=1, max_val=7) )
+OPTION_TARGET_VERTICAL_AXIS_NUMBER                               = Option( 'TargetVAxisNumber', 5, validator=numeric_validator(int, min_val=1, max_val=7) )
+OPTION_BLOCKER_HORIZONTAL_AXIS_NUMBER                            = Option( 'BlockerHAxisNumber', 6, validator=numeric_validator(int, min_val=1, max_val=7) )
+OPTION_BLOCKER_VERTICAL_AXIS_NUMBER                              = Option( 'BlockerVAxisNumber', 7, validator=numeric_validator(int, min_val=1, max_val=7) )
 
 # Ideas for the future...
 # OPTION_IS_ARRAY_UPSTREAM                                        = Option( 'ArrayIsUpstream', True, validator=bool_validator() )

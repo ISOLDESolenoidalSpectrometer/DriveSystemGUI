@@ -12,6 +12,7 @@ from drivesystemdetectoridmapping import *
 from drivesystemlib import *
 from drivesystemguilib import *
 import drivesystemoptions as dsopts
+import drivesystemmotorinfo as dsmi
 
 ################################################################################
 ################################################################################
@@ -496,43 +497,43 @@ class MoveMotorPanel( wx.Panel ):
 
         # Check whether we are moving in 2D or not
 
-        # Tell motors to move with move absolute commands
+        # Tell motors to move with move absolute commands - access motor axes by name, and the ordering is horizontal, then vertical
         # Move 2D targets
         if re.search('[0-9].[0-9].[0-9]', str(globalpos)):
             print('TARGET: ' + str(globalpos))
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
-                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+                self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
 
         # Move alpha source
         elif re.search('alpha', str(globalpos)):
             print('ALPHA SOURCE: ' + str(globalpos))
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
-                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+                self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
         
         # Move slits/apertures
         elif re.search('[a-zA-Z]_slit',str(globalpos)) or re.search('[a-zA-Z]_aperture',str(globalpos)):
             print('SLIT/APERTURES: ' + str(globalpos))
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
-                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+                self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
         
         # Move beam blocker
         elif re.search('bb.*',str(globalpos)): # beam blocker
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+            self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['BBH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['BBV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
 
         # Move beam monitoring detectors
         elif re.search('bm.*',str(globalpos)): # beam monitor
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['Det'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['Det'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
 
         # Move tritium targets
         elif re.search('ti_target[0-9]', str(globalpos)):
             print('Ti TARGET: ' + str(globalpos))
-            self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
+            self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLH'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][0] )
             if dsopts.OPTION_TARGET_LADDER_DIMENSION.get_value() == 2:
-                self.drive_system.move_absolute( MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
+                self.drive_system.move_absolute( dsmi.MOTOR_AXIS_DICT['TLV'].axis_number, dsopts.AXIS_POSITION_DICT[ str( globalpos ) ][1] )
         
         # Tell user their selected action didn't work
         else:

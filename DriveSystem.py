@@ -11,11 +11,14 @@ be found on the `GitHub page <https://github.com/ISOLDESolenoidalSpectrometer/Dr
 import drivesystemoptions as dsopts
 dsopts.initialise_options()
 
+# Import the rest
 from filelock import Timeout
 from drivesystemlib import *
 import drivesystemcli as dscli
 import drivesystemgui as dsgui
 import drivesystemlock as dslock
+import drivesystemmotorinfo as dsmi
+import drivesystemguimotorinfo as dsgmi
 import resourcemonitor
 import wx
 
@@ -34,7 +37,13 @@ def main():
     if not read_encoder_positions_of_elements( dsopts.OPTION_2D_LADDER_ENCODER_POSITION_MAP_PATH.get_value() ):
         # We want this to fail because otherwise we cannot move anything with confidence!
         return
-
+    
+    # Store default axis mapping - this is set in the options file
+    dsmi.init_motor_properties()
+    if not dsmi.set_axis_mapping():
+        # We want this to fail because otherwise we don't know which axis goes where
+        return
+    
     # Initialise DriveSystem and DriveSystemThread
     drive_system = DriveSystem()
     drive_system_thread = DriveSystemThread()
@@ -47,6 +56,10 @@ def main():
    
     # Launch DriveSystemGUI if desired
     if dsopts.CMD_LINE_ARG_NO_GUI.get_value() == False:
+        # Store graphics info about motors
+        dsgmi.store_graphics_info_about_motors()
+
+        # Launch GUI
         app = wx.App()
         gui = dsgui.DriveSystemGUI(None, "ISS Drive System")
         gui.Show()
@@ -66,7 +79,7 @@ def main():
     drive_system.abort_all()
 
     # Kill any ongoing operations
-    drive_system.kill_slit_scan() # -> this does nothing if a slit scan is not running
+    drive_system.kill_slit_scan() # -> this does nothing if a slit scan is not running, or if there are no slits
         
     # Kill thread once main program complete
     drive_system_thread.kill_thread()

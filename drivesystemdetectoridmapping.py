@@ -99,7 +99,6 @@ class TargetID:
         return None
 
     ################################################################################
-
     @classmethod
     def from_str(cls, mystr : str):
         """

@@ -5,14 +5,12 @@ Drive System GUI
 This module contains all the information required to run the GUI
 """
 # MEMORY HELP
-# Uncomment this line and add @profile above the function you want to examine. Then run with
+# Uncomment the line below and add @profile above the function you want to examine. Then run with
 # python -m memory_profiler DriveSystem.py ...
 # from memory_profiler import profile
 
 import imageio.v3 as iio
 import matplotlib
-import matplotlib.lines
-import matplotlib.patches
 matplotlib.use('WXAgg')
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
@@ -26,8 +24,9 @@ from drivesystemguilib import *
 import drivesysteminbeamelementselector
 import drivesystemdetectoridmapping
 import drivesystemplotview as dspv
+import drivesystemguimotorinfo as dsgmi
 
-ARRAY_IS_UPSTREAM = True
+ARRAY_IS_UPSTREAM = True # This should be converted to an option at some point
 
 ################################################################################
 ################################################################################
@@ -110,8 +109,8 @@ class BeamView(dspv.PlotView):
             self.beamview_target_ladder_xy[0], # X0
             self.beamview_target_ladder_xy[1]  # Y0
         ],[
-            self.beamview_target_ladder_xy[0] + MOTOR_AXIS_DICT['TLV'].width, # X1
-            self.beamview_target_ladder_xy[1] + MOTOR_AXIS_DICT['TLV'].height # Y1 
+            self.beamview_target_ladder_xy[0] + dsmi.MOTOR_AXIS_DICT['TLV'].width, # X1
+            self.beamview_target_ladder_xy[1] + dsmi.MOTOR_AXIS_DICT['TLV'].height # Y1 
         ]]
 
         tl_fig_coords = self.trans_data_to_figure_coords.transform(tl_data_coords)
@@ -128,9 +127,9 @@ class BeamView(dspv.PlotView):
                 self.tl_height_fig   # height
             ], transform=self.fig.transFigure
         )
-        self.inset_axes_target_ladder.imshow(self.ladder_image, extent=[0,MOTOR_AXIS_DICT['TLV'].width, MOTOR_AXIS_DICT['TLV'].height, 0], origin='lower') # ymin and ymax reversed as origin = lower
-        self.inset_axes_target_ladder.set_xlim(0, MOTOR_AXIS_DICT['TLV'].width)
-        self.inset_axes_target_ladder.set_ylim(0, MOTOR_AXIS_DICT['TLV'].height)
+        self.inset_axes_target_ladder.imshow(self.ladder_image, extent=[0, dsmi.MOTOR_AXIS_DICT['TLV'].width, dsmi.MOTOR_AXIS_DICT['TLV'].height, 0], origin='lower') # ymin and ymax reversed as origin = lower
+        self.inset_axes_target_ladder.set_xlim(0, dsmi.MOTOR_AXIS_DICT['TLV'].width)
+        self.inset_axes_target_ladder.set_ylim(0, dsmi.MOTOR_AXIS_DICT['TLV'].height)
         self.inset_axes_target_ladder.set_aspect('equal')
         self.inset_axes_target_ladder.axis('off')
         self.inset_axes_target_ladder.set_zorder(5)
@@ -138,7 +137,7 @@ class BeamView(dspv.PlotView):
         # Write target ladder and beam blocker position
         position_text_y_offset = -0.03
         trans = self.ax.transAxes + self.ax.transData.inverted()
-        self.text_target_ladder_position = self.ax.text( *trans.transform( ( 0.0, 1 - position_text_y_offset ) ), "", color=MOTOR_AXIS_DICT['TLH'].colour, ha='left', va='top' )
+        self.text_target_ladder_position = self.ax.text( *trans.transform( ( 0.0, 1 - position_text_y_offset ) ), "", color=dsmi.MOTOR_AXIS_DICT['TLH'].colour, ha='left', va='top' )
 
         # Inset axis for beam spot on target position view = inbeamelement view
         self.ax_inset_inbeamelement_size = self.tl_width_fig*0.2
@@ -253,8 +252,8 @@ class BeamView(dspv.PlotView):
                 self.beamview_beam_blocker_xy[0], # X0
                 self.beamview_beam_blocker_xy[1]  # Y0
             ],[
-                self.beamview_beam_blocker_xy[0] + MOTOR_AXIS_DICT['BBV'].width, # X1
-                self.beamview_beam_blocker_xy[1] + MOTOR_AXIS_DICT['BBV'].height # Y1 
+                self.beamview_beam_blocker_xy[0] + dsmi.MOTOR_AXIS_DICT['BBV'].width, # X1
+                self.beamview_beam_blocker_xy[1] + dsmi.MOTOR_AXIS_DICT['BBV'].height # Y1 
             ]]
 
             fig_bb_coords = self.trans_data_to_figure_coords.transform(data_bb_coords)
@@ -268,15 +267,15 @@ class BeamView(dspv.PlotView):
                     self.bb_height_fig
                 ],transform=self.fig.transFigure
             )
-            self.inset_axes_beam_blocker.imshow(self.blocker_image, extent=[0,MOTOR_AXIS_DICT['BBV'].width, MOTOR_AXIS_DICT['BBV'].height, 0], origin='lower') # ymin and ymax reversed as origin = lower
-            self.inset_axes_beam_blocker.set_xlim(0, MOTOR_AXIS_DICT['BBV'].width)
-            self.inset_axes_beam_blocker.set_ylim(0, MOTOR_AXIS_DICT['BBV'].height)
+            self.inset_axes_beam_blocker.imshow(self.blocker_image, extent=[0, dsmi.MOTOR_AXIS_DICT['BBV'].width, dsmi.MOTOR_AXIS_DICT['BBV'].height, 0], origin='lower') # ymin and ymax reversed as origin = lower
+            self.inset_axes_beam_blocker.set_xlim(0, dsmi.MOTOR_AXIS_DICT['BBV'].width)
+            self.inset_axes_beam_blocker.set_ylim(0, dsmi.MOTOR_AXIS_DICT['BBV'].height)
             self.inset_axes_beam_blocker.set_aspect('equal')
             self.inset_axes_beam_blocker.axis('off')
             self.inset_axes_beam_blocker.set_zorder(4)
 
             # Write target ladder and beam blocker position
-            self.text_beam_blocker_position = self.ax.text( *trans.transform( ( 0.6, 1 - position_text_y_offset ) ), "", color=MOTOR_AXIS_DICT['BBH'].colour, ha='left', va='top' )
+            self.text_beam_blocker_position = self.ax.text( *trans.transform( ( 0.6, 1 - position_text_y_offset ) ), "", color=dsmi.MOTOR_AXIS_DICT['BBH'].colour, ha='left', va='top' )
 
     ################################################################################
     def draw_objects(self, pos : list):
@@ -292,8 +291,8 @@ class BeamView(dspv.PlotView):
         if self.inset_axes_target_ladder.get_visible():
             # Update coordinates
             self.beamview_target_ladder_xy = [
-                (  pos[MOTOR_AXIS_DICT['TLH'].axis_number - 1] - self.encoder_target_ladder_reference_X )*STEP_TO_MM - self.target_ladder_offset_X,
-                ( -pos[MOTOR_AXIS_DICT['TLV'].axis_number - 1] + self.encoder_target_ladder_reference_Y )*STEP_TO_MM - self.target_ladder_offset_Y
+                (  pos[dsmi.MOTOR_AXIS_DICT['TLH'].axis_number - 1] - self.encoder_target_ladder_reference_X )*STEP_TO_MM - self.target_ladder_offset_X,
+                ( -pos[dsmi.MOTOR_AXIS_DICT['TLV'].axis_number - 1] + self.encoder_target_ladder_reference_Y )*STEP_TO_MM - self.target_ladder_offset_Y
             ]
             new_tl_coords = self.trans_data_to_figure_coords.transform(self.beamview_target_ladder_xy)
 
@@ -311,8 +310,8 @@ class BeamView(dspv.PlotView):
             if self.inset_axes_beam_blocker.get_visible():
                 # Update coordinates
                 self.beamview_beam_blocker_xy = [
-                    ( pos[MOTOR_AXIS_DICT['BBH'].axis_number - 1] - self.encoder_beam_blocker_middle_head_X)*STEP_TO_MM - self.beam_blocker_offset_X,
-                    (-pos[MOTOR_AXIS_DICT['BBV'].axis_number - 1] + self.encoder_beam_blocker_middle_head_Y)*STEP_TO_MM - self.beam_blocker_offset_Y
+                    ( pos[dsmi.MOTOR_AXIS_DICT['BBH'].axis_number - 1] - self.encoder_beam_blocker_middle_head_X)*STEP_TO_MM - self.beam_blocker_offset_X,
+                    (-pos[dsmi.MOTOR_AXIS_DICT['BBV'].axis_number - 1] + self.encoder_beam_blocker_middle_head_Y)*STEP_TO_MM - self.beam_blocker_offset_Y
                 ]
                 new_bb_coords = self.trans_data_to_figure_coords.transform(self.beamview_beam_blocker_xy)
 
@@ -469,8 +468,8 @@ class BeamView(dspv.PlotView):
             
 
         # Regardless of item shown, update the beam spot position in the current view
-        self.beam_spot_X = ( dsopts.AXIS_POSITION_DICT[self.element_in_beam][0] - pos[MOTOR_AXIS_DICT['TLH'].axis_number - 1])*STEP_TO_MM
-        self.beam_spot_Y = -( dsopts.AXIS_POSITION_DICT[self.element_in_beam][1] - pos[MOTOR_AXIS_DICT['TLV'].axis_number - 1] )*STEP_TO_MM
+        self.beam_spot_X = ( dsopts.AXIS_POSITION_DICT[self.element_in_beam][0] - pos[dsmi.MOTOR_AXIS_DICT['TLH'].axis_number - 1])*STEP_TO_MM
+        self.beam_spot_Y = -( dsopts.AXIS_POSITION_DICT[self.element_in_beam][1] - pos[dsmi.MOTOR_AXIS_DICT['TLV'].axis_number - 1] )*STEP_TO_MM
 
         # Update position of beam-related items: crosshairs + circles
         for circle in self.inbeamelement_circles:
@@ -611,8 +610,8 @@ class DriveView(dspv.PlotView):
         """
         self.ymin = -400
         self.ymax =  400
-        self.xmin = -MAGNET_LENGTH*0.5
-        self.xmax =  MAGNET_LENGTH*0.5
+        self.xmin = -dsgmi.MAGNET_LENGTH*0.5
+        self.xmax =  dsgmi.MAGNET_LENGTH*0.5
 
     ################################################################################
     def set_axis_options(self):
@@ -654,18 +653,20 @@ class DriveView(dspv.PlotView):
         self.faraday_cup_encoder_position = dsopts.AXIS_POSITION_DICT.get("bm.fc",[None])[0]
         self.zd_encoder_position = dsopts.AXIS_POSITION_DICT.get("bm.zd",[None])[0]
 
+        self.beam_blocker_soft_limit = (dsgmi.MAGNET_LENGTH/2) - 1234.0 - dsopts.OPTION_BEAM_BLOCKER_TO_TROLLEY_AXIS_SOFT_LIMIT.get_value()/MM_TO_STEP + dsmi.MOTOR_AXIS_DICT['TaC'].width - driveview_distance_from_trolley_axis_to_target_ladder
+
         # Define shapes
-        self.rectangle_ArC = plt.Rectangle((0, -MOTOR_AXIS_DICT['ArC'].height/2), MOTOR_AXIS_DICT['ArC'].width, MOTOR_AXIS_DICT['ArC'].height, fc=MOTOR_AXIS_DICT['ArC'].colour) # Array carriage
-        self.rectangle_TaC = plt.Rectangle((0,-MOTOR_AXIS_DICT['TaC'].height/2), MOTOR_AXIS_DICT['TaC'].width, MOTOR_AXIS_DICT['TaC'].height, fc=MOTOR_AXIS_DICT['TaC'].colour)  # Target carriage
-        self.rectangle_Det = plt.Rectangle((0,0), MOTOR_AXIS_DICT['Det'].width, MOTOR_AXIS_DICT['TLH'].height, fc=MOTOR_AXIS_DICT['Det'].colour)                          # Ancillary detectors (FC/ZD)
-        self.rectangle_TLH = plt.Rectangle((0,0), MOTOR_AXIS_DICT['TLH'].width, MOTOR_AXIS_DICT['TLH'].height,fc=MOTOR_AXIS_DICT['TLH'].colour)                           # Horizontal target ladder
-        self.rectangle_SiA = plt.Rectangle((0,-MOTOR_AXIS_DICT['SiA'].height/2), MOTOR_AXIS_DICT['SiA'].width, MOTOR_AXIS_DICT['SiA'].height, fc=MOTOR_AXIS_DICT['SiA'].colour)  # Silicon array
-        self.rectangle_array_not_silicon = plt.Rectangle((0,-MOTOR_AXIS_DICT['SiA'].height/2), ARRAY_SILICON_TO_TIP_DISTANCE, MOTOR_AXIS_DICT['SiA'].height, fc=arrayEdgeCol)                   # Array "edge" (non-silicon part)
-        self.silencer_rect = plt.Rectangle((0,-MOTOR_AXIS_DICT['SiA'].height/4), self.silencer_length_from_tip, MOTOR_AXIS_DICT['SiA'].height/2, fc=silencerC)                                    # Silencer
-        self.circle_faraday_cup = plt.Circle(xy=(0,0), radius=21, fc=MOTOR_AXIS_DICT['ArC'].colour)                                                        # FC circle
-        self.circle_zd = plt.Circle(xy=(0,0), radius=20, fc=MOTOR_AXIS_DICT['ArC'].colour)            # ZD circle
+        self.rectangle_ArC = plt.Rectangle((0, -dsmi.MOTOR_AXIS_DICT['ArC'].height/2), dsmi.MOTOR_AXIS_DICT['ArC'].width, dsmi.MOTOR_AXIS_DICT['ArC'].height, fc=dsmi.MOTOR_AXIS_DICT['ArC'].colour) # Array carriage
+        self.rectangle_TaC = plt.Rectangle((0,-dsmi.MOTOR_AXIS_DICT['TaC'].height/2), dsmi.MOTOR_AXIS_DICT['TaC'].width, dsmi.MOTOR_AXIS_DICT['TaC'].height, fc=dsmi.MOTOR_AXIS_DICT['TaC'].colour)  # Target carriage
+        self.rectangle_Det = plt.Rectangle((0,0), dsmi.MOTOR_AXIS_DICT['Det'].width, dsmi.MOTOR_AXIS_DICT['TLH'].height, fc=dsmi.MOTOR_AXIS_DICT['Det'].colour)                          # Ancillary detectors (FC/ZD)
+        self.rectangle_TLH = plt.Rectangle((0,0), dsmi.MOTOR_AXIS_DICT['TLH'].width, dsmi.MOTOR_AXIS_DICT['TLH'].height,fc=dsmi.MOTOR_AXIS_DICT['TLH'].colour)                           # Horizontal target ladder
+        self.rectangle_SiA = plt.Rectangle((0,-dsmi.MOTOR_AXIS_DICT['SiA'].height/2), dsmi.MOTOR_AXIS_DICT['SiA'].width, dsmi.MOTOR_AXIS_DICT['SiA'].height, fc=dsmi.MOTOR_AXIS_DICT['SiA'].colour)  # Silicon array
+        self.rectangle_array_not_silicon = plt.Rectangle((0,-dsmi.MOTOR_AXIS_DICT['SiA'].height/2), dsgmi.ARRAY_SILICON_TO_TIP_DISTANCE, dsmi.MOTOR_AXIS_DICT['SiA'].height, fc=dsmi.MOTOR_AXIS_DICT['Det'].colour )                   # Array "edge" (non-silicon part)
+        self.silencer_rect = plt.Rectangle((0,-dsmi.MOTOR_AXIS_DICT['SiA'].height/4), self.silencer_length_from_tip, dsmi.MOTOR_AXIS_DICT['SiA'].height/2, fc=dsmi.MOTOR_AXIS_DICT['Det'].colour)                                    # Silencer
+        self.circle_faraday_cup = plt.Circle(xy=(0,0), radius=21, fc=dsmi.MOTOR_AXIS_DICT['ArC'].colour)                                                        # FC circle
+        self.circle_zd = plt.Circle(xy=(0,0), radius=20, fc=dsmi.MOTOR_AXIS_DICT['ArC'].colour)            # ZD circle
         self.circle_si_recoil = plt.Circle(xy=(self.rectangle_TLH.get_x()+recoil_target_dist,0),radius=50, fc=recoilFCCol, ec=recoilECol,lw=2.5,hatch='X') # Si recoil circle
-        self.rectangle_BBH = plt.Rectangle( (beam_blocker_soft_limit,-MOTOR_AXIS_DICT['BBH'].height/2), MOTOR_AXIS_DICT['BBH'].width, MOTOR_AXIS_DICT['BBH'].height, fc=MOTOR_AXIS_DICT['BBH'].colour ) # Beam blocker
+        self.rectangle_BBH = plt.Rectangle( (self.beam_blocker_soft_limit,-dsmi.MOTOR_AXIS_DICT['BBH'].height/2), dsmi.MOTOR_AXIS_DICT['BBH'].width, dsmi.MOTOR_AXIS_DICT['BBH'].height, fc=dsmi.MOTOR_AXIS_DICT['BBH'].colour ) # Beam blocker
 
         # Add shapes to drawing (in correct order!)
         self.ax.add_patch(self.rectangle_TaC)  # Target carriage
@@ -681,17 +682,17 @@ class DriveView(dspv.PlotView):
             self.ax.add_patch(self.circle_si_recoil) # Si recoil circle
         if pvp_draw_beam_blocker:
             self.ax.add_patch( self.rectangle_BBH ) # Beam blocker
-            self.line_BBH_soft_limit = plt.plot([ beam_blocker_soft_limit, beam_blocker_soft_limit ], [-1.1*(MOTOR_AXIS_DICT['TaC'].height/2), 1.1*(MOTOR_AXIS_DICT['TaC'].height/2)], linestyle='dashed', color='black', linewidth=1)
-            self.text_BBH = self.ax.text( beam_blocker_soft_limit, 1.1*(MOTOR_AXIS_DICT['TaC'].height/2) + 20, "BBSL", color='#000000', ha='center' )
+            self.line_BBH_soft_limit = plt.plot([ self.beam_blocker_soft_limit, self.beam_blocker_soft_limit ], [-1.1*(dsmi.MOTOR_AXIS_DICT['TaC'].height/2), 1.1*(dsmi.MOTOR_AXIS_DICT['TaC'].height/2)], linestyle='dashed', color='black', linewidth=1)
+            self.text_BBH = self.ax.text( self.beam_blocker_soft_limit, 1.1*(dsmi.MOTOR_AXIS_DICT['TaC'].height/2) + 20, "BBSL", color='#000000', ha='center' )
 
         # Define list of arrows
         # ArrowAnnotation(x1, x2, y, label, label_offset)
         self.arrowdict : dict[str,ArrowAnnotation] = {
-            'd_tip' :       ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 20, 'd_tip',    10),
-            'd_collision' : ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 70, 'd_collision', 0),
-            'd_recoil' :    ArrowAnnotation(0, 0, MOTOR_AXIS_DICT['TaC'].height/2 + 10, 'd_recoil', 80),
-            'd_si' :        ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10),  'd_si',    -30),
-            'd_blocker':    ArrowAnnotation(0, 0, -1*( MOTOR_AXIS_DICT['TaC'].height/2 + 10), 'd_blocker', -30 )
+            'd_tip' :       ArrowAnnotation(0, 0, dsmi.MOTOR_AXIS_DICT['TaC'].height/2 + 20, 'd_tip',    10),
+            'd_collision' : ArrowAnnotation(0, 0, dsmi.MOTOR_AXIS_DICT['TaC'].height/2 + 70, 'd_collision', 0),
+            'd_recoil' :    ArrowAnnotation(0, 0, dsmi.MOTOR_AXIS_DICT['TaC'].height/2 + 10, 'd_recoil', 80),
+            'd_si' :        ArrowAnnotation(0, 0, -1*( dsmi.MOTOR_AXIS_DICT['TaC'].height/2 + 10),  'd_si',    -30),
+            'd_blocker':    ArrowAnnotation(0, 0, -1*( dsmi.MOTOR_AXIS_DICT['TaC'].height/2 + 10), 'd_blocker', -30 )
         }
 
         # Enable/disable arrows
@@ -711,10 +712,10 @@ class DriveView(dspv.PlotView):
         position_text_spacing = 0.25
 
         self.position_text_dict : dict[int,PositionText]= {
-            1 : PositionText( 1, *trans.transform( ( 0*position_text_spacing, 1 - position_text_y_offset) ), 0, MOTOR_AXIS_DICT['TaC'].colour ),
-            2 : PositionText( 2, *trans.transform( ( 1*position_text_spacing, 1 - position_text_y_offset) ), 0, MOTOR_AXIS_DICT['SiA'].colour ),
-            3 : PositionText( 3, *trans.transform( ( 2*position_text_spacing, 1 - position_text_y_offset) ), 0, MOTOR_AXIS_DICT['TLH'].colour ),
-            4 : PositionText( 4, *trans.transform( ( 3*position_text_spacing, 1 - position_text_y_offset) ), 0, MOTOR_AXIS_DICT['Det'].colour ),
+            1 : PositionText( 1, *trans.transform( ( 0*position_text_spacing, 1 - position_text_y_offset) ), 0, dsmi.MOTOR_AXIS_DICT['TaC'].colour ),
+            2 : PositionText( 2, *trans.transform( ( 1*position_text_spacing, 1 - position_text_y_offset) ), 0, dsmi.MOTOR_AXIS_DICT['SiA'].colour ),
+            3 : PositionText( 3, *trans.transform( ( 2*position_text_spacing, 1 - position_text_y_offset) ), 0, dsmi.MOTOR_AXIS_DICT['TLH'].colour ),
+            4 : PositionText( 4, *trans.transform( ( 3*position_text_spacing, 1 - position_text_y_offset) ), 0, dsmi.MOTOR_AXIS_DICT['Det'].colour ),
         }
 
         # Encoder positive direction arrows
@@ -768,18 +769,18 @@ class DriveView(dspv.PlotView):
         silencer_target_distance = dsopts.OPTION_ARRAY_TIP_TO_TARGET_LADDER_AT_SPECIFIED_ENCODER_POSITIONS.get_value()  # this is initial distance between tip of the array (no silencer) to the target ladder d
         silencer_target_distance -= dsopts.OPTION_ENCODER_AXIS_TWO.get_value()*STEP_TO_MM # this is measurement encoder position of axis 2
         silencer_target_distance += dsopts.OPTION_ENCODER_AXIS_ONE.get_value()*STEP_TO_MM # this is measurement encoder position of axis 1
-        silencer_target_distance += pos[MOTOR_AXIS_DICT['ArC'].axis_number - 1]*STEP_TO_MM # add on distance of array from encoder axis 2
-        silencer_target_distance -= pos[MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM # add on distance of target from encoder axis 1
+        silencer_target_distance += pos[dsmi.MOTOR_AXIS_DICT['ArC'].axis_number - 1]*STEP_TO_MM # add on distance of array from encoder axis 2
+        silencer_target_distance -= pos[dsmi.MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM # add on distance of target from encoder axis 1
         silencer_target_distance -= self.silencer_length_from_tip # length of the silencer
 
         # TODO this is 2023 value from Survey on 25th October 2023 (elog:3752)
-        recoil_pos = pos[MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM + recoil_target_dist # now on the axis 1 carriage
+        recoil_pos = pos[dsmi.MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM + recoil_target_dist # now on the axis 1 carriage
 
         # Assuming that target at encoder position 0 is 1234.0 mm from back of magnet (elog:2891)
-        coord3  = MAGNET_LENGTH/2 - 1234.0 - pos[MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM # This is top-left corner of target ladder rectangle
-        coord2 = coord3 - silencer_target_distance - MOTOR_AXIS_DICT['SiA'].width - ARRAY_SILICON_TO_TIP_DISTANCE - self.silencer_length_from_tip # This is top left corner of silicon array
+        coord3  = dsgmi.MAGNET_LENGTH/2 - 1234.0 - pos[dsmi.MOTOR_AXIS_DICT['TaC'].axis_number - 1]*STEP_TO_MM # This is top-left corner of target ladder rectangle
+        coord2 = coord3 - silencer_target_distance - dsmi.MOTOR_AXIS_DICT['SiA'].width - dsgmi.ARRAY_SILICON_TO_TIP_DISTANCE - self.silencer_length_from_tip # This is top left corner of silicon array
         coord1 = coord3 - driveview_distance_from_trolley_axis_to_target_ladder # This is top left corner of trolley axis
-        coord4 = coord1 + MOTOR_AXIS_DICT['TaC'].width - driveview_distance_from_trolley_axis_to_beam_monitoring_axis # This is top right corner of FC/ZD rectangle
+        coord4 = coord1 + dsmi.MOTOR_AXIS_DICT['TaC'].width - driveview_distance_from_trolley_axis_to_beam_monitoring_axis # This is top right corner of FC/ZD rectangle
 
         # Update position text
         i = 0
@@ -797,19 +798,19 @@ class DriveView(dspv.PlotView):
 
         # >>>> AXIS 2 - array
         self.rectangle_SiA.set_x( coord2 )
-        self.rectangle_ArC.set_x( self.rectangle_SiA.get_x() - MOTOR_AXIS_DICT['ArC'].width/2 )
-        self.rectangle_array_not_silicon.set_x( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width )
-        self.silencer_rect.set_x( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width + ARRAY_SILICON_TO_TIP_DISTANCE )
+        self.rectangle_ArC.set_x( self.rectangle_SiA.get_x() - dsmi.MOTOR_AXIS_DICT['ArC'].width/2 )
+        self.rectangle_array_not_silicon.set_x( self.rectangle_SiA.get_x() + dsmi.MOTOR_AXIS_DICT['SiA'].width )
+        self.silencer_rect.set_x( self.rectangle_SiA.get_x() + dsmi.MOTOR_AXIS_DICT['SiA'].width + dsgmi.ARRAY_SILICON_TO_TIP_DISTANCE )
 
         # >>>> AXIS 3 - target ladder
-        self.rectangle_TLH.set_y( pos[MOTOR_AXIS_DICT['TLH'].axis_number - 1]*STEP_TO_MM - MOTOR_AXIS_DICT['TLH'].height/2 )
+        self.rectangle_TLH.set_y( pos[dsmi.MOTOR_AXIS_DICT['TLH'].axis_number - 1]*STEP_TO_MM - dsmi.MOTOR_AXIS_DICT['TLH'].height/2 )
         self.rectangle_TLH.set_x(coord3)
 
         # >>>> AXIS 4 - FC/ZD
-        self.rectangle_Det.set_y( pos[MOTOR_AXIS_DICT['Det'].axis_number - 1]*STEP_TO_MM - MOTOR_AXIS_DICT['Det'].height/2 )
-        self.rectangle_Det.set_x( coord4 - MOTOR_AXIS_DICT['Det'].width )
-        self.circle_faraday_cup.center = (self.rectangle_Det.get_x() + 0.5*MOTOR_AXIS_DICT['Det'].width, self.rectangle_Det.get_y() + MOTOR_AXIS_DICT['Det'].height/2 - self.faraday_cup_encoder_position*STEP_TO_MM )
-        self.circle_zd.center = (self.rectangle_Det.get_x() + 0.5*MOTOR_AXIS_DICT['Det'].width, self.rectangle_Det.get_y() + MOTOR_AXIS_DICT['Det'].height/2 - self.zd_encoder_position*STEP_TO_MM )
+        self.rectangle_Det.set_y( pos[dsmi.MOTOR_AXIS_DICT['Det'].axis_number - 1]*STEP_TO_MM - dsmi.MOTOR_AXIS_DICT['Det'].height/2 )
+        self.rectangle_Det.set_x( coord4 - dsmi.MOTOR_AXIS_DICT['Det'].width )
+        self.circle_faraday_cup.center = (self.rectangle_Det.get_x() + 0.5*dsmi.MOTOR_AXIS_DICT['Det'].width, self.rectangle_Det.get_y() + dsmi.MOTOR_AXIS_DICT['Det'].height/2 - self.faraday_cup_encoder_position*STEP_TO_MM )
+        self.circle_zd.center = (self.rectangle_Det.get_x() + 0.5*dsmi.MOTOR_AXIS_DICT['Det'].width, self.rectangle_Det.get_y() + dsmi.MOTOR_AXIS_DICT['Det'].height/2 - self.zd_encoder_position*STEP_TO_MM )
 
         # >>>> SILICON RECOIL
         # self.circle_si_recoil.center = self.rectangle_TLH.get_x() + ( recoil_target_dist, 0 )
@@ -818,32 +819,32 @@ class DriveView(dspv.PlotView):
         
 
         # >>>> ARROWS
-        self.arrowdict['d_tip'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width + ARRAY_SILICON_TO_TIP_DISTANCE + self.silencer_length_from_tip, self.rectangle_TLH.get_x() )
+        self.arrowdict['d_tip'].update( self.rectangle_SiA.get_x() + dsmi.MOTOR_AXIS_DICT['SiA'].width + dsgmi.ARRAY_SILICON_TO_TIP_DISTANCE + self.silencer_length_from_tip, self.rectangle_TLH.get_x() )
         self.arrowdict['d_recoil'].update( self.rectangle_TLH.get_x(), self.rectangle_TLH.get_x() + recoil_target_dist)
-        self.arrowdict['d_si'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width, self.rectangle_TLH.get_x() )
-        self.arrowdict['d_blocker'].update( self.rectangle_TaC.get_x() + self.rectangle_TaC.get_width(), beam_blocker_soft_limit )
-        self.arrowdict['d_collision'].update( self.rectangle_SiA.get_x() + MOTOR_AXIS_DICT['SiA'].width + ARRAY_SILICON_TO_TIP_DISTANCE + self.silencer_length_from_tip, self.rectangle_TLH.get_x() - dsopts.OPTION_TARGET_LADDER_THICKNESS.get_value() )
+        self.arrowdict['d_si'].update( self.rectangle_SiA.get_x() + dsmi.MOTOR_AXIS_DICT['SiA'].width, self.rectangle_TLH.get_x() )
+        self.arrowdict['d_blocker'].update( self.rectangle_TaC.get_x() + self.rectangle_TaC.get_width(), self.beam_blocker_soft_limit )
+        self.arrowdict['d_collision'].update( self.rectangle_SiA.get_x() + dsmi.MOTOR_AXIS_DICT['SiA'].width + dsgmi.ARRAY_SILICON_TO_TIP_DISTANCE + self.silencer_length_from_tip, self.rectangle_TLH.get_x() - dsopts.OPTION_TARGET_LADDER_THICKNESS.get_value() )
 
         for key in self.arrowdict.keys():
             self.arrowdict[key].draw(self.ax)
 
         # Axis labels - update X and Y
-        self.text_axis_1_label.set_x( self.rectangle_TaC.get_x() + MOTOR_AXIS_DICT['TaC'].width/2 )
-        self.text_axis_2_label.set_x( self.rectangle_ArC.get_x() + MOTOR_AXIS_DICT['ArC'].width/2 )
-        self.text_axis_3_label.set_x( self.rectangle_TLH.get_x() + MOTOR_AXIS_DICT['TLH'].width/2 )
-        self.text_axis_4_label.set_x( self.rectangle_Det.get_x() + MOTOR_AXIS_DICT['Det'].width/2 )
+        self.text_axis_1_label.set_x( self.rectangle_TaC.get_x() + dsmi.MOTOR_AXIS_DICT['TaC'].width/2 )
+        self.text_axis_2_label.set_x( self.rectangle_ArC.get_x() + dsmi.MOTOR_AXIS_DICT['ArC'].width/2 )
+        self.text_axis_3_label.set_x( self.rectangle_TLH.get_x() + dsmi.MOTOR_AXIS_DICT['TLH'].width/2 )
+        self.text_axis_4_label.set_x( self.rectangle_Det.get_x() + dsmi.MOTOR_AXIS_DICT['Det'].width/2 )
 
-        self.text_axis_1_label.set_y( self.rectangle_TaC.get_y() + 0.75*MOTOR_AXIS_DICT['TaC'].height )
-        self.text_axis_2_label.set_y( self.rectangle_ArC.get_y() + 0.75*MOTOR_AXIS_DICT['ArC'].height )
-        self.text_axis_3_label.set_y( self.rectangle_TLH.get_y() + 0.5*MOTOR_AXIS_DICT['TLH'].height )
-        self.text_axis_4_label.set_y( self.rectangle_Det.get_y() + 0.5*MOTOR_AXIS_DICT['Det'].height )
+        self.text_axis_1_label.set_y( self.rectangle_TaC.get_y() + 0.75*dsmi.MOTOR_AXIS_DICT['TaC'].height )
+        self.text_axis_2_label.set_y( self.rectangle_ArC.get_y() + 0.75*dsmi.MOTOR_AXIS_DICT['ArC'].height )
+        self.text_axis_3_label.set_y( self.rectangle_TLH.get_y() + 0.5*dsmi.MOTOR_AXIS_DICT['TLH'].height )
+        self.text_axis_4_label.set_y( self.rectangle_Det.get_y() + 0.5*dsmi.MOTOR_AXIS_DICT['Det'].height )
 
         # Add FC and ZD labels
-        self.text_fc_label.set_x( self.rectangle_Det.get_x() + MOTOR_AXIS_DICT['Det'].width/2 )
-        self.text_zd_label.set_x( self.rectangle_Det.get_x() + MOTOR_AXIS_DICT['Det'].width/2 )
+        self.text_fc_label.set_x( self.rectangle_Det.get_x() + dsmi.MOTOR_AXIS_DICT['Det'].width/2 )
+        self.text_zd_label.set_x( self.rectangle_Det.get_x() + dsmi.MOTOR_AXIS_DICT['Det'].width/2 )
 
-        self.text_fc_label.set_y( self.rectangle_Det.get_y() + 1.1*MOTOR_AXIS_DICT['Det'].height )
-        self.text_zd_label.set_y( self.rectangle_Det.get_y() - 0.3*MOTOR_AXIS_DICT['Det'].height )
+        self.text_fc_label.set_y( self.rectangle_Det.get_y() + 1.1*dsmi.MOTOR_AXIS_DICT['Det'].height )
+        self.text_zd_label.set_y( self.rectangle_Det.get_y() - 0.3*dsmi.MOTOR_AXIS_DICT['Det'].height )
 
     ################################################################################
     def remove_objects(self):
@@ -918,7 +919,7 @@ class ControlViewAxisPanel(wx.Panel):
     of axes available. It also can be disabled or paused as needed
     """
     ################################################################################
-    def __init__(self, parent : wx.Panel, axis : int, *args, **kwargs) -> None:
+    def __init__(self, parent : wx.Panel, axis : int, label : str, *args, **kwargs) -> None:
         """
         ControlViewAxisPanel: Initialise the panel
         """
@@ -930,7 +931,7 @@ class ControlViewAxisPanel(wx.Panel):
         size = self.GetSize()
 
         # Labels for axis label
-        self.textlist_axis_label = wx.StaticText(self, wx.ID_ANY, "("+str(axis)+"):\n"+AXIS_LABELS[axis-1], (0,0))
+        self.textlist_axis_label = wx.StaticText(self, wx.ID_ANY, "("+str(axis)+"):\n" + label, (0,0))
         
         # Check if this is a disabled panel
         if axis in dsopts.OPTION_DISABLED_AXES.get_value():
@@ -1184,10 +1185,10 @@ class ControlView(wx.Panel):
         self.controlviewaxispanellist = []
         self.linelist_dividers = []
 
-
+        self.axis_labels = dsmi.get_motor_axis_dict_property_as_array( 'axis_label' )
         # Loop over the number of axes
         for i in range(NUMBER_OF_MOTOR_AXES):
-            self.controlviewaxispanellist.append( ControlViewAxisPanel( self.datum_and_move_relative_panel, i+1, 
+            self.controlviewaxispanellist.append( ControlViewAxisPanel( self.datum_and_move_relative_panel, i+1, self.axis_labels[i],
                                                                         pos=(i*(controlview_axispanel_width + controlview_margin),0),
                                                                         size=(controlview_axispanel_width,controlview_axispanel_height)))
             # Line dividers
@@ -1442,7 +1443,7 @@ class DriveSystemGUI(wx.Frame):
         """
         # Call parent constructor and set options
         super(DriveSystemGUI, self).__init__( parent, title=mytitle, size=(drive_system_gui_width,drive_system_gui_height), style = wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX) )
-
+        
         # Bind close button to destructor function
         self.Bind( wx.EVT_CLOSE, self.close_program )
 
@@ -1602,6 +1603,7 @@ class HelpWindow(wx.Frame):
             "This is a GUI for controlling the ISS Drive System.\n",
             f"The Drive System contains {NUMBER_OF_MOTOR_AXES} axes:",
         ]
+        AXIS_LABELS = dsmi.get_motor_axis_dict_property_as_array('axis_label')
         for i in range(0,NUMBER_OF_MOTOR_AXES):
             lines.append( f"  • Axis {i+1}: {AXIS_LABELS[i]}" )
         

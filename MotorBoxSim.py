@@ -261,7 +261,7 @@ class MotorBoxSim(serialinterface.SerialInterface):
                     cmd_ret = f'{axis:02d}:{int(motor.encoder)}' + ' '*( 12 - len(str(motor.encoder)))
                 
                 # MOVE ABSOLUTE (MA)
-                if cmd == 'ma':
+                elif cmd == 'ma':
                     if motor.is_motor_aborted():
                         cmd_ret = motor.status
                     else:
@@ -269,7 +269,7 @@ class MotorBoxSim(serialinterface.SerialInterface):
                         motor.move(int(arg))
                 
                 # MOVE RELATIVE (MR)
-                if cmd == 'mr':
+                elif cmd == 'mr':
                     if motor.is_motor_aborted():
                         cmd_ret = motor.status
                     else:
@@ -277,23 +277,22 @@ class MotorBoxSim(serialinterface.SerialInterface):
                         motor.move( int(arg) + motor.encoder)
                 
                 # ABSOLUTE POSITION (AP)
-                if cmd == 'ap':
+                elif cmd == 'ap':
                     motor.set_position(int(arg))
                     cmd_ret = f'{axis:02d}:! OK'
                 
                 # ABORT (AB)
-                if cmd == 'ab':
+                elif cmd == 'ab':
                     motor.abort()
                     cmd_ret = motor.status
 
                 # RESET (RS)
-                if cmd == 'rs':
-                    if motor.is_motor_aborted():
-                        motor.reset()
+                elif cmd == 'rs':
+                    motor.reset()
                     cmd_ret = motor.status
                 
                 # QUERY ALL (QA)
-                if cmd == 'qa':
+                elif cmd == 'qa':
                     query_all_list = [
                         f"{axis:02d}qa\rMclennan Digiloop Motor Controller V1.04   Servo mode\r\n",
                         f"Input command: {axis}qa\r\n",
@@ -325,7 +324,7 @@ class MotorBoxSim(serialinterface.SerialInterface):
                     return query_all_list
                 
                 # LIST SEQUENCE
-                if cmd == 'ls':
+                elif cmd == 'ls':
                     list_sequence_list = [
                         f"{axis:02d}ls\r{axis:02d}:Sequence {arg}:\r\n",
                         f"X1\t####\r\n",
